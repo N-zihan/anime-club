@@ -1,3 +1,4 @@
+import os
 from flask import Flask , render_template
 
 app = Flask(__name__)
@@ -19,5 +20,6 @@ def activities():
     else:
         return render_template('activities.html', activities = activities_list)
 
-#if __name__ == '__main__':
-    app.run(host='0.0.0.0',port = 7891,debug=True)
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 7891))
+    app.run(host='0.0.0.0', port=port, debug=False)
