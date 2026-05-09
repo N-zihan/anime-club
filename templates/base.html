@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>南平一中动漫社 - {% block title %}{% endblock %}</title>
+</head>
+<body>
+    <nav>
+        <a href="/">首页</a>
+        <a href="/about">社团介绍</a>
+        <a href="/activities">社团活动</a>
+        <a href="javascript:history.back()">返回上一页</a>
+    </nav>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>© 2026 南平一中动漫社 | 用爱发电</footer>
+
+</body>
+</html>

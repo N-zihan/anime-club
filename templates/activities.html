@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}社团活动{% endblock %}
+{% block content %}
+<h2>近期活动</h2>
+<ul>
+    {% for activity in activities %}
+        <li>
+            <strong>{{ activity.title }}</strong>
+            <br>日期：{{ activity.date }}<br>
+            {{ activity.content }}
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}
