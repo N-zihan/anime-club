@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}留言板{% endblock %}
+{% block content %}
+<h2>📢 社员留言板</h2>
+
+<div class="messages-list">
+    <h3>✨ 最新留言</h3>
+    <ul class="message-list">
+        {% for msg in messages %}
+        <li>
+            <strong>{{ msg.nickname }}</strong> 说：<br>
+            {{ msg.content }}
+        </li>
+        {% else %}
+        <li>暂无留言，来做第一个留言的人吧！</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="message-form">
+    <h3>📝 留下你的足迹</h3>
+    <form method="POST">
+        <p>
+            <label for="nickname">昵称（可选）：</label>
+            <input type="text" name="nickname" id="nickname" placeholder="匿名">
+        </p>
+        <p>
+            <label for="content">留言内容：</label><br>
+            <textarea name="content" id="content" rows="4" cols="50" required></textarea>
+        </p>
+        <p><input type="submit" value="提交留言"></p>
+    </form>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .messages-list {
+        margin-bottom: 40px;
+    }
+    .message-list {
+        list-style: none;
+        padding: 0;
+    }
+    .message-list li {
+        border-bottom: 1px solid #ccc;
+        padding: 12px 0;
+    }
+    .message-list li strong {
+        color: #2c3e50;
+    }
+    .message-form {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+    }
+    label {
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+    input[type="text"], textarea {
+        width: 100%;
+        max-width: 500px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: inherit;
+    }
+    input[type="submit"] {
+        background-color: #2c3e50;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    input[type="submit"]:hover {
+        background-color: #1a2a3a;
+    }
+</style>
+{% endblock %}
