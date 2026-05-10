@@ -1,14 +1,18 @@
 {% extends "base.html" %}
 {% block title %}社团活动{% endblock %}
 {% block content %}
-<h2>近期活动</h2>
-<ul>
+<h2>📅 近期活动</h2>
+<div class="activities-grid">
     {% for activity in activities %}
-        <li>
-            <strong>{{ activity.title }}</strong>
-            <br>日期：{{ activity.date }}<br>
-            {{ activity.content }}
-        </li>
+    <div class="activity-card">
+        <div class="activity-date">
+            {{ activity.date }}
+        </div>
+        <h3>{{ activity.title }}</h3>
+        <p>{{ activity.content }}</p>
+        <!-- 如果有图片字段，可以加 img -->
+        {# <!-- <img src="{{ url_for('static', filename='images/' + activity.image) }}" alt="{{ activity.title }}"> --> #}
+    </div>
     {% endfor %}
-</ul>
+</div>
 {% endblock %}
