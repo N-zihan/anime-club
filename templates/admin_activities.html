@@ -17,6 +17,7 @@
             <td>
                 <a href="{{ url_for('admin_activity_edit', id=act.id) }}">编辑</a> |
                 <a href="{{ url_for('admin_activity_delete', id=act.id) }}" onclick="return confirm('确定删除？')">删除</a>
+                <a href="{{ url_for('admin_gallery') }}">管理照片墙</a>
             </td>
         </tr>
         {% endfor %}

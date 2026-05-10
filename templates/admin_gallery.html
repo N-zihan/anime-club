@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}管理照片墙{% endblock %}
+{% block content %}
+<h2>🖼️ 照片墙管理</h2>
+
+<h3>上传新照片</h3>
+<form method="POST" action="{{ url_for('admin_gallery_upload') }}" enctype="multipart/form-data">
+    <input type="file" name="file" accept="image/*" required>
+    <input type="submit" value="上传">
+</form>
+
+<h3>现有照片（点击删除）</h3>
+<div class="gallery-grid">
+    {% for img in images %}
+    <div class="gallery-item">
+        <img src="{{ url_for('static', filename='history_photos/' + img) }}" alt="{{ img }}">
+        <a href="{{ url_for('admin_gallery_delete', filename=img) }}" onclick="return confirm('确定删除？');">删除</a>
+    </div>
+    {% endfor %}
+</div>
+<a href="{{ url_for('admin_activities') }}">返回活动管理</a>
+{% endblock %}
