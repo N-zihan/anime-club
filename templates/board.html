@@ -8,7 +8,9 @@
     <ul class="message-list">
         {% for msg in messages %}
         <li>
-            <strong>{{ msg.nickname }}</strong> 说：<br>
+            <strong>{{ msg.nickname }}</strong>
+            <span class="msg-time">· {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+            <br>
             {{ msg.content }}
         </li>
         {% else %}
@@ -48,6 +50,11 @@
     }
     .message-list li strong {
         color: #2c3e50;
+    }
+    .msg-time {
+        color: #888;
+        font-size: 0.85em;
+        margin-left: 8px;
     }
     .message-form {
         background-color: #f9f9f9;
