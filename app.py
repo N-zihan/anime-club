@@ -37,7 +37,7 @@ def about():
 
 @app.route('/activities')
 def activities():
-    activities_list = []
+    activities_list = [{'title': '动漫社管理层换届选举', 'date': '2026-05-17', 'content': '动漫社一年一度最重要的大事，届时将会选出新一届的社长、副社长。站长本人也参与其中，嘿嘿~'}]
     #活动添加格式：
     #{'title': '活动标题',
     #'date': 'YYYY-MM-DD',
