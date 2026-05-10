@@ -37,10 +37,7 @@ def about():
 
 @app.route('/activities')
 def activities():
-    activities_list = [
-        {'title': '春日漫展', 'date': '2025-04-15', 'content': '一起去广州漫展'},
-        {'title': '绘画教学', 'date': '2025-05-01', 'content': '教你画眼睛'}
-    ]
+    activities_list = []
     if not activities_list:
         return render_template('no_activities.html')
     return render_template('activities.html', activities=activities_list)
