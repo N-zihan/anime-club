@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if activity else '添加' }}活动{% endblock %}
+{% block content %}
+<h2>{{ '编辑活动' if activity else '添加新活动' }}</h2>
+<form method="POST">
+    <p>标题：<input type="text" name="title" value="{{ activity.title if activity else '' }}" required></p>
+    <p>日期（YYYY-MM-DD）：<input type="text" name="date" value="{{ activity.date if activity else '' }}" placeholder="2025-12-31" required></p>
+    <p>内容：<br><textarea name="content" rows="5" cols="50" required>{{ activity.content if activity else '' }}</textarea></p>
+    <p><input type="submit" value="保存"></p>
+</form>
+<a href="{{ url_for('admin_activities') }}">返回管理页</a>
+{% endblock %}
