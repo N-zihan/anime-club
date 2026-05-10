@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timezone   # 修改 1：导入 timezone
 
 load_dotenv()
+print("DATABASE_URL:", os.getenv('DATABASE_URL'))
 
 app = Flask(__name__)
 
