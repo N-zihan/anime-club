@@ -38,6 +38,10 @@ def about():
 @app.route('/activities')
 def activities():
     activities_list = []
+    #活动添加格式：
+    #{'title': '活动标题',
+    #'date': 'YYYY-MM-DD',
+    #'content': '活动内容描述'}
     if not activities_list:
         return render_template('no_activities.html')
     return render_template('activities.html', activities=activities_list)
