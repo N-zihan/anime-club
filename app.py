@@ -7,18 +7,17 @@ from functools import wraps
 from flask import session, flash
 from werkzeug.utils import secure_filename
 
-DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://postgres.ydpxvobwfyllqeetcyjc:IBSW3Ls7QEUsY6RE@aws-1-ap-south-1.pooler.supabase.com:5432/postgres')
-ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '20090929nzh')
-
-# 接着可以添加一个安全检查，如果两个都是默认值，就说明环境变量大概率没设置
-if DATABASE_URL == 'postgresql://user:pass@localhost/db' and ADMIN_PASSWORD == 'a_secure_fallback_password':
-    print("⚠️ 警告: 未检测到有效环境变量，应用可能无法正常工作。")
-
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = '20090929nzh'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+DATABASE_URL = os.getenv('DATABASE_URL')
+if not DATABASE_URL:
+    # 如果未设置环境变量，使用 SQLite（仅用于本地测试，生产环境不应如此）
+    print("警告: 未设置 DATABASE_URL 环境变量，将使用 SQLite 数据库。")
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # --- 在 app = Flask(__name__) 之后添加配置 ---
 # 配置图片上传的保存文件夹 (在 static 目录下)
