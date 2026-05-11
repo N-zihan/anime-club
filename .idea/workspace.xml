@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="动漫社网站">
-      <change afterPath="$PROJECT_DIR$/templates/admin_gallery.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_activities.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_activities.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/board.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/board.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,7 +43,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/N-zihan/anime-club.git&quot;,
+    &quot;url&quot;: &quot;git@github.com:N-zihan/anime-club.git&quot;,
     &quot;accountId&quot;: &quot;9864df25-fa90-4eda-ad53-ffb50cec7a37&quot;
   }
 }</component>
@@ -63,30 +59,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Flask 服务器.anime-club.executor": "Run",
-    "Flask 服务器.动漫社网站.executor": "Run",
-    "HTTP 请求.generated-requests | #1.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.test.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/NZH/Desktop/动漫社网站/static/images",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Flask 服务器.anime-club.executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.动漫社网站.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP 请求.generated-requests | #1.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/NZH/Desktop/动漫社网站/static/images&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\NZH\Desktop\动漫社网站\static\images" />
@@ -99,7 +95,7 @@
       <recent name="C:\Users\NZH\Desktop\动漫社网站\api" />
     </key>
   </component>
-  <component name="RunManager" selected="Flask 服务器.anime-club">
+  <component name="RunManager" selected="HTTP 请求.generated-requests | #1">
     <configuration name="generated-requests | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#1" runType="运行单个请求">
       <method v="2" />
     </configuration>
@@ -183,7 +179,7 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -218,7 +214,8 @@
       <workItem from="1778323121497" duration="12287000" />
       <workItem from="1778346154955" duration="5245000" />
       <workItem from="1778357814198" duration="2561000" />
-      <workItem from="1778388493202" duration="24157000" />
+      <workItem from="1778388493202" duration="24277000" />
+      <workItem from="1778472761851" duration="43000" />
     </task>
     <task id="LOCAL-00001" summary="动漫社网站">
       <option name="closed" value="true" />
@@ -452,7 +449,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778425946941</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="动漫社网站">
+      <option name="closed" value="true" />
+      <created>1778428093054</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1778428093054</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
