@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}社员注册{% endblock %}
+{% block content %}
+<div class="card-form">
+    <h2>📝 社团成员注册</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="POST">
+        <div class="form-group">
+            <label>用户名：</label>
+            <input type="text" name="username" required>
+        </div>
+        <div class="form-group">
+            <label>QQ号：</label>
+            <input type="text" name="qq" pattern="\d{5,12}" title="请填写5-12位数字QQ号" required>
+        </div>
+        <div class="form-group">
+            <label>社团验证码：</label>
+            <input type="text" name="group" placeholder="（请向社团管理员索取）" required>
+        </div>
+        <div class="form-group">
+            <label>密码：</label>
+            <input type="password" name="password" required>
+        </div>
+        <button type="submit" class="btn-primary">注册</button>
+    </form>
+    <p>已有账号？<a href="{{ url_for('login') }}">立即登录</a></p>
+</div>
+{% endblock %}
