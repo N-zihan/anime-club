@@ -92,7 +92,7 @@ def activities():
 @app.route('/gallery')
 def gallery():
     static_folder = app.static_folder or ''
-    image_folder = os.path.join(static_folder, 'history_photos')
+    image_folder = os.path.join(static_folder, 'static/history_photos')
     os.makedirs(image_folder, exist_ok=True)
     image_files = [f for f in os.listdir(image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     image_urls = [url_for('static', filename=f'history_photos/{img}') for img in image_files]
@@ -170,7 +170,7 @@ def add_reply(message_id):
 @app.route('/admin/gallery')
 @admin_required
 def admin_gallery():
-    image_folder = os.path.join(app.static_folder, 'history_photos')
+    image_folder = os.path.join(app.static_folder, 'static/history_photos')
     os.makedirs(image_folder, exist_ok=True)
     images = [f for f in os.listdir(image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     return render_template('admin_gallery.html', images=images)
@@ -189,10 +189,10 @@ def admin_gallery_upload():
         filename = secure_filename(file.filename)
         base, ext = os.path.splitext(filename)
         counter = 1
-        save_path = os.path.join(app.static_folder, 'history_photos', filename)
+        save_path = os.path.join(app.static_folder, 'static/history_photos', filename)
         while os.path.exists(save_path):
             filename = f"{base}_{counter}{ext}"
-            save_path = os.path.join(app.static_folder, 'history_photos', filename)
+            save_path = os.path.join(app.static_folder, 'static/history_photos', filename)
             counter += 1
         file.save(save_path)
         flash(f'图片 {filename} 上传成功')
@@ -203,7 +203,7 @@ def admin_gallery_upload():
 @app.route('/admin/gallery/delete/<filename>')
 @admin_required
 def admin_gallery_delete(filename):
-    file_path = os.path.join(app.static_folder, 'history_photos', filename)
+    file_path = os.path.join(app.static_folder, 'static/history_photos', filename)
     if os.path.exists(file_path):
         os.remove(file_path)
         flash(f'图片 {filename} 已删除')
