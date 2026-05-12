@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}社员登录{% endblock %}
+{% block content %}
+<div class="card-form">
+    <h2>🔐 社员登录</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>用户名：</label>
+            <input type="text" name="username" required>
+        </div>
+        <div class="form-group">
+            <label>密码：</label>
+            <input type="password" name="password" required>
+        </div>
+        <button type="submit" class="btn-primary">登录</button>
+    </form>
+    <p>还没注册？<a href="{{ url_for('register') }}">立即注册</a></p>
+</div>
+{% endblock %}
