@@ -8,17 +8,40 @@
 </head>
 <body>
     <nav>
-        <a href="/">首页</a>
-        <a href="/about">社团介绍</a>
-        <a href="/activities">社团活动</a>
-        <a href="/gallery">社团珍贵历史照片</a>
-        <a href="/board">留言板</a>
-        <a href="javascript:history.back()">返回上一页</a>
+        <div class="nav-left">
+            <a href="/" class="logo">南平一中动漫社</a>
+        </div>
+        <div class="nav-links">
+            <a href="/">首页</a>
+            <a href="/about">社团介绍</a>
+            <a href="/activities">活动</a>
+            <a href="/gallery">珍贵历史图片</a>
+            <a href="/board">留言板</a>
+            <a href="{{ url_for('anime_resources') }}">番剧链接</a>
+        </div>
+        <div class="nav-right">
+            {% if session.user_id %}
+                <span class="user-name">{{ session.username }}</span>
+                <a href="{{ url_for('logout') }}">退出</a>
+                <form method="POST" action="{{ url_for('delete_account') }}" class="inline-form">
+                    <button type="submit" class="delete-btn" onclick="return confirm('永久注销账号？')">注销</button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('login') }}">登录</a>
+                <a href="{{ url_for('register') }}">注册</a>
+            {% endif %}
+            {% if session.admin_logged_in %}
+                <a href="{{ url_for('admin_activities') }}" class="admin-link">管理</a>
+            {% endif %}
+        </div>
     </nav>
+
     <main>
         {% block content %}{% endblock %}
     </main>
-    <footer>© 2026 南平一中动漫社 | 用爱发电 | <a href="/admin/login">管理</a></footer>
 
+    <footer>
+        <p>© 南平一中动漫社 | 为爱发电</p>
+    </footer>
 </body>
 </html>

@@ -13,6 +13,13 @@
             <input type="password" name="password" required>
         </div>
         <button type="submit" class="btn-primary">登录</button>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
     </form>
     <p>还没注册？<a href="{{ url_for('register') }}">立即注册</a></p>
 </div>

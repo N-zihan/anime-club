@@ -1,4 +1,4 @@
-/* ========== 全局样式 ========== */
+/* 全局重置 */
 * {
     margin: 0;
     padding: 0;
@@ -6,249 +6,309 @@
 }
 
 body {
-    background-color: #f0f8ff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    color: #333;
+    background: #f0f8ff;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #1e2a3a;
 }
 
-/* ========== 导航栏 ========== */
+/* 导航栏 - 纯黑色背景，所有文字纯白 */
 nav {
-    background-color: #2c3e50;
-    padding: 12px 20px;
+    background: #1e2a3a;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 30px;
     flex-wrap: wrap;
     gap: 20px;
 }
-nav a {
-    color: white;
+
+nav a, nav span, nav button {
+    color: white !important;
+    background: transparent !important;
     text-decoration: none;
-    font-weight: bold;
-    padding: 8px 16px;
-    border-radius: 8px;
-    transition: background 0.2s;
-}
-nav a:hover {
-    background-color: #1a2a3a;
-    text-decoration: underline;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 6px 14px;
+    border-radius: 30px;
+    transition: 0.2s;
+    border: none;
+    cursor: pointer;
 }
 
-/* ========== 主要内容容器 ========== */
+nav a:hover, nav button:hover {
+    background: #2a3a4a !important;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-name {
+    background: #2a3a4a !important;
+    border-radius: 30px;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.delete-btn {
+    color: #ffb3b3 !important;
+}
+.delete-btn:hover {
+    background: #4a2a2a !important;
+}
+
+/* 主内容区 */
 main {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    max-width: 1300px;
+    margin: 30px auto;
+    padding: 20px 30px;
+    background: white;
+    border-radius: 32px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.05);
 }
 
-/* ========== 页脚 ========== */
-footer {
-    text-align: center;
-    color: #666;
-    margin-top: 40px;
-    padding: 20px;
-    font-size: 0.9rem;
-}
-
-/* ========== 首页欢迎区 ========== */
+/* 首页欢迎区 */
 .hero {
     text-align: center;
-    margin: 40px 0 60px;
+    margin: 30px 0 50px;
 }
 .hero h1 {
     font-size: 2.5rem;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 .hero p {
     font-size: 1.2rem;
-    color: #555;
-    max-width: 800px;
+    color: #4a6a7a;
+    max-width: 700px;
     margin: 0 auto;
 }
 
-/* ========== 卡片网格（固定两列）========== */
+/* 首页卡片网格 - 两列，干净卡片 */
 .card-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 30px;
-    margin: 40px 0;
+    margin: 30px 0;
 }
-
-/* 卡片样式 */
 .card {
     background: white;
-    border-radius: 16px;
+    border-radius: 24px;
     padding: 30px 20px;
     text-align: center;
     text-decoration: none;
-    color: #333;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    color: #1e2a3a;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+    transition: 0.2s;
+    border: 1px solid #e2e8f0;
 }
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
 }
 .card-icon {
     font-size: 48px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 .card h3 {
-    margin-bottom: 12px;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
+    margin-bottom: 10px;
 }
 .card p {
-    color: #666;
-    line-height: 1.4;
-    margin: 0;
+    color: #4a6a7a;
 }
 
-/* 手机窄屏：卡片变成一列 */
-@media (max-width: 600px) {
-    .card-grid {
-        grid-template-columns: 1fr;
-    }
+/* 活动 & 番剧链接共用卡片网格 */
+.activities-grid, .anime-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 25px;
+}
+.activity-card, .anime-card {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    border: 1px solid #e2e8f0;
+    transition: 0.2s;
+}
+.activity-card:hover, .anime-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+.activity-date {
+    background: #1e2a3a;
+    color: white;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 40px;
+    font-size: 0.8rem;
+    margin-bottom: 12px;
+}
+.activity-card h3, .anime-card h3 {
+    font-size: 1.4rem;
+    margin: 10px 0 8px;
+}
+.activity-card p, .anime-card p {
+    color: #4a6a7a;
+    line-height: 1.5;
 }
 
-/* ========== 留言板样式 ========== */
+/* 留言板 */
 .messages-list {
-    margin-bottom: 40px;
+    margin: 20px 0;
 }
 .message-list {
     list-style: none;
     padding: 0;
 }
 .message-list li {
-    border-bottom: 1px solid #ccc;
-    padding: 12px 0;
-}
-.message-list li strong {
-    color: #2c3e50;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 15px 0;
 }
 .msg-time {
-    color: #888;
-    font-size: 0.85em;
-    margin-left: 8px;
+    color: #7a8a9a;
+    font-size: 0.8rem;
+    margin-left: 10px;
 }
 .message-form {
-    background-color: #f9f9f9;
+    background: #f8fafc;
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 24px;
+    margin-top: 30px;
 }
 .message-form label {
-    font-weight: bold;
-    display: inline-block;
+    font-weight: 600;
+    display: block;
     margin-bottom: 5px;
 }
-.message-form input[type="text"],
-.message-form textarea {
+.message-form input, .message-form textarea {
     width: 100%;
     max-width: 500px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-family: inherit;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
 }
 .message-form input[type="submit"] {
-    background-color: #2c3e50;
+    background: #1e2a3a;
     color: white;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 4px;
+    width: auto;
+    padding: 8px 24px;
     cursor: pointer;
-}
-.message-form input[type="submit"]:hover {
-    background-color: #1a2a3a;
+    border: none;
 }
 
-/* ========== 照片墙样式 ========== */
+/* 照片墙 */
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 20px;
-    margin-top: 20px;
+    margin: 20px 0;
 }
 .gallery-item {
-    background-color: #f0f0f0;
-    border-radius: 8px;
+    background: #f1f5f9;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-}
-.gallery-item:hover {
-    transform: scale(1.02);
 }
 .gallery-item img {
     width: 100%;
-    height: 250px;
+    height: 200px;
     object-fit: cover;
     display: block;
 }
-@media (max-width: 768px) {
-    .gallery-item img {
-        height: 180px;
+
+/* 后台卡片 */
+.admin-card {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e2e8f0;
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.btn-add {
+    background: #1e2a3a;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 40px;
+    text-decoration: none;
+}
+
+/* 表单卡片 */
+.card-form {
+    max-width: 500px;
+    margin: 40px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 32px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+}
+.form-group {
+    margin-bottom: 20px;
+}
+.form-group label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 6px;
+}
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+}
+.btn-primary {
+    background: #1e2a3a;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 40px;
+    border: none;
+    cursor: pointer;
+}
+
+/* 响应式 */
+@media (max-width: 700px) {
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+    nav {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    .nav-links, .nav-right {
+        justify-content: center;
     }
 }
 
-/* ========== 其他通用样式 ========== */
-h1, h2, h3 {
-    color: #2c3e50;
-    margin-top: 0;
-}
-a {
-    text-decoration: none;
-}
-.container {
+footer {
+    text-align: center;
+    color: #666;
+    margin-top: 40px;
     padding: 20px;
-}
-
-/* 活动卡片网格布局 */
-.activities-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-/* 单个活动卡片 */
-.activity-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 1px solid #eaeaea;
-}
-
-.activity-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-}
-
-.activity-date {
-    display: inline-block;
-    background-color: #2c3e50;
-    color: white;
-    font-size: 0.85rem;
-    padding: 4px 12px;
-    border-radius: 20px;
-    margin-bottom: 15px;
-}
-
-.activity-card h3 {
-    margin: 0 0 10px 0;
-    font-size: 1.4rem;
-    color: #1e2a36;
-}
-
-.activity-card p {
-    color: #555;
-    line-height: 1.5;
-    margin: 0;
+    font-size: 0.9rem;
+    width: 100%;
+    clear: both;
 }

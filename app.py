@@ -17,6 +17,7 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 if not DATABASE_URL:
     print("警告: 未设置 DATABASE_URL 环境变量，将使用 SQLite 数据库。")
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -25,6 +26,17 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 UPLOAD_FOLDER = 'static/upload_photos'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# 番剧资源上传目录
+ANIME_UPLOAD_FOLDER = 'static/anime_zips'
+ALLOWED_ZIP_EXTENSIONS = {'zip'}
+app.config['ANIME_UPLOAD_FOLDER'] = ANIME_UPLOAD_FOLDER
+
+# 确保目录存在
+os.makedirs(ANIME_UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_zip(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_ZIP_EXTENSIONS
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -64,6 +76,17 @@ class Reply(db.Model):
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     message_id = db.Column(db.Integer, db.ForeignKey('message.id'), nullable=False)
     message = db.relationship('Message', backref=db.backref('replies', lazy='dynamic', order_by='Reply.timestamp'))
+
+class AnimeResource(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(200), nullable=True)
+    filename = db.Column(db.String(200), nullable=False)
+    upload_time = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    uploader = db.Column(db.String(50), nullable=True)   # 记录管理员用户名
+
+    def __repr__(self):
+        return f'<AnimeResource {self.title}>'
 
 with app.app_context():
     db.create_all()
@@ -117,13 +140,18 @@ def board():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        nickname = request.form.get('nickname', '匿名')
+        nickname = session.get('username', '匿名')   # 自动使用登录用户名
         content = request.form.get('content')
         if content:
             msg = Message(nickname=nickname, content=content)
             db.session.add(msg)
             db.session.commit()
         return redirect(url_for('board'))
+
+    messages = db.session.query(Message).order_by(Message.timestamp.desc()).all()
+    for msg in messages:
+        msg.timestamp = msg.timestamp + timedelta(hours=8)
+    return render_template('board.html', messages=messages)
 
     messages = db.session.query(Message).order_by(Message.timestamp.desc()).all()
     for msg in messages:
@@ -153,7 +181,7 @@ def register():
 
         # 验证社团验证码 = 动漫社QQ群号 (582651609)
         if group != '582651609':
-            flash('验证码错误，请确认你是社团成员')
+            flash('群号错误，请确认你是社团成员')
             return redirect(url_for('register'))
 
         # 用户名唯一性
@@ -187,22 +215,22 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        user = User.query.filter_by(username=username).first()
-        if user and user.check_password(password):
-            session['user_id'] = user.id
-            session['username'] = user.username
-            flash('登录成功', 'success')
-            return redirect(url_for('index'))
+        # 前端验证非空
+        if not username or not password:
+            flash('请填写用户名和密码', 'danger')
         else:
-            flash('用户名或密码错误')
+            user = User.query.filter_by(username=username).first()
+            if user and user.check_password(password):
+                session['user_id'] = user.id
+                session['username'] = user.username
+                flash('登录成功', 'success')
+                return redirect(url_for('index'))
+            else:
+                if not user:
+                    flash('用户名不存在，请先注册', 'danger')
+                else:
+                    flash('密码错误', 'danger')
     return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.pop('user_id', None)
-    session.pop('username', None)
-    flash('已退出登录', 'info')
-    return redirect(url_for('login'))
 
 # ---------- 后台管理 ----------
 @app.route('/admin/activities')
@@ -291,6 +319,52 @@ def admin_gallery_delete(filename):
         flash('文件不存在')
     return redirect(url_for('admin_gallery'))
 
+@app.route('/admin/anime_resources', methods=['GET', 'POST'])
+@admin_required
+def admin_anime_resources():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        file = request.files.get('file')
+        if not title or not file or not allowed_zip(file.filename):
+            flash('请填写标题并上传 zip 文件')
+            return redirect(url_for('admin_anime_resources'))
+        filename = secure_filename(file.filename)
+        # 避免重名
+        base, ext = os.path.splitext(filename)
+        counter = 1
+        save_path = os.path.join(app.config['ANIME_UPLOAD_FOLDER'], filename)
+        while os.path.exists(save_path):
+            filename = f"{base}_{counter}{ext}"
+            save_path = os.path.join(app.config['ANIME_UPLOAD_FOLDER'], filename)
+            counter += 1
+        file.save(save_path)
+        resource = AnimeResource(
+            title=title,
+            description=description,
+            filename=filename,
+            uploader=session.get('username', 'admin')
+        )
+        db.session.add(resource)
+        db.session.commit()
+        flash('资源上传成功')
+        return redirect(url_for('admin_anime_resources'))
+
+    resources = AnimeResource.query.order_by(AnimeResource.upload_time.desc()).all()
+    return render_template('admin_anime_resources.html', resources=resources)
+
+@app.route('/admin/anime_resources/delete/<int:id>')
+@admin_required
+def admin_anime_resources_delete(id):
+    resource = AnimeResource.query.get_or_404(id)
+    file_path = os.path.join(app.config['ANIME_UPLOAD_FOLDER'], resource.filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    db.session.delete(resource)
+    db.session.commit()
+    flash('资源已删除')
+    return redirect(url_for('admin_anime_resources'))
+
 @app.before_request
 def require_login():
     # 公开路由列表（不需要登录就能访问）
@@ -298,6 +372,46 @@ def require_login():
     # 如果用户未登录，且当前请求的端点不在公开列表中，则重定向到登录页
     if not session.get('user_id') and request.endpoint not in public_routes:
         return redirect(url_for('login'))
+
+
+# 退出登录（已有，确认正确即可）
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    session.pop('username', None)
+    flash('已退出登录', 'info')
+    return redirect(url_for('login'))
+
+
+# 注销账号（彻底删除用户及其所有关联数据）
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+    if not user:
+        return redirect(url_for('login'))
+
+    # 可选：删除该用户的所有留言和回复（根据需求）
+    # 注意：留言有 replies 外键，需先删除 replies 或建立级联删除。
+    # 为了简单，我们只删除用户，留言保留但显示“已注销用户”。
+    # 如果你想彻底删除用户的所有留言，请取消下面注释（需先处理 replies）。
+
+    # 删除用户
+    db.session.delete(user)
+    db.session.commit()
+
+    # 清除 session
+    session.clear()
+    flash('账号已注销，感谢曾经参与', 'info')
+    return redirect(url_for('register'))
+
+@app.route('/anime_resources')
+def anime_resources():
+    resources = AnimeResource.query.order_by(AnimeResource.upload_time.desc()).all()
+    return render_template('anime_resources.html', resources=resources)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
