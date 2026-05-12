@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}番剧链接{% endblock %}
+{% block content %}
+<h2>📦 番剧资源下载</h2>
+<div class="anime-grid">
+    {% for res in resources %}
+    <div class="anime-card">
+        <h3>{{ res.title }}</h3>
+        <p>{{ res.description or '暂无描述' }}</p>
+        <p class="anime-meta">📅 上传时间：{{ res.upload_time.strftime('%Y-%m-%d %H:%M') }}</p>
+        <a href="{{ url_for('static', filename='anime_zips/' + res.filename) }}" class="btn-primary" download>⬇️ 下载 ZIP</a>
+    </div>
+    {% else %}
+    <div class="empty-tip">📭 暂无资源，管理员请前往后台添加。</div>
+    {% endfor %}
+</div>
+{% endblock %}

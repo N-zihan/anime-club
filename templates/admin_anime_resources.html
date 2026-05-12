@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}番剧资源管理{% endblock %}
+{% block content %}
+<div class="admin-header">
+    <h2>📦 番剧资源管理（仅管理员）</h2>
+</div>
+
+<div class="card-form">
+    <h3>上传新资源（zip文件）</h3>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>标题：</label>
+            <input type="text" name="title" required>
+        </div>
+        <div class="form-group">
+            <label>描述（可选）：</label>
+            <textarea name="description" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+            <label>选择 zip 文件：</label>
+            <input type="file" name="file" accept=".zip" required>
+        </div>
+        <button type="submit" class="btn-primary">上传</button>
+    </form>
+</div>
+
+<h3>已上传资源</h3>
+<div class="card-grid">
+    {% for res in resources %}
+    <div class="admin-card">
+        <div class="card-header">
+            <strong>{{ res.title }}</strong>
+            <div class="card-actions">
+                <a href="{{ url_for('admin_anime_resources_delete', id=res.id) }}" class="delete-btn" onclick="return confirm('确定删除？')">🗑️</a>
+            </div>
+        </div>
+        <p>{{ res.description or '无描述' }}</p>
+        <p style="font-size:0.8rem; color:#888;">文件名: {{ res.filename }} | 上传: {{ res.upload_time.strftime('%Y-%m-%d') }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

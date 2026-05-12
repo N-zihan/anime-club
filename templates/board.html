@@ -13,20 +13,19 @@
             <br>
             {{ msg.content }}
             <!-- 显示已有回复 -->
-            {% if msg.replies.count() > 0 %}
-                <div class="replies-section" style="margin-top: 10px; margin-left: 20px; background:#f9f9f9; padding:8px; border-radius:6px;">
-                    {% for reply in msg.replies %}
-                        <div class="reply-item" style="border-bottom:1px solid #eee; margin-bottom:6px;">
-                            <strong>{{ reply.nickname }}</strong>
-                            <span class="msg-time">· {{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
-                            <p>{{ reply.content }}</p>
-                        </div>
-                    {% endfor %}
+            {% if msg.replies %}
+            <div class="replies-section" style="margin-top: 10px; margin-left: 20px; background:#f9f9f9; padding:8px; border-radius:6px;">
+                {% for reply in msg.replies %}
+                <div class="reply-item" style="border-bottom:1px solid #eee; margin-bottom:6px;">
+                    <strong>{{ reply.nickname }}</strong>
+                    <span class="msg-time">· {{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                    <p>{{ reply.content }}</p>
                 </div>
+                {% endfor %}
+            </div>
             {% endif %}
-            <!-- 回复表单（所有人可见） -->
+            <!-- 回复表单（无昵称输入框，自动使用当前登录用户名） -->
             <form action="{{ url_for('add_reply', message_id=msg.id) }}" method="POST" style="margin-top: 10px;">
-                <input type="text" name="nickname" placeholder="你的昵称（可选）" size="20">
                 <textarea name="content" rows="2" cols="50" placeholder="写回复..." required></textarea>
                 <input type="submit" value="回复">
             </form>
@@ -41,31 +40,10 @@
     <h3>📝 发表新留言</h3>
     <form method="POST">
         <p>
-            <label for="nickname">昵称（可选）：</label>
-            <input type="text" name="nickname" id="nickname" placeholder="匿名">
-        </p>
-        <p>
             <label for="content">留言内容：</label><br>
             <textarea name="content" id="content" rows="4" cols="50" required></textarea>
         </p>
         <p><input type="submit" value="提交留言"></p>
     </form>
 </div>
-{% endblock %}
-
-{% block styles %}
-<style>
-    /* 你的原有样式保持不变，可适当增加回复区域的样式 */
-    .replies-section {
-        background-color: #f5f5f5;
-        border-radius: 8px;
-        margin: 10px 0 0 20px;
-    }
-    .reply-item {
-        padding: 5px 0;
-    }
-    .reply-item p {
-        margin: 0 0 5px 0;
-    }
-</style>
 {% endblock %}
