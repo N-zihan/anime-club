@@ -162,7 +162,9 @@ def board():
 def add_reply(message_id):
     if not session.get('user_id'):
         return redirect(url_for('login'))
-    nickname = request.form.get('nickname', '匿名')
+    # 从数据库获取当前登录用户的真实用户名
+    user = User.query.get(session['user_id'])
+    nickname = user.username if user else '匿名'
     content = request.form.get('content')
     if content:
         reply = Reply(nickname=nickname, content=content, message_id=message_id)
