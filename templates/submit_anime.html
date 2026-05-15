@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}推荐番剧链接{% endblock %}
+{% block content %}
+<div class="card-form">
+    <h2>📤 推荐番剧资源</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>标题：</label>
+            <input type="text" name="title" required>
+        </div>
+        <div class="form-group">
+            <label>描述（可选）：</label>
+            <textarea name="description" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+            <label>网盘分享链接：</label>
+            <input type="url" name="link" required>
+        </div>
+        <div class="form-group">
+            <label>提取码（如有）：</label>
+            <input type="text" name="extract_code">
+        </div>
+        <button type="submit" class="btn-primary">提交审核</button>
+    </form>
+</div>
+{% endblock %}

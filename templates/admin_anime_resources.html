@@ -2,41 +2,54 @@
 {% block title %}番剧资源管理{% endblock %}
 {% block content %}
 <div class="admin-header">
-    <h2>番剧资源管理</h2>
+    <h2>📦 番剧资源管理</h2>
+    <a href="{{ url_for('admin_anime_resources_add') }}" class="btn-add">➕ 手动添加</a>
 </div>
 
-<div class="card-form">
-    <h3>上传新资源（zip文件）</h3>
-    <form method="POST" enctype="multipart/form-data">
-        <div class="form-group">
-            <label>标题：</label>
-            <input type="text" name="title" required>
-        </div>
-        <div class="form-group">
-            <label>描述（可选）：</label>
-            <textarea name="description" rows="2"></textarea>
-        </div>
-        <div class="form-group">
-            <label>选择 zip 文件：</label>
-            <input type="file" name="file" accept=".zip" required>
-        </div>
-        <button type="submit" class="btn-primary">上传</button>
-    </form>
-</div>
-
-<h3>已上传资源</h3>
-<div class="card-grid">
-    {% for res in resources %}
-    <div class="admin-card">
+<!-- 待审核资源 -->
+<h3>⏳ 待审核资源</h3>
+<div class="anime-grid">
+    {% for res in pending_resources %}
+    <div class="anime-card">
         <div class="card-header">
             <strong>{{ res.title }}</strong>
             <div class="card-actions">
-                <a href="{{ url_for('admin_anime_resources_delete', id=res.id) }}" class="delete-btn" onclick="return confirm('确定删除？')">🗑️</a>
+                <a href="{{ url_for('approve_anime_resource', id=res.id) }}" class="edit-btn" onclick="return confirm('批准该资源？')">✅ 通过</a>
+                <a href="{{ url_for('reject_anime_resource', id=res.id) }}" class="delete-btn" onclick="return confirm('拒绝并删除该资源？')">❌ 拒绝</a>
             </div>
         </div>
         <p>{{ res.description or '无描述' }}</p>
-        <p style="font-size:0.8rem; color:#888;">文件名: {{ res.filename }} | 上传: {{ res.upload_time.strftime('%Y-%m-%d') }}</p>
+        <p>🔗 链接：<a href="{{ res.link }}" target="_blank">{{ res.link[:50] }}{% if res.link|length > 50 %}...{% endif %}</a></p>
+        {% if res.extract_code %}
+            <p>🔑 提取码：<strong>{{ res.extract_code }}</strong></p>
+        {% endif %}
+        <p><small>提交人：{{ res.uploader or '未知' }} | 提交时间：{{ res.upload_time.strftime('%Y-%m-%d %H:%M') }}</small></p>
     </div>
+    {% else %}
+    <p>暂无待审核资源</p>
+    {% endfor %}
+</div>
+
+<!-- 已审核资源 -->
+<h3>✅ 已通过资源</h3>
+<div class="anime-grid">
+    {% for res in approved_resources %}
+    <div class="anime-card">
+        <div class="card-header">
+            <strong>{{ res.title }}</strong>
+            <div class="card-actions">
+                <a href="{{ url_for('admin_anime_resources_delete', id=res.id) }}" class="delete-btn" onclick="return confirm('确定删除？')">🗑️ 删除</a>
+            </div>
+        </div>
+        <p>{{ res.description or '无描述' }}</p>
+        <p>🔗 链接：<a href="{{ res.link }}" target="_blank">{{ res.link[:50] }}{% if res.link|length > 50 %}...{% endif %}</a></p>
+        {% if res.extract_code %}
+            <p>🔑 提取码：<strong>{{ res.extract_code }}</strong></p>
+        {% endif %}
+        <p><small>提交人：{{ res.uploader or '未知' }} | 审核通过时间：{{ res.upload_time.strftime('%Y-%m-%d') }}</small></p>
+    </div>
+    {% else %}
+    <p>暂无已通过资源</p>
     {% endfor %}
 </div>
 {% endblock %}
