@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 {% block title %}留言板{% endblock %}
 {% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 <h2>📢 社员留言板</h2>
 
 <div class="messages-list">
@@ -15,7 +22,7 @@
             <!-- 显示已有回复 -->
             {% if msg.replies %}
             <div class="replies-section" style="margin-top: 10px; margin-left: 20px; background:#f9f9f9; padding:8px; border-radius:6px;">
-                {% for reply in msg.replies %}
+                {% for reply in msg. replies %}
                 <div class="reply-item" style="border-bottom:1px solid #eee; margin-bottom:6px;">
                     <strong>{{ reply.nickname }}</strong>
                     <span class="msg-time">· {{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>

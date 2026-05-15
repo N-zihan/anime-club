@@ -31,7 +31,7 @@
                 <a href="{{ url_for('register') }}">注册</a>
             {% endif %}
             {% if session.admin_logged_in %}
-                <a href="{{ url_for('admin_activities') }}" class="admin-link">管理</a>
+            <a href="{{ url_for('admin_dashboard') }}">管理</a>
             {% endif %}
         </div>
     </nav>

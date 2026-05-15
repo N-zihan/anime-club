@@ -312,3 +312,25 @@ footer {
     width: 100%;
     clear: both;
 }
+
+/* 让番剧卡片中的网盘链接自动换行 */
+.anime-card a {
+    word-wrap: break-word;      /* 允许长单词换行 */
+    overflow-wrap: break-word;  /* 现代浏览器换行 */
+    word-break: break-all;      /* 在任意字符间断行（保险） */
+    display: inline-block;      /* 让链接受宽度限制 */
+    max-width: 100%;            /* 不超出父容器 */
+}
+
+.login-tip {
+    color: #888;
+    font-style: italic;
+    margin: 10px 0;
+}
+.login-tip a {
+    color: #1e2a3a;
+    text-decoration: underline;
+}
+.login-tip a:hover {
+    color: #2c3e50;
+}
