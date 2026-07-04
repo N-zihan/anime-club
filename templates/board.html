@@ -52,12 +52,12 @@
 
 <div class="message-form">
     <h3>📝 发表新留言</h3>
-    <form method="POST">
+    <form method="POST" onsubmit="document.querySelector('.submit-btn').disabled = true;">
         <p>
             <label for="content">留言内容：</label><br>
-            <textarea cols="50" id="content" name="content" required rows="4"></textarea>
+            <textarea name="content" id="content" rows="4" cols="50" required></textarea>
         </p>
-        <p><input type="submit" value="提交留言"></p>
+        <p><input type="submit" value="提交留言" class="submit-btn"></p>
     </form>
 </div>
 {% endblock %}
