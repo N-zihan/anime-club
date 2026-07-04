@@ -12,12 +12,12 @@
             <a href="/" class="logo">南平一中动漫社</a>
         </div>
         <div class="nav-links">
-            <a href="/">首页</a>
+            <a href="/home">首页</a>
             <a href="/about">社团介绍</a>
             <a href="/activities">活动</a>
             <a href="/gallery">珍贵历史图片</a>
             <a href="/board">留言板</a>
-            <a href="{{ url_for('anime_resources') }}">番剧链接</a>
+            <a href="/anime_resources">番剧链接</a>
         </div>
         <div class="nav-right">
             {% if session.user_id %}
