@@ -271,7 +271,7 @@ def admin_login():
     if request.method == 'POST':
         if request.form.get('password') == os.getenv('ADMIN_PASSWORD', 'your_default_password'):
             session['admin_logged_in'] = True
-            return redirect(url_for('admin_activities'))
+            return redirect(url_for('admin_dashboard'))
         else:
             flash('密码错误', 'danger')
     return render_template('admin_login.html')
