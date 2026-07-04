@@ -1,36 +1,36 @@
 {% extends "base.html" %}
 {% block title %}首页{% endblock %}
 {% block content %}
-    <div class="hero">
-        <h1>欢迎来到动漫社！</h1>
-        <p>以热爱动漫为纽带，交流二次元文化，开展趣味社团活动，丰富课余生活，弘扬正向动漫文化，团结同好、共同成长。</p>
-    </div>
-    <div class="card-grid">
-        <a href="/about" class="card">
-            <div class="card-icon">📖</div>
-            <h3>社团介绍</h3>
-            <p>了解社团历史、宗旨和核心成员</p>
-        </a>
-        <a href="/activities" class="card">
-            <div class="card-icon">🎉</div>
-            <h3>活动展示</h3>
-            <p>查看近期活动、往期精彩回顾</p>
-        </a>
-        <a href="/gallery" class="card">
-            <div class="card-icon">📸</div>
-            <h3>珍贵历史图片</h3>
-            <p>记录社团点滴瞬间</p>
-        </a>
-        <a href="/board" class="card">
-            <div class="card-icon">💬</div>
-            <h3>留言板</h3>
-            <p>社员交流、留下你的足迹</p>
-        </a>
-        <a href="{{ url_for('anime_resources') }}" class="card">
-            <div class="card-icon">📦</div>
-            <h3>番剧链接</h3>
-            <p>下载动漫资源、查看番剧分享</p>
-        </a>
-    </div>
+<div class="hero">
+    <h1>欢迎来到动漫社！</h1>
+    <p>以热爱动漫为纽带，交流二次元文化，开展趣味社团活动，丰富课余生活，弘扬正向动漫文化，团结同好、共同成长。</p>
+</div>
+<div class="card-grid">
+    <a class="card" href="/about">
+        <div class="card-icon">📖</div>
+        <h3>社团介绍</h3>
+        <p>了解社团历史、宗旨和核心成员</p>
+    </a>
+    <a class="card" href="/activities">
+        <div class="card-icon">🎉</div>
+        <h3>活动展示</h3>
+        <p>查看近期活动、往期精彩回顾</p>
+    </a>
+    <a class="card" href="/gallery">
+        <div class="card-icon">📸</div>
+        <h3>珍贵历史图片</h3>
+        <p>记录社团点滴瞬间</p>
+    </a>
+    <a class="card" href="/board">
+        <div class="card-icon">💬</div>
+        <h3>留言板</h3>
+        <p>社员交流、留下你的足迹</p>
+    </a>
+    <a class="card" href="{{ url_for('anime_resources') }}">
+        <div class="card-icon">📦</div>
+        <h3>番剧链接</h3>
+        <p>下载动漫资源、查看番剧分享</p>
+    </a>
+</div>
 </div>
 {% endblock %}

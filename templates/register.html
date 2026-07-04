@@ -4,30 +4,30 @@
 <div class="card-form">
     <h2>📝 社团成员注册</h2>
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
     {% endwith %}
     <form method="POST">
         <div class="form-group">
             <label>用户名：</label>
-            <input type="text" name="username" required>
+            <input name="username" required type="text">
         </div>
         <div class="form-group">
             <label>QQ号：</label>
-            <input type="text" name="qq" pattern="\d{5,12}" title="请填写5-12位数字QQ号" required>
+            <input name="qq" pattern="\d{5,12}" required title="请填写5-12位数字QQ号" type="text">
         </div>
         <div class="form-group">
             <label>社团QQ群号：</label>
-            <input type="text" name="group" placeholder="（非社团成员禁止入内）" required>
+            <input name="group" placeholder="（非社团成员禁止入内）" required type="text">
         </div>
         <div class="form-group">
             <label>密码：</label>
-            <input type="password" name="password" required>
+            <input name="password" required type="password">
         </div>
-        <button type="submit" class="btn-primary">注册</button>
+        <button class="btn-primary" type="submit">注册</button>
     </form>
     <p>已有账号？<a href="{{ url_for('login') }}">立即登录</a></p>
 </div>

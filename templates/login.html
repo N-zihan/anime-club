@@ -6,24 +6,24 @@
     <form method="POST">
         <div class="form-group">
             <label>用户名：</label>
-            <input type="text" name="username" required>
+            <input name="username" required type="text">
         </div>
         <div class="form-group">
             <label>密码：</label>
-            <input type="password" name="password" required>
+            <input name="password" required type="password">
         </div>
-        <button type="submit" class="btn-primary">登录</button>
+        <button class="btn-primary" type="submit">登录</button>
         {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
+        {% if messages %}
         {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">{{ message }}</div>
+        <div class="alert alert-{{ category }}">{{ message }}</div>
         {% endfor %}
-    {% endif %}
-{% endwith %}
+        {% endif %}
+        {% endwith %}
     </form>
     <p>还没注册？<a href="{{ url_for('register') }}">立即注册</a></p>
     <div style="text-align: center; margin-top: 20px;">
-    <a href="{{ url_for('guest_login') }}" class="btn-secondary">游客登录</a>
+        <a class="btn-secondary" href="{{ url_for('guest_login') }}">游客登录</a>
     </div>
 </div>
 {% endblock %}

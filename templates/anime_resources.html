@@ -4,9 +4,9 @@
 <h2>📦 番剧资源下载</h2>
 
 {% if session.user_id and not session.is_guest %}
-    <div style="text-align: right; margin-bottom: 20px;">
-        <a href="{{ url_for('submit_anime') }}" class="btn-primary">➕ 推荐番剧</a>
-    </div>
+<div style="text-align: right; margin-bottom: 20px;">
+    <a class="btn-primary" href="{{ url_for('submit_anime') }}">➕ 推荐番剧</a>
+</div>
 {% endif %}
 
 <div class="anime-grid">
@@ -16,17 +16,19 @@
         <p>{{ res.description or '暂无描述' }}</p>
 
         {% if session.user_id and not session.is_guest %}
-            {# 正常登录用户（非游客）显示下载链接和提取码 #}
-            <p>🔗 链接：<a href="{{ res.link }}" target="_blank">{{ res.link }}</a></p>
-            {% if res.extract_code %}
-                <p>🔑 提取码：<strong>{{ res.extract_code }}</strong></p>
-            {% endif %}
+        {# 正常登录用户（非游客）显示下载链接和提取码 #}
+        <p>🔗 链接：<a href="{{ res.link }}" target="_blank">{{ res.link }}</a></p>
+        {% if res.extract_code %}
+        <p>🔑 提取码：<strong>{{ res.extract_code }}</strong></p>
+        {% endif %}
         {% else %}
-            {# 游客或未登录用户显示提示 #}
-            <p class="login-tip">🔒 <a href="{{ url_for('login') }}">登录</a> 或 <a href="{{ url_for('register') }}">注册</a> 后查看下载链接</p>
+        {# 游客或未登录用户显示提示 #}
+        <p class="login-tip">🔒 <a href="{{ url_for('login') }}">登录</a> 或 <a href="{{ url_for('register') }}">注册</a>
+            后查看下载链接</p>
         {% endif %}
 
-        <p><small>提交人：{{ res.uploader or '未知' }} | 审核通过时间：{{ res.upload_time.strftime('%Y-%m-%d') }}</small></p>
+        <p><small>提交人：{{ res.uploader or '未知' }} | 审核通过时间：{{ res.upload_time.strftime('%Y-%m-%d') }}</small>
+        </p>
     </div>
     {% else %}
     <p>暂无资源，敬请期待。</p>

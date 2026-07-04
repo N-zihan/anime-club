@@ -4,14 +4,15 @@
 <div class="card-form">
     <h2>👤 个人设置</h2>
     <div style="text-align:center; margin-bottom:20px;">
-        <img src="{{ url_for('static', filename='avatars/' + (user.avatar if user.avatar else 'default.png')) }}" alt="头像" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #ddd;">
+        <img alt="头像"
+             src="{{ url_for('static', filename='avatars/' + (user.avatar if user.avatar else 'default.png')) }}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #ddd;">
     </div>
-    <form method="POST" enctype="multipart/form-data">
+    <form enctype="multipart/form-data" method="POST">
         <div class="form-group">
             <label>更换头像（支持 jpg/png/gif）：</label>
-            <input type="file" name="avatar" accept="image/*" required>
+            <input accept="image/*" name="avatar" required type="file">
         </div>
-        <button type="submit" class="btn-primary">上传头像</button>
+        <button class="btn-primary" type="submit">上传头像</button>
     </form>
     <p style="margin-top:15px;"><a href="{{ url_for('members') }}">返回社员列表</a></p>
 </div>

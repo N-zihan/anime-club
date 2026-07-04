@@ -4,8 +4,8 @@
 <h2>🖼️ 照片墙管理</h2>
 
 <h3>上传新照片</h3>
-<form method="POST" action="{{ url_for('admin_gallery_upload') }}" enctype="multipart/form-data">
-    <input type="file" name="file" accept="image/*" required>
+<form action="{{ url_for('admin_gallery_upload') }}" enctype="multipart/form-data" method="POST">
+    <input accept="image/*" name="file" required type="file">
     <input type="submit" value="上传">
 </form>
 
@@ -13,7 +13,7 @@
 <div class="gallery-grid">
     {% for img in images %}
     <div class="gallery-item">
-        <img src="{{ url_for('static', filename='history_photos/' + img) }}" alt="{{ img }}">
+        <img alt="{{ img }}" src="{{ url_for('static', filename='history_photos/' + img) }}">
         <a href="{{ url_for('admin_gallery_delete', filename=img) }}" onclick="return confirm('确定删除？');">删除</a>
     </div>
     {% endfor %}
