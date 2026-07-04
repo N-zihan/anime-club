@@ -15,6 +15,12 @@
     <ul class="message-list">
         {% for msg in messages %}
         <li>
+            <div style="display:flex; align-items:center; gap:10px;">
+            <img src="{{ url_for('static', filename='avatars/' + (msg.avatar if msg.avatar else 'default.png')) }}" alt="{{ msg.nickname }}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
+            <strong>{{ msg.nickname }}</strong>
+            <span class="msg-time">· {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+            <p>{{ msg.content }}</p>
             <strong>{{ msg.nickname }}</strong>
             <span class="msg-time">· {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
             <br>

@@ -334,3 +334,43 @@ footer {
 .login-tip a:hover {
     color: #2c3e50;
 }
+
+/* 社员名单样式 */
+.member-count {
+    text-align: center;
+    color: #7f8c8d;
+    margin-bottom: 25px;
+}
+.members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+.member-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.member-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+.member-avatar {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+.member-info h3 {
+    font-size: 1.2rem;
+    margin: 0 0 6px 0;
+    color: #1e2a3a;
+}
+.member-time {
+    color: #7f8c8d;
+    font-size: 0.8rem;
+    margin: 0;
+}
