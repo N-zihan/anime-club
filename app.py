@@ -1,12 +1,13 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-from flask_sqlalchemy import SQLAlchemy
-from dotenv import load_dotenv
+import uuid
 from datetime import datetime, timedelta, timezone
 from functools import wraps
-from werkzeug.utils import secure_filename
+
+from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-import uuid
+from werkzeug.utils import secure_filename
 
 load_dotenv()
 
@@ -27,10 +28,13 @@ UPLOAD_FOLDER = 'static/upload_photos'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 db = SQLAlchemy(app)
+
 
 # ---------- 数据模型 ----------
 class User(db.Model):
@@ -46,17 +50,20 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(50), nullable=False, default='匿名')
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
+
 class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     date = db.Column(db.String(20), nullable=False)
     content = db.Column(db.Text, nullable=False)
+
 
 class Reply(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -65,6 +72,7 @@ class Reply(db.Model):
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     message_id = db.Column(db.Integer, db.ForeignKey('message.id'), nullable=False)
     message = db.relationship('Message', backref=db.backref('replies', lazy='dynamic', order_by='Reply.timestamp'))
+
 
 class AnimeResource(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -76,8 +84,10 @@ class AnimeResource(db.Model):
     uploader = db.Column(db.String(50))
     status = db.Column(db.String(20), default='pending')
 
+
 with app.app_context():
     db.create_all()
+
 
 # ---------- 后台认证装饰器 ----------
 def admin_required(f):
@@ -89,25 +99,31 @@ def admin_required(f):
         if not session.get('admin_logged_in'):
             return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
+
     return decorated_function
+
 
 # ---------- 前台路由 ----------
 @app.route('/')
 def splash():
     return render_template('splash.html')
 
+
 @app.route('/home')
 def index():
     return render_template('index.html')
+
 
 @app.route('/about')
 def about():
     return render_template('about.html')
 
+
 @app.route('/activities')
 def activities():
     activities = Activity.query.order_by(Activity.date.asc()).all()
     return render_template('activities.html', activities=activities)
+
 
 @app.route('/gallery')
 def gallery():
@@ -117,6 +133,7 @@ def gallery():
     image_files = [f for f in os.listdir(image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     image_urls = [url_for('static', filename=f'history_photos/{img}') for img in image_files]
     return render_template('gallery.html', image_urls=image_urls)
+
 
 # ---------- 用户认证 ----------
 @app.route('/register', methods=['GET', 'POST'])
@@ -146,6 +163,7 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html')
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -162,6 +180,7 @@ def login():
             flash('用户名或密码错误', 'danger')
     return render_template('login.html')
 
+
 @app.route('/guest_login')
 def guest_login():
     guest_id = -abs(hash(str(uuid.uuid4())) % 1000000) - 1
@@ -171,11 +190,13 @@ def guest_login():
     flash('您已以游客身份登录，部分功能受限（不能留言、推荐、下载番剧等）', 'info')
     return redirect(url_for('index'))
 
+
 @app.route('/logout')
 def logout():
     session.clear()
     flash('已退出登录', 'info')
     return redirect(url_for('login'))
+
 
 @app.route('/delete_account', methods=['POST'])
 def delete_account():
@@ -188,6 +209,7 @@ def delete_account():
     session.clear()
     flash('账号已注销', 'info')
     return redirect(url_for('register'))
+
 
 # ---------- 留言板 ----------
 @app.route('/board', methods=['GET', 'POST'])
@@ -210,6 +232,7 @@ def board():
         msg.timestamp = msg.timestamp + timedelta(hours=8)
     return render_template('board.html', messages=messages)
 
+
 @app.route('/reply/<int:message_id>', methods=['POST'])
 def add_reply(message_id):
     if not session.get('user_id'):
@@ -225,11 +248,13 @@ def add_reply(message_id):
         db.session.commit()
     return redirect(url_for('board'))
 
+
 # ---------- 番剧资源 ----------
 @app.route('/anime_resources')
 def anime_resources():
     resources = AnimeResource.query.filter_by(status='approved').order_by(AnimeResource.upload_time.desc()).all()
     return render_template('anime_resources.html', resources=resources)
+
 
 @app.route('/submit_anime', methods=['GET', 'POST'])
 def submit_anime():
@@ -260,11 +285,13 @@ def submit_anime():
         return redirect(url_for('anime_resources'))
     return render_template('submit_anime.html')
 
+
 # ---------- 后台管理 ----------
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
     return render_template('admin_dashboard.html')
+
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -276,11 +303,13 @@ def admin_login():
             flash('密码错误', 'danger')
     return render_template('admin_login.html')
 
+
 @app.route('/admin/activities')
 @admin_required
 def admin_activities():
     activities = Activity.query.order_by(Activity.date.desc()).all()
     return render_template('admin_activities.html', activities=activities)
+
 
 @app.route('/admin/activities/add', methods=['GET', 'POST'])
 @admin_required
@@ -296,6 +325,7 @@ def admin_activity_add():
         return redirect(url_for('admin_activities'))
     return render_template('admin_activity_form.html', activity=None)
 
+
 @app.route('/admin/activities/edit/<int:id>', methods=['GET', 'POST'])
 @admin_required
 def admin_activity_edit(id):
@@ -309,6 +339,7 @@ def admin_activity_edit(id):
         return redirect(url_for('admin_activities'))
     return render_template('admin_activity_form.html', activity=activity)
 
+
 @app.route('/admin/activities/delete/<int:id>')
 @admin_required
 def admin_activity_delete(id):
@@ -318,6 +349,7 @@ def admin_activity_delete(id):
     flash('活动已删除', 'success')
     return redirect(url_for('admin_activities'))
 
+
 @app.route('/admin/gallery')
 @admin_required
 def admin_gallery():
@@ -325,6 +357,7 @@ def admin_gallery():
     os.makedirs(image_folder, exist_ok=True)
     images = [f for f in os.listdir(image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     return render_template('admin_gallery.html', images=images)
+
 
 @app.route('/admin/gallery/upload', methods=['POST'])
 @admin_required
@@ -351,6 +384,7 @@ def admin_gallery_upload():
         flash('不支持的文件类型', 'danger')
     return redirect(url_for('admin_gallery'))
 
+
 @app.route('/admin/gallery/delete/<filename>')
 @admin_required
 def admin_gallery_delete(filename):
@@ -362,12 +396,14 @@ def admin_gallery_delete(filename):
         flash('文件不存在', 'danger')
     return redirect(url_for('admin_gallery'))
 
+
 @app.route('/admin/anime_resources')
 @admin_required
 def admin_anime_resources():
     pending = AnimeResource.query.filter_by(status='pending').order_by(AnimeResource.upload_time.desc()).all()
     approved = AnimeResource.query.filter_by(status='approved').order_by(AnimeResource.upload_time.desc()).all()
     return render_template('admin_anime_resources.html', pending_resources=pending, approved_resources=approved)
+
 
 @app.route('/admin/anime_resources/approve/<int:id>')
 @admin_required
@@ -378,6 +414,7 @@ def approve_anime_resource(id):
     flash('已通过审核', 'success')
     return redirect(url_for('admin_anime_resources'))
 
+
 @app.route('/admin/anime_resources/reject/<int:id>')
 @admin_required
 def reject_anime_resource(id):
@@ -387,6 +424,7 @@ def reject_anime_resource(id):
     flash('已拒绝并删除', 'warning')
     return redirect(url_for('admin_anime_resources'))
 
+
 @app.route('/admin/anime_resources/delete/<int:id>')
 @admin_required
 def admin_anime_resources_delete(id):
@@ -395,6 +433,7 @@ def admin_anime_resources_delete(id):
     db.session.commit()
     flash('已删除', 'success')
     return redirect(url_for('admin_anime_resources'))
+
 
 @app.route('/admin/anime_resources/add', methods=['GET', 'POST'])
 @admin_required
@@ -421,6 +460,7 @@ def admin_anime_resources_add():
         return redirect(url_for('admin_anime_resources'))
     return render_template('admin_anime_resources_add.html')
 
+
 # ---------- 登录拦截器（未登录用户跳转） ----------
 @app.before_request
 def require_login():
@@ -428,6 +468,7 @@ def require_login():
     # 允许所有用户（包括游客）访问页面
     if not session.get('user_id') and request.endpoint not in public_routes:
         return redirect(url_for('login'))
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
