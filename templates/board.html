@@ -2,11 +2,11 @@
 {% block title %}留言板{% endblock %}
 {% block content %}
 {% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }}">{{ message }}</div>
-{% endfor %}
-{% endif %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
 {% endwith %}
 <h2>📢 社员留言板</h2>
 
@@ -21,15 +21,10 @@
                 <span class="msg-time">· {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
             </div>
             <p>{{ msg.content }}</p>
-            <strong>{{ msg.nickname }}</strong>
-            <span class="msg-time">· {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
-            <br>
-            {{ msg.content }}
             <!-- 显示已有回复 -->
             {% if msg.replies %}
-            <div class="replies-section"
-                 style="margin-top: 10px; margin-left: 20px; background:#f9f9f9; padding:8px; border-radius:6px;">
-                {% for reply in msg. replies %}
+            <div class="replies-section" style="margin-top: 10px; margin-left: 20px; background:#f9f9f9; padding:8px; border-radius:6px;">
+                {% for reply in msg.replies %}   <!-- 修正：去掉多余空格 -->
                 <div class="reply-item" style="border-bottom:1px solid #eee; margin-bottom:6px;">
                     <strong>{{ reply.nickname }}</strong>
                     <span class="msg-time">· {{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
@@ -38,8 +33,8 @@
                 {% endfor %}
             </div>
             {% endif %}
-            <!-- 回复表单（无昵称输入框，自动使用当前登录用户名） -->
-            <form action="{{ url_for('add_reply', message_id=msg.id) }}" method="POST" style="margin-top: 10px;">
+            <!-- 回复表单 -->
+            <form action="{{ url_for('add_reply', message_id=msg.id) }}" method="POST" style="margin-top: 10px;" onsubmit="this.querySelector('input[type=submit]').disabled = true;">
                 <textarea cols="50" name="content" placeholder="写回复..." required rows="2"></textarea>
                 <input type="submit" value="回复">
             </form>
@@ -52,7 +47,7 @@
 
 <div class="message-form">
     <h3>📝 发表新留言</h3>
-    <form method="POST" onsubmit="document.querySelector('.submit-btn').disabled = true;">
+    <form method="POST" onsubmit="this.querySelector('.submit-btn').disabled = true;">
         <p>
             <label for="content">留言内容：</label><br>
             <textarea name="content" id="content" rows="4" cols="50" required></textarea>
