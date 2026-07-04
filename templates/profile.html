@@ -4,8 +4,7 @@
 <div class="card-form">
     <h2>👤 个人设置</h2>
     <div style="text-align:center; margin-bottom:20px;">
-        <img alt="头像"
-             src="{{ url_for('static', filename='avatars/' + (user.avatar if user.avatar else 'default.png')) }}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #ddd;">
+        <img src="{{ url_for('get_avatar', user_id=user.id) }}" alt="头像" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #ddd;">
     </div>
     <form enctype="multipart/form-data" method="POST">
         <div class="form-group">

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from functools import wraps
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -50,7 +50,8 @@ class User(db.Model):
     qq = db.Column(db.String(20), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     registered_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    avatar = db.Column(db.String(100), nullable=True, default='default.png')
+    avatar = db.Column(db.LargeBinary, nullable=True)
+    avatar_mime = db.Column(db.String(50), nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -141,34 +142,6 @@ def gallery():
     image_files = [f for f in os.listdir(image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
     image_urls = [url_for('static', filename=f'history_photos/{img}') for img in image_files]
     return render_template('gallery.html', image_urls=image_urls)
-
-
-@app.route('/profile', methods=['GET', 'POST'])
-def profile():
-    if not session.get('user_id'):
-        flash('请先登录', 'warning')
-        return redirect(url_for('login'))
-
-    user = User.query.get(session['user_id'])
-
-    if request.method == 'POST':
-        if 'avatar' in request.files:
-            file = request.files['avatar']
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                ext = filename.rsplit('.', 1)[1].lower()
-                new_filename = f"{session['user_id']}.{ext}"
-                save_path = os.path.join('static/avatars', new_filename)
-                os.makedirs('static/avatars', exist_ok=True)
-                file.save(save_path)
-                user.avatar = new_filename
-                db.session.commit()
-                flash('头像更新成功', 'success')
-            else:
-                flash('不支持的文件类型（支持 png, jpg, jpeg, gif）', 'danger')
-        return redirect(url_for('profile'))
-
-    return render_template('profile.html', user=user)
 
 
 # ---------- 用户认证 ----------
@@ -266,7 +239,7 @@ def board():
 
     for msg in messages:
         user = User.query.filter_by(username=msg.nickname).first()
-        msg.avatar = user.avatar if user and user.avatar else 'default.png'
+        msg.user_id = user.id if user else None
         msg.timestamp = msg.timestamp + timedelta(hours=8)
     return render_template('board.html', messages=messages)
 
@@ -324,11 +297,39 @@ def submit_anime():
     return render_template('submit_anime.html')
 
 
+# ---------- 社团成员 ----------
 @app.route('/members')
 def members():
     # 获取所有用户，按注册时间倒序（最新注册在前）
     users = User.query.order_by(User.registered_at.desc()).all()
     return render_template('members.html', users=users)
+
+
+# ---------- 头像上传 ----------
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if not session.get('user_id'):
+        flash('请先登录', 'warning')
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+
+    if request.method == 'POST':
+        if 'avatar' in request.files:
+            file = request.files['avatar']
+            if file and allowed_file(file.filename):
+                # 读取文件二进制数据
+                avatar_data = file.read()
+                avatar_mime = file.content_type or 'image/png'
+                user.avatar = avatar_data
+                user.avatar_mime = avatar_mime
+                db.session.commit()
+                flash('头像更新成功', 'success')
+            else:
+                flash('不支持的文件类型（支持 png, jpg, jpeg, gif）', 'danger')
+        return redirect(url_for('profile'))
+
+    return render_template('profile.html', user=user)
 
 
 # ---------- 后台管理 ----------
@@ -504,6 +505,16 @@ def admin_anime_resources_add():
         flash('资源添加成功', 'success')
         return redirect(url_for('admin_anime_resources'))
     return render_template('admin_anime_resources_add.html')
+
+
+@app.route('/avatar/<int:user_id>')
+def get_avatar(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.avatar and user.avatar_mime:
+        return Response(user.avatar, mimetype=user.avatar_mime)
+    else:
+        # 如果没有头像，返回默认头像（需在 static/avatars/default.png 放一张图片）
+        return redirect(url_for('static', filename='avatars/default.png'))
 
 
 # ---------- 登录拦截器（未登录用户跳转） ----------
