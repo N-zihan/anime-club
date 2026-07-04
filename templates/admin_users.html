@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}用户管理{% endblock %}
+{% block content %}
+<h2>👥 用户管理</h2>
+<table border="1" cellpadding="8" style="width:100%; border-collapse:collapse;">
+    <tr>
+        <th>ID</th>
+        <th>用户名</th>
+        <th>QQ</th>
+        <th>注册时间</th>
+        <th>操作</th>
+    </tr>
+    {% for user in users %}
+    <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.qq }}</td>
+        <td>{{ user.registered_at.strftime('%Y-%m-%d') }}</td>
+        <td>
+            <a href="{{ url_for('admin_delete_user', user_id=user.id) }}"
+               onclick="return confirm('确定删除用户 {{ user.username }} 吗？')" style="color:red;">删除</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="{{ url_for('admin_dashboard') }}">返回后台首页</a>
+{% endblock %}
