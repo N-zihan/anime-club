@@ -23,7 +23,7 @@ app = Flask(__name__)
 app.secret_key = '20090929nzh'
 
 # 在文件顶部，和其他 os.getenv 放在一起
-GROUP_VERIFICATION_CODE = os.getenv('GROUP_VERIFICATION_CODE', '582651609')
+GROUP_VERIFICATION_CODE = os.getenv('GROUP_VERIFICATION_CODE')
 
 # 数据库配置
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -69,6 +69,8 @@ class Message(db.Model):
     nickname = db.Column(db.String(50), nullable=False, default='匿名')
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    user = db.relationship('User', backref='messages')
 
 
 class Activity(db.Model):
@@ -85,6 +87,8 @@ class Reply(db.Model):
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     message_id = db.Column(db.Integer, db.ForeignKey('message.id'), nullable=False)
     message = db.relationship('Message', backref=db.backref('replies', lazy='dynamic', order_by='Reply.timestamp'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    user = db.relationship('User', backref='replies')
 
 
 class AnimeResource(db.Model):
@@ -129,7 +133,8 @@ def index():
 
 @app.route('/about')
 def about():
-    return render_template('about.html')
+    users = User.query.all()
+    return render_template('about.html', users=users)
 
 
 @app.route('/activities')
@@ -234,17 +239,19 @@ def board():
         nickname = session.get('username', '匿名')
         content = request.form.get('content')
         if content:
-            msg = Message(nickname=nickname, content=content)
+            msg = Message(
+                nickname=nickname,
+                content=content,
+                user_id=session.get('user_id')  # 新增
+            )
             db.session.add(msg)
             db.session.commit()
         return redirect(url_for('board'))
 
     messages = db.session.query(Message).order_by(Message.timestamp.desc()).all()
-
     for msg in messages:
-        user = User.query.filter_by(username=msg.nickname).first()
-        msg.user_id = user.id if user else None
         msg.timestamp = msg.timestamp + timedelta(hours=8)
+        # 头像在模板中直接使用 msg.user_id
     return render_template('board.html', messages=messages)
 
 
@@ -258,7 +265,12 @@ def add_reply(message_id):
     nickname = session.get('username', '匿名')
     content = request.form.get('content')
     if content:
-        reply = Reply(nickname=nickname, content=content, message_id=message_id)
+        reply = Reply(
+            nickname=nickname,
+            content=content,
+            message_id=message_id,
+            user_id=session.get('user_id')  # 新增
+        )
         db.session.add(reply)
         db.session.commit()
     return redirect(url_for('board'))
@@ -338,6 +350,32 @@ def profile():
         return redirect(url_for('profile'))
 
     return render_template('profile.html', user=user)
+
+
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if not session.get('user_id'):
+        flash('请先登录', 'warning')
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    if request.method == 'POST':
+        old = request.form.get('old_password')
+        new = request.form.get('new_password')
+        confirm = request.form.get('confirm_password')
+        if not user.check_password(old):
+            flash('原密码错误', 'danger')
+            return redirect(url_for('change_password'))
+        if new != confirm:
+            flash('两次输入的新密码不一致', 'danger')
+            return redirect(url_for('change_password'))
+        if len(new) < 6:
+            flash('新密码至少6位', 'danger')
+            return redirect(url_for('change_password'))
+        user.set_password(new)
+        db.session.commit()
+        flash('密码修改成功', 'success')
+        return redirect(url_for('profile'))
+    return render_template('change_password.html')
 
 
 # ---------- 后台管理 ----------
@@ -513,6 +551,26 @@ def admin_anime_resources_add():
         flash('资源添加成功', 'success')
         return redirect(url_for('admin_anime_resources'))
     return render_template('admin_anime_resources_add.html')
+
+
+@app.route('/admin/users')
+@admin_required
+def admin_users():
+    users = User.query.order_by(User.registered_at.desc()).all()
+    return render_template('admin_users.html', users=users)
+
+
+@app.route('/admin/users/delete/<int:user_id>')
+@admin_required
+def admin_delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.id == session.get('user_id'):
+        flash('不能删除自己', 'danger')
+        return redirect(url_for('admin_users'))
+    db.session.delete(user)
+    db.session.commit()
+    flash('用户已删除', 'success')
+    return redirect(url_for('admin_users'))
 
 
 @app.route('/avatar/<int:user_id>')
