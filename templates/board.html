@@ -16,8 +16,7 @@
         {% for msg in messages %}
         <li>
             <div style="display:flex; align-items:center; gap:10px;">
-                <img alt="{{ msg.nickname }}"
-                     src="{{ url_for('static', filename='avatars/' + (msg.avatar if msg.avatar else 'default.png')) }}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
+                <img src="{{ url_for('get_avatar', user_id=msg.user_id) }}" alt="{{ msg.nickname }}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
                 <strong>{{ msg.nickname }}</strong>
                 <span class="msg-time">· {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
             </div>
