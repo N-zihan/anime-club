@@ -1,3 +1,4 @@
+import base64
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -22,7 +23,7 @@ app = Flask(__name__)
 app.secret_key = '20090929nzh'
 
 # 在文件顶部，和其他 os.getenv 放在一起
-GROUP_VERIFICATION_CODE = os.getenv('GROUP_VERIFICATION_CODE')
+GROUP_VERIFICATION_CODE = os.getenv('GROUP_VERIFICATION_CODE', '582651609')
 
 # 数据库配置
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -318,6 +319,10 @@ def profile():
     user = User.query.get(session['user_id'])
 
     if request.method == 'POST':
+        # 限制上传大小（2MB）
+        if request.content_length and request.content_length > 2 * 1024 * 1024:
+            flash('头像文件不能超过2MB', 'danger')
+            return redirect(url_for('profile'))
         if 'avatar' in request.files:
             file = request.files['avatar']
             if file and allowed_file(file.filename):
@@ -514,10 +519,15 @@ def admin_anime_resources_add():
 def get_avatar(user_id):
     user = User.query.get_or_404(user_id)
     if user.avatar and user.avatar_mime:
-        return Response(user.avatar, mimetype=user.avatar_mime)
+        response = Response(user.avatar, mimetype=user.avatar_mime)
     else:
-        # 如果没有头像，返回默认头像（需在 static/avatars/default.png 放一张图片）
-        return redirect(url_for('static', filename='avatars/default.png'))
+        default = base64.b64decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
+        response = Response(default, mimetype='image/png')
+
+    # 设置缓存头（放在这里）
+    response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
 
 
 # ---------- 登录拦截器（未登录用户跳转） ----------
