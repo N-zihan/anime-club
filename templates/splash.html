@@ -2,16 +2,22 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>南平一中动漫社</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', 'PingFang SC', sans-serif;
             overflow: hidden;
             height: 100vh;
             background: linear-gradient(135deg, #e0f0ff 0%, #f0e6ff 50%, #ffe6f0 100%);
         }
+
         #canvas {
             position: fixed;
             top: 0;
@@ -21,6 +27,7 @@
             z-index: 0;
             pointer-events: none;
         }
+
         .splash-content {
             position: relative;
             z-index: 1;
@@ -33,6 +40,7 @@
             padding: 20px;
             color: #2c3e50;
         }
+
         .splash-content h1 {
             font-size: 4.5rem;
             font-weight: 700;
@@ -40,9 +48,10 @@
             background: linear-gradient(135deg, #4a90d9, #9b59b6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 60px rgba(74,144,217,0.2);
+            text-shadow: 0 0 60px rgba(74, 144, 217, 0.2);
             letter-spacing: 2px;
         }
+
         .splash-content .subtitle {
             font-size: 1.5rem;
             margin-bottom: 1.8em;
@@ -51,6 +60,7 @@
             letter-spacing: 6px;
             font-weight: 300;
         }
+
         .btn-enter {
             display: inline-block;
             padding: 14px 50px;
@@ -60,17 +70,19 @@
             font-size: 1.2rem;
             font-weight: 600;
             text-decoration: none;
-            background: rgba(255,255,255,0.5);
+            background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(8px);
             transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(74,144,217,0.15);
+            box-shadow: 0 4px 20px rgba(74, 144, 217, 0.15);
         }
+
         .btn-enter:hover {
             background: #4a90d9;
             color: white;
             transform: scale(1.05);
-            box-shadow: 0 8px 40px rgba(74,144,217,0.3);
+            box-shadow: 0 8px 40px rgba(74, 144, 217, 0.3);
         }
+
         .footer-note {
             position: absolute;
             bottom: 30px;
@@ -82,146 +94,167 @@
             opacity: 0.6;
             letter-spacing: 2px;
         }
+
         @media (max-width: 600px) {
-            .splash-content h1 { font-size: 2.8rem; }
-            .splash-content .subtitle { font-size: 1rem; letter-spacing: 3px; }
-            .btn-enter { padding: 12px 30px; font-size: 1rem; }
+            .splash-content h1 {
+                font-size: 2.8rem;
+            }
+
+            .splash-content .subtitle {
+                font-size: 1rem;
+                letter-spacing: 3px;
+            }
+
+            .btn-enter {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
-    <div class="splash-content">
-        <h1>南平一中动漫社</h1>
-        <p class="subtitle">以热爱为名 · 共创二次元家园</p>
-        <a href="/home" class="btn-enter">进入社团 →</a>
-        <div class="footer-note">✨ 欢迎来到我们的二次元世界</div>
-    </div>
+<canvas id="canvas"></canvas>
+<div class="splash-content">
+    <h1>南平一中动漫社</h1>
+    <p class="subtitle">以热爱为名 · 共创二次元家园</p>
+    <a class="btn-enter" href="/home">进入社团 →</a>
+    <div class="footer-note">✨ 欢迎来到我们的二次元世界</div>
+</div>
 
-    <script>
-        (function() {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            let W, H;
-            let mouseX = -1000, mouseY = -1000;
-            let time = 0;
+<script>
+    (function () {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let W, H;
+        let mouseX = -1000, mouseY = -1000;
+        let time = 0;
 
-            function resize() {
-                W = canvas.width = window.innerWidth;
-                H = canvas.height = window.innerHeight;
-            }
-            window.addEventListener('resize', resize);
-            resize();
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
 
-            // 优化参数：线条少一些，步长大一些
-            const numLines = 45;            // 减少到45条，性能大幅提升
-            const amp = 55;
-            const freq = 0.028;
-            const speed = 0.5;
-            const mouseInfluence = 70;
-            const step = 3;                 // 步长增加，减少绘制点数
+        window.addEventListener('resize', resize);
+        resize();
 
-            const phases = [];
+        // 优化参数：线条少一些，步长大一些
+        const numLines = 45;            // 减少到45条，性能大幅提升
+        const amp = 55;
+        const freq = 0.028;
+        const speed = 0.5;
+        const mouseInfluence = 70;
+        const step = 3;                 // 步长增加，减少绘制点数
+
+        const phases = [];
+        for (let i = 0; i < numLines; i++) {
+            phases.push(i * 0.7 + 0.3);
+        }
+
+        function drawWaves() {
+            ctx.clearRect(0, 0, W, H);
+
+            // 背景渐变
+            const grad = ctx.createLinearGradient(0, 0, 0, H);
+            grad.addColorStop(0, 'rgba(224, 240, 255, 0.10)');
+            grad.addColorStop(0.5, 'rgba(240, 230, 255, 0.06)');
+            grad.addColorStop(1, 'rgba(255, 230, 240, 0.10)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+
+            // 偏移范围：从 -H 到 W
+            const offsetMin = -H - 50;
+            const offsetMax = W + 50;
+
+            // 基础线条
             for (let i = 0; i < numLines; i++) {
-                phases.push(i * 0.7 + 0.3);
-            }
+                const offset = offsetMin + (i / (numLines - 1)) * (offsetMax - offsetMin);
 
-            function drawWaves() {
-                ctx.clearRect(0, 0, W, H);
-
-                // 背景渐变
-                const grad = ctx.createLinearGradient(0, 0, 0, H);
-                grad.addColorStop(0, 'rgba(224, 240, 255, 0.10)');
-                grad.addColorStop(0.5, 'rgba(240, 230, 255, 0.06)');
-                grad.addColorStop(1, 'rgba(255, 230, 240, 0.10)');
-                ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, W, H);
-
-                // 偏移范围：从 -H 到 W
-                const offsetMin = -H - 50;
-                const offsetMax = W + 50;
-
-                // 基础线条
-                for (let i = 0; i < numLines; i++) {
-                    const offset = offsetMin + (i / (numLines - 1)) * (offsetMax - offsetMin);
-
-                    ctx.beginPath();
-                    let first = true;
-                    const xStart = -200;
-                    const xEnd = W + 200;
-                    for (let x = xStart; x <= xEnd; x += step) {
-                        let y_base = x + offset;
-                        let wave = amp * Math.sin(x * freq + time * speed + phases[i]);
-                        let mouseBend = 0;
-                        const dx = x - mouseX;
-                        const dy = y_base - mouseY;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist < 200) {
-                            const factor = (200 - dist) / 200;
-                            mouseBend = mouseInfluence * factor * Math.sin( (x - mouseX) * 0.02 );
-                        }
-                        let y = y_base + wave + mouseBend;
-                        if (first) { ctx.moveTo(x, y); first = false; }
-                        else { ctx.lineTo(x, y); }
+                ctx.beginPath();
+                let first = true;
+                const xStart = -200;
+                const xEnd = W + 200;
+                for (let x = xStart; x <= xEnd; x += step) {
+                    let y_base = x + offset;
+                    let wave = amp * Math.sin(x * freq + time * speed + phases[i]);
+                    let mouseBend = 0;
+                    const dx = x - mouseX;
+                    const dy = y_base - mouseY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 200) {
+                        const factor = (200 - dist) / 200;
+                        mouseBend = mouseInfluence * factor * Math.sin((x - mouseX) * 0.02);
                     }
-                    const alpha = 0.2 + 0.2 * (i / numLines);
-                    ctx.strokeStyle = `rgba(180, 210, 255, ${alpha})`;
-                    ctx.lineWidth = 1.6;
-                    ctx.stroke();
-                }
-
-                // 少量高亮线条
-                for (let i = 4; i < numLines; i += 6) {
-                    const offset = offsetMin + (i / (numLines - 1)) * (offsetMax - offsetMin);
-                    ctx.beginPath();
-                    let first = true;
-                    const xStart = -200;
-                    const xEnd = W + 200;
-                    for (let x = xStart; x <= xEnd; x += step) {
-                        let y_base = x + offset;
-                        let wave = amp * Math.sin(x * freq + time * speed + phases[i] + 1.8);
-                        let mouseBend = 0;
-                        const dx = x - mouseX;
-                        const dy = y_base - mouseY;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist < 200) {
-                            const factor = (200 - dist) / 200;
-                            mouseBend = mouseInfluence * factor * Math.sin( (x - mouseX) * 0.02 );
-                        }
-                        let y = y_base + wave + mouseBend;
-                        if (first) { ctx.moveTo(x, y); first = false; }
-                        else { ctx.lineTo(x, y); }
+                    let y = y_base + wave + mouseBend;
+                    if (first) {
+                        ctx.moveTo(x, y);
+                        first = false;
+                    } else {
+                        ctx.lineTo(x, y);
                     }
-                    ctx.strokeStyle = 'rgba(220, 235, 255, 0.5)';
-                    ctx.lineWidth = 2.5;
-                    ctx.stroke();
                 }
+                const alpha = 0.2 + 0.2 * (i / numLines);
+                ctx.strokeStyle = `rgba(180, 210, 255, ${alpha})`;
+                ctx.lineWidth = 1.6;
+                ctx.stroke();
             }
 
-            // 鼠标事件
-            document.addEventListener('mousemove', e => {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-            });
-            document.addEventListener('touchmove', e => {
-                const touch = e.touches[0];
-                mouseX = touch.clientX;
-                mouseY = touch.clientY;
-            }, { passive: true });
-            document.addEventListener('touchend', () => {
-                mouseX = -1000;
-                mouseY = -1000;
-            });
-
-            function animate() {
-                requestAnimationFrame(animate);
-                time += 0.03;
-                drawWaves();
+            // 少量高亮线条
+            for (let i = 4; i < numLines; i += 6) {
+                const offset = offsetMin + (i / (numLines - 1)) * (offsetMax - offsetMin);
+                ctx.beginPath();
+                let first = true;
+                const xStart = -200;
+                const xEnd = W + 200;
+                for (let x = xStart; x <= xEnd; x += step) {
+                    let y_base = x + offset;
+                    let wave = amp * Math.sin(x * freq + time * speed + phases[i] + 1.8);
+                    let mouseBend = 0;
+                    const dx = x - mouseX;
+                    const dy = y_base - mouseY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 200) {
+                        const factor = (200 - dist) / 200;
+                        mouseBend = mouseInfluence * factor * Math.sin((x - mouseX) * 0.02);
+                    }
+                    let y = y_base + wave + mouseBend;
+                    if (first) {
+                        ctx.moveTo(x, y);
+                        first = false;
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.strokeStyle = 'rgba(220, 235, 255, 0.5)';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
             }
-            animate();
+        }
 
-            window.addEventListener('resize', resize);
-        })();
-    </script>
+        // 鼠标事件
+        document.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        document.addEventListener('touchmove', e => {
+            const touch = e.touches[0];
+            mouseX = touch.clientX;
+            mouseY = touch.clientY;
+        }, {passive: true});
+        document.addEventListener('touchend', () => {
+            mouseX = -1000;
+            mouseY = -1000;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.03;
+            drawWaves();
+        }
+
+        animate();
+
+        window.addEventListener('resize', resize);
+    })();
+</script>
 </body>
 </html>

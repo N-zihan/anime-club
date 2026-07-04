@@ -2,47 +2,47 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     <title>南平一中动漫社 - {% block title %}{% endblock %}</title>
-    <link rel="shortcut icon" href="favicon.jpg" />
+    <link href="favicon.jpg" rel="shortcut icon"/>
 </head>
 <body>
-    <nav>
-        <div class="nav-left">
-            <a href="/" class="logo">南平一中动漫社</a>
-        </div>
-        <div class="nav-links">
-            <a href="/home">首页</a>
-            <a href="/about">社团介绍</a>
-            <a href="/activities">活动</a>
-            <a href="/gallery">珍贵历史图片</a>
-            <a href="/board">留言板</a>
-            <a href="/anime_resources">番剧链接</a>
-            <a href="{{ url_for('members') }}">社员名单</a>
-        </div>
-        <div class="nav-right">
-            {% if session.user_id %}
-                <a href="{{ url_for('profile') }}" class="user-name">{{ session.username }}</a>
-                <a href="{{ url_for('logout') }}">退出</a>
-                <form method="POST" action="{{ url_for('delete_account') }}" class="inline-form">
-                    <button type="submit" class="delete-btn" onclick="return confirm('永久注销账号？')">注销</button>
-                </form>
-            {% else %}
-                <a href="{{ url_for('login') }}">登录</a>
-                <a href="{{ url_for('register') }}">注册</a>
-            {% endif %}
-            {% if session.admin_logged_in %}
-            <a href="{{ url_for('admin_dashboard') }}">管理</a>
-            {% endif %}
-        </div>
-    </nav>
+<nav>
+    <div class="nav-left">
+        <a class="logo" href="/">南平一中动漫社</a>
+    </div>
+    <div class="nav-links">
+        <a href="/home">首页</a>
+        <a href="/about">社团介绍</a>
+        <a href="/activities">活动</a>
+        <a href="/gallery">珍贵历史图片</a>
+        <a href="/board">留言板</a>
+        <a href="/anime_resources">番剧链接</a>
+        <a href="{{ url_for('members') }}">社员名单</a>
+    </div>
+    <div class="nav-right">
+        {% if session.user_id %}
+        <a class="user-name" href="{{ url_for('profile') }}">{{ session.username }}</a>
+        <a href="{{ url_for('logout') }}">退出</a>
+        <form action="{{ url_for('delete_account') }}" class="inline-form" method="POST">
+            <button class="delete-btn" onclick="return confirm('永久注销账号？')" type="submit">注销</button>
+        </form>
+        {% else %}
+        <a href="{{ url_for('login') }}">登录</a>
+        <a href="{{ url_for('register') }}">注册</a>
+        {% endif %}
+        {% if session.admin_logged_in %}
+        <a href="{{ url_for('admin_dashboard') }}">管理</a>
+        {% endif %}
+    </div>
+</nav>
 
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+<main>
+    {% block content %}{% endblock %}
+</main>
 
-    <footer>
-        <p>© 南平一中动漫社 | 为爱发电</p>
-    </footer>
+<footer>
+    <p>© 南平一中动漫社 | 为爱发电</p>
+</footer>
 </body>
 </html>

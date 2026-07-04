@@ -6,7 +6,7 @@
     <form method="POST">
         <div class="form-group">
             <label>标题：</label>
-            <input type="text" name="title" required>
+            <input name="title" required type="text">
         </div>
         <div class="form-group">
             <label>描述（可选）：</label>
@@ -14,14 +14,14 @@
         </div>
         <div class="form-group">
             <label>网盘分享链接：</label>
-            <input type="url" name="link" required>
+            <input name="link" required type="url">
         </div>
         <div class="form-group">
             <label>提取码（如有）：</label>
-            <input type="text" name="extract_code">
+            <input name="extract_code" type="text">
         </div>
-        <button type="submit" class="btn-primary">添加资源</button>
-        <a href="{{ url_for('admin_anime_resources') }}" class="btn-cancel">返回管理</a>
+        <button class="btn-primary" type="submit">添加资源</button>
+        <a class="btn-cancel" href="{{ url_for('admin_anime_resources') }}">返回管理</a>
     </form>
 </div>
 {% endblock %}
