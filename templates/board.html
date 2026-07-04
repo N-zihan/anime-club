@@ -2,11 +2,11 @@
 {% block title %}留言板{% endblock %}
 {% block content %}
 {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}">{{ message }}</div>
+{% endfor %}
+{% endif %}
 {% endwith %}
 <h2>📢 社员留言板</h2>
 
@@ -16,14 +16,16 @@
         {% for msg in messages %}
         <li>
             <div style="display:flex; align-items:center; gap:10px;">
-                <img src="{{ url_for('get_avatar', user_id=msg.user_id) }}" alt="{{ msg.nickname }}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
+                <img alt="{{ msg.nickname }}" src="{{ url_for('get_avatar', user_id=msg.user_id) }}"
+                     style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
                 <strong>{{ msg.nickname }}</strong>
                 <span class="msg-time">· {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
             </div>
             <p>{{ msg.content }}</p>
             <!-- 显示已有回复 -->
             {% if msg.replies %}
-            <div class="replies-section" style="margin-top: 10px; margin-left: 20px; background:#f9f9f9; padding:8px; border-radius:6px;">
+            <div class="replies-section"
+                 style="margin-top: 10px; margin-left: 20px; background:#f9f9f9; padding:8px; border-radius:6px;">
                 {% for reply in msg.replies %}   <!-- 修正：去掉多余空格 -->
                 <div class="reply-item" style="border-bottom:1px solid #eee; margin-bottom:6px;">
                     <strong>{{ reply.nickname }}</strong>
@@ -34,7 +36,8 @@
             </div>
             {% endif %}
             <!-- 回复表单 -->
-            <form action="{{ url_for('add_reply', message_id=msg.id) }}" method="POST" style="margin-top: 10px;" onsubmit="this.querySelector('input[type=submit]').disabled = true;">
+            <form action="{{ url_for('add_reply', message_id=msg.id) }}" method="POST" onsubmit="this.querySelector('input[type=submit]').disabled = true;"
+                  style="margin-top: 10px;">
                 <textarea cols="50" name="content" placeholder="写回复..." required rows="2"></textarea>
                 <input type="submit" value="回复">
             </form>
@@ -50,9 +53,9 @@
     <form method="POST" onsubmit="this.querySelector('.submit-btn').disabled = true;">
         <p>
             <label for="content">留言内容：</label><br>
-            <textarea name="content" id="content" rows="4" cols="50" required></textarea>
+            <textarea cols="50" id="content" name="content" required rows="4"></textarea>
         </p>
-        <p><input type="submit" value="提交留言" class="submit-btn"></p>
+        <p><input class="submit-btn" type="submit" value="提交留言"></p>
     </form>
 </div>
 {% endblock %}

@@ -7,7 +7,8 @@
     {% for user in users %}
     <div class="member-card">
         <div class="member-avatar">
-            <img src="{{ url_for('get_avatar', user_id=user.id) }}" alt="{{ user.username }}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0;">
+            <img alt="{{ user.username }}" src="{{ url_for('get_avatar', user_id=user.id) }}"
+                 style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0;">
         </div>
         <div class="member-info">
             <h3>{{ user.username }}</h3>
