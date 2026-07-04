@@ -93,6 +93,10 @@ def admin_required(f):
 
 # ---------- 前台路由 ----------
 @app.route('/')
+def splash():
+    return render_template('splash.html')
+
+@app.route('/home')
 def index():
     return render_template('index.html')
 
@@ -420,7 +424,7 @@ def admin_anime_resources_add():
 # ---------- 登录拦截器（未登录用户跳转） ----------
 @app.before_request
 def require_login():
-    public_routes = ['login', 'register', 'static', 'guest_login']
+    public_routes = ['login', 'register', 'static', 'guest_login', 'splash']
     # 允许所有用户（包括游客）访问页面
     if not session.get('user_id') and request.endpoint not in public_routes:
         return redirect(url_for('login'))

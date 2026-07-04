@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>南平一中动漫社</title>
+    <style>
+        /* 全局重置 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            background: linear-gradient(135deg, #e0f0ff 0%, #f0e6ff 50%, #ffe6f0 100%);
+        }
+        /* 画布 */
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        /* 内容区域 */
+        .splash-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            padding: 20px;
+            color: #2c3e50;
+        }
+        .splash-content h1 {
+            font-size: 4.5rem;
+            font-weight: 700;
+            margin-bottom: 0.3em;
+            background: linear-gradient(135deg, #4a90d9, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 60px rgba(74,144,217,0.2);
+            letter-spacing: 2px;
+        }
+        .splash-content .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 1.8em;
+            color: #34495e;
+            opacity: 0.8;
+            letter-spacing: 6px;
+            font-weight: 300;
+        }
+        .btn-enter {
+            display: inline-block;
+            padding: 14px 50px;
+            border: 2px solid #4a90d9;
+            border-radius: 50px;
+            color: #4a90d9;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-decoration: none;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(74,144,217,0.15);
+        }
+        .btn-enter:hover {
+            background: #4a90d9;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 8px 40px rgba(74,144,217,0.3);
+        }
+        .footer-note {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            opacity: 0.6;
+            letter-spacing: 2px;
+        }
+        @media (max-width: 600px) {
+            .splash-content h1 { font-size: 2.8rem; }
+            .splash-content .subtitle { font-size: 1rem; letter-spacing: 3px; }
+            .btn-enter { padding: 12px 30px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="splash-content">
+        <h1>南平一中动漫社</h1>
+        <p class="subtitle">以热爱为名 · 共创二次元家园</p>
+        <a href="/home" class="btn-enter">进入社团 →</a>
+        <div class="footer-note">✨ 欢迎来到我们的二次元世界</div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            let W, H;
+            let particles = [];
+            let mouseX = -1000, mouseY = -1000;
+
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            // 柔和色调：浅蓝、浅粉、浅紫、浅青
+            const colors = [
+                'hsla(210, 70%, 70%, 0.7)',
+                'hsla(280, 60%, 75%, 0.7)',
+                'hsla(340, 70%, 75%, 0.7)',
+                'hsla(180, 60%, 70%, 0.7)',
+                'hsla(260, 60%, 70%, 0.7)'
+            ];
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.size = Math.random() * 4 + 2;
+                    this.speedX = (Math.random() - 0.5) * 0.4;
+                    this.speedY = (Math.random() - 0.5) * 0.4;
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                }
+                update() {
+                    // 鼠标引力（柔和）
+                    const dx = mouseX - this.x;
+                    const dy = mouseY - this.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 250) {
+                        const force = (250 - dist) / 250;
+                        this.x += dx * force * 0.02;
+                        this.y += dy * force * 0.02;
+                    }
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x < -20 || this.x > W+20 || this.y < -20 || this.y > H+20) {
+                        this.reset();
+                    }
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    // 光晕
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 12;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            const count = 120;
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+
+            document.addEventListener('mousemove', e => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            document.addEventListener('touchmove', e => {
+                const touch = e.touches[0];
+                mouseX = touch.clientX;
+                mouseY = touch.clientY;
+            }, { passive: true });
+
+            // 粒子间连线
+            function drawLines() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i+1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < 120) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(180, 200, 255, ${0.15 * (1 - dist/120)})`;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                ctx.clearRect(0, 0, W, H);
+                // 注意：canvas 背景透明，CSS 渐变会透出来
+                particles.forEach(p => { p.update(); p.draw(); });
+                drawLines();
+            }
+            animate();
+        })();
+    </script>
+</body>
+</html>
