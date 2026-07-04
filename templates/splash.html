@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>南平一中动漫社</title>
     <style>
-        /* 全局重置 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', 'PingFang SC', sans-serif;
@@ -13,7 +12,6 @@
             height: 100vh;
             background: linear-gradient(135deg, #e0f0ff 0%, #f0e6ff 50%, #ffe6f0 100%);
         }
-        /* 画布 */
         #canvas {
             position: fixed;
             top: 0;
@@ -23,7 +21,6 @@
             z-index: 0;
             pointer-events: none;
         }
-        /* 内容区域 */
         .splash-content {
             position: relative;
             z-index: 1;
@@ -106,8 +103,8 @@
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
             let W, H;
-            let particles = [];
             let mouseX = -1000, mouseY = -1000;
+            let time = 0;
 
             function resize() {
                 W = canvas.width = window.innerWidth;
@@ -116,61 +113,92 @@
             window.addEventListener('resize', resize);
             resize();
 
-            // 柔和色调：浅蓝、浅粉、浅紫、浅青
-            const colors = [
-                'hsla(210, 70%, 70%, 0.7)',
-                'hsla(280, 60%, 75%, 0.7)',
-                'hsla(340, 70%, 75%, 0.7)',
-                'hsla(180, 60%, 70%, 0.7)',
-                'hsla(260, 60%, 70%, 0.7)'
-            ];
+            // 优化参数：线条少一些，步长大一些
+            const numLines = 45;            // 减少到45条，性能大幅提升
+            const amp = 55;
+            const freq = 0.028;
+            const speed = 0.5;
+            const mouseInfluence = 70;
+            const step = 3;                 // 步长增加，减少绘制点数
 
-            class Particle {
-                constructor() {
-                    this.reset();
-                }
-                reset() {
-                    this.x = Math.random() * W;
-                    this.y = Math.random() * H;
-                    this.size = Math.random() * 4 + 2;
-                    this.speedX = (Math.random() - 0.5) * 0.4;
-                    this.speedY = (Math.random() - 0.5) * 0.4;
-                    this.color = colors[Math.floor(Math.random() * colors.length)];
-                }
-                update() {
-                    // 鼠标引力（柔和）
-                    const dx = mouseX - this.x;
-                    const dy = mouseY - this.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    if (dist < 250) {
-                        const force = (250 - dist) / 250;
-                        this.x += dx * force * 0.02;
-                        this.y += dy * force * 0.02;
-                    }
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    if (this.x < -20 || this.x > W+20 || this.y < -20 || this.y > H+20) {
-                        this.reset();
-                    }
-                }
-                draw() {
+            const phases = [];
+            for (let i = 0; i < numLines; i++) {
+                phases.push(i * 0.7 + 0.3);
+            }
+
+            function drawWaves() {
+                ctx.clearRect(0, 0, W, H);
+
+                // 背景渐变
+                const grad = ctx.createLinearGradient(0, 0, 0, H);
+                grad.addColorStop(0, 'rgba(224, 240, 255, 0.10)');
+                grad.addColorStop(0.5, 'rgba(240, 230, 255, 0.06)');
+                grad.addColorStop(1, 'rgba(255, 230, 240, 0.10)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // 偏移范围：从 -H 到 W
+                const offsetMin = -H - 50;
+                const offsetMax = W + 50;
+
+                // 基础线条
+                for (let i = 0; i < numLines; i++) {
+                    const offset = offsetMin + (i / (numLines - 1)) * (offsetMax - offsetMin);
+
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fillStyle = this.color;
-                    ctx.fill();
-                    // 光晕
-                    ctx.shadowColor = this.color;
-                    ctx.shadowBlur = 12;
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
+                    let first = true;
+                    const xStart = -200;
+                    const xEnd = W + 200;
+                    for (let x = xStart; x <= xEnd; x += step) {
+                        let y_base = x + offset;
+                        let wave = amp * Math.sin(x * freq + time * speed + phases[i]);
+                        let mouseBend = 0;
+                        const dx = x - mouseX;
+                        const dy = y_base - mouseY;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < 200) {
+                            const factor = (200 - dist) / 200;
+                            mouseBend = mouseInfluence * factor * Math.sin( (x - mouseX) * 0.02 );
+                        }
+                        let y = y_base + wave + mouseBend;
+                        if (first) { ctx.moveTo(x, y); first = false; }
+                        else { ctx.lineTo(x, y); }
+                    }
+                    const alpha = 0.2 + 0.2 * (i / numLines);
+                    ctx.strokeStyle = `rgba(180, 210, 255, ${alpha})`;
+                    ctx.lineWidth = 1.6;
+                    ctx.stroke();
+                }
+
+                // 少量高亮线条
+                for (let i = 4; i < numLines; i += 6) {
+                    const offset = offsetMin + (i / (numLines - 1)) * (offsetMax - offsetMin);
+                    ctx.beginPath();
+                    let first = true;
+                    const xStart = -200;
+                    const xEnd = W + 200;
+                    for (let x = xStart; x <= xEnd; x += step) {
+                        let y_base = x + offset;
+                        let wave = amp * Math.sin(x * freq + time * speed + phases[i] + 1.8);
+                        let mouseBend = 0;
+                        const dx = x - mouseX;
+                        const dy = y_base - mouseY;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < 200) {
+                            const factor = (200 - dist) / 200;
+                            mouseBend = mouseInfluence * factor * Math.sin( (x - mouseX) * 0.02 );
+                        }
+                        let y = y_base + wave + mouseBend;
+                        if (first) { ctx.moveTo(x, y); first = false; }
+                        else { ctx.lineTo(x, y); }
+                    }
+                    ctx.strokeStyle = 'rgba(220, 235, 255, 0.5)';
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
                 }
             }
 
-            const count = 120;
-            for (let i = 0; i < count; i++) {
-                particles.push(new Particle());
-            }
-
+            // 鼠标事件
             document.addEventListener('mousemove', e => {
                 mouseX = e.clientX;
                 mouseY = e.clientY;
@@ -180,34 +208,19 @@
                 mouseX = touch.clientX;
                 mouseY = touch.clientY;
             }, { passive: true });
-
-            // 粒子间连线
-            function drawLines() {
-                for (let i = 0; i < particles.length; i++) {
-                    for (let j = i+1; j < particles.length; j++) {
-                        const dx = particles[i].x - particles[j].x;
-                        const dy = particles[i].y - particles[j].y;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist < 120) {
-                            ctx.beginPath();
-                            ctx.moveTo(particles[i].x, particles[i].y);
-                            ctx.lineTo(particles[j].x, particles[j].y);
-                            ctx.strokeStyle = `rgba(180, 200, 255, ${0.15 * (1 - dist/120)})`;
-                            ctx.lineWidth = 1;
-                            ctx.stroke();
-                        }
-                    }
-                }
-            }
+            document.addEventListener('touchend', () => {
+                mouseX = -1000;
+                mouseY = -1000;
+            });
 
             function animate() {
                 requestAnimationFrame(animate);
-                ctx.clearRect(0, 0, W, H);
-                // 注意：canvas 背景透明，CSS 渐变会透出来
-                particles.forEach(p => { p.update(); p.draw(); });
-                drawLines();
+                time += 0.03;
+                drawWaves();
             }
             animate();
+
+            window.addEventListener('resize', resize);
         })();
     </script>
 </body>
