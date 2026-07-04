@@ -21,6 +21,9 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = '20090929nzh'
 
+# 在文件顶部，和其他 os.getenv 放在一起
+GROUP_VERIFICATION_CODE = os.getenv('GROUP_VERIFICATION_CODE')
+
 # 数据库配置
 DATABASE_URL = os.getenv('DATABASE_URL')
 if not DATABASE_URL:
@@ -152,7 +155,7 @@ def register():
         qq = request.form.get('qq')
         group = request.form.get('group')
         password = request.form.get('password')
-        if group != '582651609':
+        if group != GROUP_VERIFICATION_CODE:
             flash('验证码错误，请确认你是社团成员', 'danger')
             return redirect(url_for('register'))
         if User.query.filter_by(username=username).first():
