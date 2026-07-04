@@ -18,10 +18,11 @@
             <a href="/gallery">珍贵历史图片</a>
             <a href="/board">留言板</a>
             <a href="/anime_resources">番剧链接</a>
+            <a href="{{ url_for('members') }}">社员名单</a>
         </div>
         <div class="nav-right">
             {% if session.user_id %}
-                <span class="user-name">{{ session.username }}</span>
+                <a href="{{ url_for('profile') }}" class="user-name">{{ session.username }}</a>
                 <a href="{{ url_for('logout') }}">退出</a>
                 <form method="POST" action="{{ url_for('delete_account') }}" class="inline-form">
                     <button type="submit" class="delete-btn" onclick="return confirm('永久注销账号？')">注销</button>

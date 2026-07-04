@@ -8,6 +8,13 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+import os
+from werkzeug.utils import secure_filename
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 load_dotenv()
 
@@ -43,6 +50,7 @@ class User(db.Model):
     qq = db.Column(db.String(20), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     registered_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    avatar = db.Column(db.String(100), nullable=True, default='default.png')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -135,6 +143,34 @@ def gallery():
     return render_template('gallery.html', image_urls=image_urls)
 
 
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if not session.get('user_id'):
+        flash('请先登录', 'warning')
+        return redirect(url_for('login'))
+
+    user = User.query.get(session['user_id'])
+
+    if request.method == 'POST':
+        if 'avatar' in request.files:
+            file = request.files['avatar']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                ext = filename.rsplit('.', 1)[1].lower()
+                new_filename = f"{session['user_id']}.{ext}"
+                save_path = os.path.join('static/avatars', new_filename)
+                os.makedirs('static/avatars', exist_ok=True)
+                file.save(save_path)
+                user.avatar = new_filename
+                db.session.commit()
+                flash('头像更新成功', 'success')
+            else:
+                flash('不支持的文件类型（支持 png, jpg, jpeg, gif）', 'danger')
+        return redirect(url_for('profile'))
+
+    return render_template('profile.html', user=user)
+
+
 # ---------- 用户认证 ----------
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -214,8 +250,6 @@ def delete_account():
 # ---------- 留言板 ----------
 @app.route('/board', methods=['GET', 'POST'])
 def board():
-    if not session.get('user_id'):
-        return redirect(url_for('login'))
     if request.method == 'POST':
         if session.get('is_guest'):
             flash('游客不能发表留言', 'warning')
@@ -227,8 +261,12 @@ def board():
             db.session.add(msg)
             db.session.commit()
         return redirect(url_for('board'))
+
     messages = db.session.query(Message).order_by(Message.timestamp.desc()).all()
+
     for msg in messages:
+        user = User.query.filter_by(username=msg.nickname).first()
+        msg.avatar = user.avatar if user and user.avatar else 'default.png'
         msg.timestamp = msg.timestamp + timedelta(hours=8)
     return render_template('board.html', messages=messages)
 
@@ -284,6 +322,13 @@ def submit_anime():
         flash('提交成功，等待管理员审核', 'success')
         return redirect(url_for('anime_resources'))
     return render_template('submit_anime.html')
+
+
+@app.route('/members')
+def members():
+    # 获取所有用户，按注册时间倒序（最新注册在前）
+    users = User.query.order_by(User.registered_at.desc()).all()
+    return render_template('members.html', users=users)
 
 
 # ---------- 后台管理 ----------
