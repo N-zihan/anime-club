@@ -1,5 +1,6 @@
 import base64
 import os
+import re
 import uuid
 from datetime import datetime, timedelta, timezone
 from functools import wraps
@@ -166,6 +167,12 @@ def register():
         qq = request.form.get('qq')
         group = request.form.get('group')
         password = request.form.get('password')
+
+        # 格式校验：只允许字母、数字、下划线，长度2-20
+        if not re.match(r'^[A-Za-z0-9_]{2,20}$', username):
+            flash('用户名只允许字母、数字、下划线，长度2-20个字符', 'danger')
+            return redirect(url_for('register'))
+
         if group != GROUP_VERIFICATION_CODE:
             flash('验证码错误，请确认你是社团成员', 'danger')
             return redirect(url_for('register'))
