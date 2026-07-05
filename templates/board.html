@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% {% extends "base.html" %}
 {% block title %}留言板{% endblock %}
 {% block content %}
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -9,7 +9,7 @@
 {% endif %}
 {% endwith %}
 
-<h2>📢 社员留言板</h2>
+<h2>社员留言板</h2>
 
 <div class="messages-list">
     <h3>最新留言</h3>
@@ -18,7 +18,7 @@
         <li>
             <div style="display:flex; align-items:center; gap:10px;">
                 <img alt="{{ msg.user.username if msg.user else msg.nickname }}"
-                     src="{{ url_for('get_avatar', user_id=msg.user_id) }}"
+                     src="{% if msg.user_id %}{{ url_for('get_avatar', user_id=msg.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}"
                      style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
                 <strong>{{ msg.user.username if msg.user else msg.nickname }}</strong>
                 <span class="msg-time">· {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
@@ -31,7 +31,7 @@
                 {% for reply in msg.replies %}
                 <div class="reply-item" style="border-bottom:1px solid #eee; margin-bottom:6px;">
                     <img alt="{{ reply.user.username if reply.user else reply.nickname }}"
-                         src="{{ url_for('get_avatar', user_id=reply.user_id) }}"
+                         src="{% if reply.user_id %}{{ url_for('get_avatar', user_id=reply.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}"
                          style="width:20px; height:20px; border-radius:50%; object-fit:cover; margin-right:8px;">
                     <strong>{{ reply.user.username if reply.user else reply.nickname }}</strong>
                     <span class="msg-time">· {{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
