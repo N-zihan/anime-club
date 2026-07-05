@@ -661,10 +661,20 @@ def get_avatar(user_id):
 # ---------- 登录拦截器（未登录用户跳转） ----------
 @app.before_request
 def require_login():
-    public_routes = ['login', 'register', 'static', 'guest_login', 'splash']
-    # 允许所有用户（包括游客）访问页面
+    # 公开路由（未登录也能访问）
+    public_routes = ['login', 'register', 'static', 'guest_login', 'splash', 'index']
+
+    # 游客可访问的路由（已登录但权限受限）
+    guest_allowed_routes = ['index', 'about', 'activities']
+
+    # 如果未登录，访问公开路由外的页面 → 跳转登录
     if not session.get('user_id') and request.endpoint not in public_routes:
         return redirect(url_for('login'))
+
+    # 如果已登录但身份是游客，且访问的页面不在游客允许列表中 → 跳转首页
+    if session.get('is_guest') and request.endpoint not in guest_allowed_routes:
+        flash('游客无法访问此页面，请登录完整账号', 'warning')
+        return redirect(url_for('index'))
 
 
 # ---------- 自定义错误页面 ----------
