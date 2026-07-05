@@ -1,7 +1,6 @@
 import base64
 import os
 import re
-import uuid
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 
@@ -209,16 +208,6 @@ def login():
         else:
             flash('用户名或密码错误', 'danger')
     return render_template('login.html')
-
-
-@app.route('/guest_login')
-def guest_login():
-    guest_id = -abs(hash(str(uuid.uuid4())) % 1000000) - 1
-    session['user_id'] = guest_id
-    session['username'] = f'游客_{str(uuid.uuid4())[:8]}'
-    session['is_guest'] = True
-    flash('您已以游客身份登录，部分功能受限（不能留言、推荐、下载番剧等）', 'info')
-    return redirect(url_for('index'))
 
 
 @app.route('/logout')
@@ -662,7 +651,7 @@ def get_avatar(user_id):
 @app.before_request
 def require_login():
     # 公开路由（未登录也能访问）
-    public_routes = ['login', 'register', 'static', 'guest_login', 'splash', 'index']
+    public_routes = ['login', 'register', 'static', 'splash']
     # 如果未登录，访问公开路由外的页面 → 跳转登录
     if not session.get('user_id') and request.endpoint not in public_routes:
         return redirect(url_for('login'))
