@@ -328,80 +328,75 @@ def members():
 # ---------- 个人设置 ----------
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
+    # 检查用户是否已登录
     if not session.get('user_id'):
         flash('请先登录', 'warning')
         return redirect(url_for('login'))
 
+    # 获取当前用户对象
     user = User.query.get(session['user_id'])
 
     if request.method == 'POST':
         action = request.form.get('action')
 
-        # 修改头像
+        # ---------- 1. 修改头像 ----------
         if action == 'change_avatar':
             if 'avatar' in request.files:
                 file = request.files['avatar']
                 if file and allowed_file(file.filename):
-                    avatar_data = file.read()
-                    avatar_mime = file.content_type or 'image/png'
-                    user.avatar = avatar_data
-                    user.avatar_mime = avatar_mime
-                    db.session.commit()
-                    flash('头像更新成功', 'success')
+                    # 限制文件大小（2MB）
+                    if request.content_length and request.content_length > 2 * 1024 * 1024:
+                        flash('头像文件不能超过2MB', 'danger')
+                    else:
+                        avatar_data = file.read()
+                        avatar_mime = file.content_type or 'image/png'
+                        user.avatar = avatar_data
+                        user.avatar_mime = avatar_mime
+                        db.session.commit()
+                        flash('头像更新成功', 'success')
                 else:
                     flash('不支持的文件类型（支持 png, jpg, jpeg, gif）', 'danger')
             return redirect(url_for('profile'))
 
-        # 修改用户名
+        # ---------- 2. 修改用户名 ----------
         elif action == 'change_username':
             new_username = request.form.get('new_username', '').strip()
             if not new_username:
                 flash('用户名不能为空', 'danger')
-                return redirect(url_for('profile'))
-            if len(new_username) < 2 or len(new_username) > 20:
+            elif len(new_username) < 2 or len(new_username) > 20:
                 flash('用户名长度应在2-20个字符之间', 'danger')
-                return redirect(url_for('profile'))
-            # 检查是否与其他用户重复（排除自己）
-            existing = User.query.filter(User.username == new_username, User.id != user.id).first()
-            if existing:
-                flash('该用户名已被占用', 'danger')
-                return redirect(url_for('profile'))
-            # 更新用户名
-            old_username = user.username
-            user.username = new_username
-            db.session.commit()
-            # 更新 session
-            session['username'] = new_username
-            flash(f'用户名已从 "{old_username}" 更新为 "{new_username}"', 'success')
+            else:
+                # 检查是否与其他用户重复（排除自己）
+                existing = User.query.filter(User.username == new_username, User.id != user.id).first()
+                if existing:
+                    flash('该用户名已被占用', 'danger')
+                else:
+                    old_username = user.username
+                    user.username = new_username
+                    db.session.commit()
+                    session['username'] = new_username  # 更新 session
+                    flash(f'用户名已从 "{old_username}" 更新为 "{new_username}"', 'success')
             return redirect(url_for('profile'))
 
+        # ---------- 3. 修改密码 ----------
+        elif action == 'change_password':
+            old = request.form.get('old_password')
+            new = request.form.get('new_password')
+            confirm = request.form.get('confirm_password')
+            if not user.check_password(old):
+                flash('原密码错误', 'danger')
+            elif new != confirm:
+                flash('两次输入的新密码不一致', 'danger')
+            elif len(new) < 6:
+                flash('新密码至少6位', 'danger')
+            else:
+                user.set_password(new)
+                db.session.commit()
+                flash('密码修改成功', 'success')
+            return redirect(url_for('profile'))
+
+    # GET 请求：显示个人设置页面
     return render_template('profile.html', user=user)
-
-
-@app.route('/change_password', methods=['GET', 'POST'])
-def change_password():
-    if not session.get('user_id'):
-        flash('请先登录', 'warning')
-        return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    if request.method == 'POST':
-        old = request.form.get('old_password')
-        new = request.form.get('new_password')
-        confirm = request.form.get('confirm_password')
-        if not user.check_password(old):
-            flash('原密码错误', 'danger')
-            return redirect(url_for('change_password'))
-        if new != confirm:
-            flash('两次输入的新密码不一致', 'danger')
-            return redirect(url_for('change_password'))
-        if len(new) < 6:
-            flash('新密码至少6位', 'danger')
-            return redirect(url_for('change_password'))
-        user.set_password(new)
-        db.session.commit()
-        flash('密码修改成功', 'success')
-        return redirect(url_for('profile'))
-    return render_template('change_password.html')
 
 
 # ---------- 后台管理 ----------
