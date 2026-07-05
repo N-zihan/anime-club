@@ -609,6 +609,21 @@ def admin_toggle_staff(user_id):
     return redirect(url_for('admin_users'))
 
 
+@app.route('/admin/users/toggle_owner/<int:user_id>')
+@admin_required
+def admin_toggle_owner(user_id):
+    user = User.query.get_or_404(user_id)
+    # 如果当前用户不是站长，则先将所有用户置为非站长（保证唯一性）
+    if not user.is_owner:
+        User.query.update({User.is_owner: False})
+        db.session.commit()
+    # 切换当前用户的站长状态
+    user.is_owner = not user.is_owner
+    db.session.commit()
+    flash(f'用户 {user.username} 的站长状态已更新', 'success')
+    return redirect(url_for('admin_users'))
+
+
 @app.route('/avatar/<int:user_id>')
 def get_avatar(user_id):
     user = User.query.get_or_404(user_id)
