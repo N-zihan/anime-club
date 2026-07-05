@@ -7,6 +7,7 @@ from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import joinedload
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
@@ -250,10 +251,9 @@ def board():
             db.session.commit()
         return redirect(url_for('board'))
 
-    messages = db.session.query(Message).order_by(Message.timestamp.desc()).all()
+    messages = db.session.query(Message).options(joinedload(Message.user)).order_by(Message.timestamp.desc()).all()
     for msg in messages:
         msg.timestamp = msg.timestamp + timedelta(hours=8)
-        # 头像在模板中直接使用 msg.user_id
     return render_template('board.html', messages=messages)
 
 
@@ -323,7 +323,7 @@ def members():
     return render_template('members.html', users=users)
 
 
-# ---------- 头像上传 ----------
+# ---------- 个人设置 ----------
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     if not session.get('user_id'):
@@ -333,23 +333,45 @@ def profile():
     user = User.query.get(session['user_id'])
 
     if request.method == 'POST':
-        # 限制上传大小（2MB）
-        if request.content_length and request.content_length > 2 * 1024 * 1024:
-            flash('头像文件不能超过2MB', 'danger')
+        action = request.form.get('action')
+
+        # 修改头像
+        if action == 'change_avatar':
+            if 'avatar' in request.files:
+                file = request.files['avatar']
+                if file and allowed_file(file.filename):
+                    avatar_data = file.read()
+                    avatar_mime = file.content_type or 'image/png'
+                    user.avatar = avatar_data
+                    user.avatar_mime = avatar_mime
+                    db.session.commit()
+                    flash('头像更新成功', 'success')
+                else:
+                    flash('不支持的文件类型（支持 png, jpg, jpeg, gif）', 'danger')
             return redirect(url_for('profile'))
-        if 'avatar' in request.files:
-            file = request.files['avatar']
-            if file and allowed_file(file.filename):
-                # 读取文件二进制数据
-                avatar_data = file.read()
-                avatar_mime = file.content_type or 'image/png'
-                user.avatar = avatar_data
-                user.avatar_mime = avatar_mime
-                db.session.commit()
-                flash('头像更新成功', 'success')
-            else:
-                flash('不支持的文件类型（支持 png, jpg, jpeg, gif）', 'danger')
-        return redirect(url_for('profile'))
+
+        # 修改用户名
+        elif action == 'change_username':
+            new_username = request.form.get('new_username', '').strip()
+            if not new_username:
+                flash('用户名不能为空', 'danger')
+                return redirect(url_for('profile'))
+            if len(new_username) < 2 or len(new_username) > 20:
+                flash('用户名长度应在2-20个字符之间', 'danger')
+                return redirect(url_for('profile'))
+            # 检查是否与其他用户重复（排除自己）
+            existing = User.query.filter(User.username == new_username, User.id != user.id).first()
+            if existing:
+                flash('该用户名已被占用', 'danger')
+                return redirect(url_for('profile'))
+            # 更新用户名
+            old_username = user.username
+            user.username = new_username
+            db.session.commit()
+            # 更新 session
+            session['username'] = new_username
+            flash(f'用户名已从 "{old_username}" 更新为 "{new_username}"', 'success')
+            return redirect(url_for('profile'))
 
     return render_template('profile.html', user=user)
 

@@ -7,45 +7,49 @@
 </div>
 <table border="1" cellpadding="8" style="width:100%; border-collapse:collapse; margin-top:20px;">
     <thead>
-        <tr>
-            <th>ID</th>
-            <th>头像</th>
-            <th>用户名</th>
-            <th>QQ</th>
-            <th>注册时间</th>
-            <th>运营</th>
-            <th>操作</th>
-        </tr>
+    <tr>
+        <th>ID</th>
+        <th>头像</th>
+        <th>用户名</th>
+        <th>QQ</th>
+        <th>注册时间</th>
+        <th>运营</th>
+        <th>操作</th>
+    </tr>
     </thead>
     <tbody>
-        {% for user in users %}
-        <tr>
-            <td>{{ user.id }}</td>
-            <td>
-                <img src="{{ url_for('get_avatar', user_id=user.id) }}" alt="{{ user.username }}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
-            </td>
-            <td>{{ user.username }}</td>
-            <td>{{ user.qq }}</td>
-            <td>{{ user.registered_at.strftime('%Y-%m-%d') }}</td>
-            <td>
-                {% if user.is_staff %}
-                    ✅ 运营
-                {% else %}
-                    —
-                {% endif %}
-            </td>
-            <td>
-                <a href="{{ url_for('admin_toggle_staff', user_id=user.id) }}" style="color:{{ 'green' if user.is_staff else 'blue' }};">
-                    {{ '取消运营' if user.is_staff else '设为运营' }}
-                </a>
-                {% if user.id != session.user_id %}
-                <a href="{{ url_for('admin_delete_user', user_id=user.id) }}" onclick="return confirm('确定删除用户 {{ user.username }} 吗？')" style="color:red; margin-left:10px;">删除</a>
-                {% else %}
-                <span style="color:#aaa; margin-left:10px;">（自己）</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
+    {% for user in users %}
+    <tr>
+        <td>{{ user.id }}</td>
+        <td>
+            <img alt="{{ user.username }}" src="{{ url_for('get_avatar', user_id=user.id) }}"
+                 style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+        </td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.qq }}</td>
+        <td>{{ user.registered_at.strftime('%Y-%m-%d') }}</td>
+        <td>
+            {% if user.is_staff %}
+            ✅ 运营
+            {% else %}
+            —
+            {% endif %}
+        </td>
+        <td>
+            <a href="{{ url_for('admin_toggle_staff', user_id=user.id) }}"
+               style="color:{{ 'green' if user.is_staff else 'blue' }};">
+                {{ '取消运营' if user.is_staff else '设为运营' }}
+            </a>
+            {% if user.id != session.user_id %}
+            <a href="{{ url_for('admin_delete_user', user_id=user.id) }}"
+               onclick="return confirm('确定删除用户 {{ user.username }} 吗？')"
+               style="color:red; margin-left:10px;">删除</a>
+            {% else %}
+            <span style="color:#aaa; margin-left:10px;">（自己）</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
     </tbody>
 </table>
 <p style="margin-top:20px;"><a href="{{ url_for('admin_dashboard') }}">← 返回后台首页</a></p>
