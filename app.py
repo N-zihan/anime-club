@@ -56,6 +56,7 @@ class User(db.Model):
     registered_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     avatar = db.Column(db.LargeBinary, nullable=True)
     avatar_mime = db.Column(db.String(50), nullable=True)
+    is_staff = db.Column(db.Boolean, default=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -134,7 +135,8 @@ def index():
 @app.route('/about')
 def about():
     users = User.query.all()
-    return render_template('about.html', users=users)
+    staff = User.query.filter_by(is_staff=True).all()  # 动态查询
+    return render_template('about.html', users=users, staff=staff)
 
 
 @app.route('/activities')
@@ -570,6 +572,16 @@ def admin_delete_user(user_id):
     db.session.delete(user)
     db.session.commit()
     flash('用户已删除', 'success')
+    return redirect(url_for('admin_users'))
+
+
+@app.route('/admin/users/toggle_staff/<int:user_id>')
+@admin_required
+def admin_toggle_staff(user_id):
+    user = User.query.get_or_404(user_id)
+    user.is_staff = not user.is_staff  # 取反
+    db.session.commit()
+    flash(f'用户 {user.username} 的运营状态已更新', 'success')
     return redirect(url_for('admin_users'))
 
 
