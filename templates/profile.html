@@ -2,21 +2,26 @@
 {% block title %}个人设置{% endblock %}
 {% block content %}
 <div class="card-form">
-    <h2>👤 个人设置</h2>
+    <h2>个人设置</h2>
+
+    <!-- 头像 -->
     <div style="text-align:center; margin-bottom:20px;">
         <img alt="头像" src="{{ url_for('get_avatar', user_id=user.id) }}"
              style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #ddd;">
     </div>
     <form enctype="multipart/form-data" method="POST">
+        <input name="action" type="hidden" value="change_avatar">
         <div class="form-group">
             <label>更换头像（支持 jpg/png/gif）：</label>
             <input accept="image/*" name="avatar" required type="file">
         </div>
         <button class="btn-primary" type="submit">上传头像</button>
     </form>
-    <!-- 修改用户名 -->
+
     <hr style="margin: 40px 0;">
-    <h3>📝 修改用户名</h3>
+
+    <!-- 修改用户名 -->
+    <h3>修改用户名</h3>
     <form method="POST" onsubmit="return confirm('确定要修改用户名吗？修改后请重新登录。');">
         <input name="action" type="hidden" value="change_username">
         <div class="form-group">
@@ -25,6 +30,28 @@
         </div>
         <button class="btn-primary" type="submit">修改用户名</button>
     </form>
-    <p style="margin-top:15px;"><a href="{{ url_for('members') }}">返回社员列表</a></p>
+
+    <hr style="margin: 40px 0;">
+
+    <!-- 修改密码 -->
+    <h3>修改密码</h3>
+    <form method="POST" onsubmit="return confirm('确认修改密码？');">
+        <input name="action" type="hidden" value="change_password">
+        <div class="form-group">
+            <label>原密码：</label>
+            <input name="old_password" required type="password">
+        </div>
+        <div class="form-group">
+            <label>新密码（至少6位）：</label>
+            <input minlength="6" name="new_password" required type="password">
+        </div>
+        <div class="form-group">
+            <label>确认新密码：</label>
+            <input name="confirm_password" required type="password">
+        </div>
+        <button class="btn-primary" type="submit">修改密码</button>
+    </form>
+
+    <p style="margin-top:20px;"><a href="{{ url_for('members') }}">返回社员列表</a></p>
 </div>
 {% endblock %}
