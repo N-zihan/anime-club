@@ -13,7 +13,10 @@
     <form method="POST">
         <div class="form-group">
             <label>用户名：</label>
-            <input name="username" required type="text">
+            <input name="username" pattern="[A-Za-z0-9_]{2,20}"
+                   required
+                   title="只允许字母、数字、下划线，长度2-20个字符"
+                   type="text">
         </div>
         <div class="form-group">
             <label>QQ号：</label>
