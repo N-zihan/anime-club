@@ -2,11 +2,9 @@
 {% block title %}留言板{% endblock %}
 {% block content %}
 {% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
+{% for category, message in messages if category in ['danger', 'warning'] %}
 <div class="alert alert-{{ category }}">{{ message }}</div>
 {% endfor %}
-{% endif %}
 {% endwith %}
 
 <h2>社员留言板</h2>
