@@ -14,6 +14,17 @@
         </div>
         <button class="btn-primary" type="submit">上传头像</button>
     </form>
+    <!-- 修改用户名 -->
+    <hr style="margin: 40px 0;">
+    <h3>📝 修改用户名</h3>
+    <form method="POST" onsubmit="return confirm('确定要修改用户名吗？修改后请重新登录。');">
+        <input name="action" type="hidden" value="change_username">
+        <div class="form-group">
+            <label>新用户名：</label>
+            <input maxlength="20" minlength="2" name="new_username" required type="text">
+        </div>
+        <button class="btn-primary" type="submit">修改用户名</button>
+    </form>
     <p style="margin-top:15px;"><a href="{{ url_for('members') }}">返回社员列表</a></p>
 </div>
 {% endblock %}
