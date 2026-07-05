@@ -503,7 +503,7 @@ def admin_gallery_upload():
         flash('没有文件', 'danger')
         return redirect(url_for('admin_gallery'))
     file = request.files['file']
-    if file.filename == '':
+    if file.filename == '':  # 用户未选择文件
         flash('未选择文件', 'danger')
         return redirect(url_for('admin_gallery'))
     if file and allowed_file(file.filename):
@@ -622,7 +622,7 @@ def admin_delete_user(user_id):
 @admin_required
 def admin_toggle_staff(user_id):
     user = User.query.get_or_404(user_id)
-    user.is_staff = not user.is_staff  # 取反
+    user.is_staff = not user.is_staff
     db.session.commit()
     flash(f'用户 {user.username} 的运营状态已更新', 'success')
     return redirect(url_for('admin_users'))
@@ -663,18 +663,9 @@ def get_avatar(user_id):
 def require_login():
     # 公开路由（未登录也能访问）
     public_routes = ['login', 'register', 'static', 'guest_login', 'splash', 'index']
-
-    # 游客可访问的路由（已登录但权限受限）
-    guest_allowed_routes = ['index', 'about', 'activities']
-
     # 如果未登录，访问公开路由外的页面 → 跳转登录
     if not session.get('user_id') and request.endpoint not in public_routes:
         return redirect(url_for('login'))
-
-    # 如果已登录但身份是游客，且访问的页面不在游客允许列表中 → 跳转首页
-    if session.get('is_guest') and request.endpoint not in guest_allowed_routes:
-        flash('游客无法访问此页面，请登录完整账号', 'warning')
-        return redirect(url_for('index'))
 
 
 # ---------- 自定义错误页面 ----------
