@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from functools import wraps
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
+from flask import Flask, render_template, request, redirect, url_for, session, flash, Response, abort
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import joinedload
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -401,17 +401,18 @@ def profile():
 
 @app.route('/user/<username>')
 def user_profile(username):
-    user = User.query.filter_by(username=username).first_or_404()
-
+    from sqlalchemy import func
+    # 忽略大小写、去除首尾空格
+    user = User.query.filter(func.lower(User.username) == func.lower(username.strip())).first()
+    if not user:
+        abort(404)
     # 获取该用户的留言（按时间倒序）
     messages = Message.query.filter_by(user_id=user.id).order_by(Message.timestamp.desc()).limit(10).all()
     for msg in messages:
         msg.timestamp = msg.timestamp + timedelta(hours=8)
-
     # 获取该用户推荐并通过审核的番剧
     anime = AnimeResource.query.filter_by(uploader=username, status='approved').order_by(
         AnimeResource.upload_time.desc()).all()
-
     return render_template('user_profile.html', user=user, messages=messages, anime=anime)
 
 
