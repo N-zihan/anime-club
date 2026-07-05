@@ -105,6 +105,15 @@ class AnimeResource(db.Model):
     status = db.Column(db.String(20), default='pending')
 
 
+class Photo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(200), nullable=False)  # 存储文件名，如 "photo_123.jpg"
+    activity_id = db.Column(db.Integer, db.ForeignKey('activity.id'), nullable=True)
+    activity = db.relationship('Activity', backref='photos')
+    upload_time = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    uploader = db.Column(db.String(50))  # 上传者用户名
+
+
 with app.app_context():
     db.create_all()
 
@@ -150,12 +159,12 @@ def activities():
 
 @app.route('/gallery')
 def gallery():
-    static_folder = app.static_folder or ''
-    image_folder = os.path.join(static_folder, 'history_photos')
-    os.makedirs(image_folder, exist_ok=True)
-    image_files = [f for f in os.listdir(image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
-    image_urls = [url_for('static', filename=f'history_photos/{img}') for img in image_files]
-    return render_template('gallery.html', image_urls=image_urls)
+    # 获取所有活动及其照片
+    activities = Activity.query.options(joinedload(Activity.photos)).order_by(Activity.date.desc()).all()
+    # 获取未分类照片（activity_id 为 NULL）
+    uncategorized_photos = Photo.query.filter_by(activity_id=None).all()
+
+    return render_template('gallery.html', activities=activities, uncategorized_photos=uncategorized_photos)
 
 
 # ---------- 用户认证 ----------
@@ -479,10 +488,9 @@ def admin_activity_delete(id):
 @app.route('/admin/gallery')
 @admin_required
 def admin_gallery():
-    image_folder = os.path.join(app.static_folder, 'history_photos')
-    os.makedirs(image_folder, exist_ok=True)
-    images = [f for f in os.listdir(image_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
-    return render_template('admin_gallery.html', images=images)
+    activities = Activity.query.order_by(Activity.date.desc()).all()
+    photos = Photo.query.order_by(Photo.upload_time.desc()).all()
+    return render_template('admin_gallery.html', activities=activities, photos=photos)
 
 
 @app.route('/admin/gallery/upload', methods=['POST'])
@@ -492,9 +500,14 @@ def admin_gallery_upload():
         flash('没有文件', 'danger')
         return redirect(url_for('admin_gallery'))
     file = request.files['file']
-    if file.filename == '':  # 用户未选择文件
+    if file.filename == '':
         flash('未选择文件', 'danger')
         return redirect(url_for('admin_gallery'))
+
+    activity_id = request.form.get('activity_id')
+    if activity_id:
+        activity_id = int(activity_id)
+
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         base, ext = os.path.splitext(filename)
@@ -505,21 +518,30 @@ def admin_gallery_upload():
             save_path = os.path.join(app.static_folder, 'history_photos', filename)
             counter += 1
         file.save(save_path)
-        flash(f'图片 {filename} 上传成功', 'success')
+
+        photo = Photo(
+            filename=filename,
+            activity_id=activity_id if activity_id else None,
+            uploader=session.get('username', 'admin')
+        )
+        db.session.add(photo)
+        db.session.commit()
+        flash('照片上传成功', 'success')
     else:
         flash('不支持的文件类型', 'danger')
     return redirect(url_for('admin_gallery'))
 
 
-@app.route('/admin/gallery/delete/<filename>')
+@app.route('/admin/gallery/delete/<int:photo_id>')
 @admin_required
-def admin_gallery_delete(filename):
-    file_path = os.path.join(app.static_folder, 'history_photos', filename)
+def admin_gallery_delete(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    file_path = os.path.join(app.static_folder, 'history_photos', photo.filename)
     if os.path.exists(file_path):
         os.remove(file_path)
-        flash(f'图片 {filename} 已删除', 'success')
-    else:
-        flash('文件不存在', 'danger')
+    db.session.delete(photo)
+    db.session.commit()
+    flash('照片已删除', 'success')
     return redirect(url_for('admin_gallery'))
 
 

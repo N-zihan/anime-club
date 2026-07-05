@@ -1,20 +1,36 @@
 {% extends "base.html" %}
 {% block title %}管理照片墙{% endblock %}
 {% block content %}
-<h2>🖼️ 照片墙管理</h2>
+<h2>照片墙管理</h2>
 
 <h3>上传新照片</h3>
 <form action="{{ url_for('admin_gallery_upload') }}" enctype="multipart/form-data" method="POST">
     <input accept="image/*" name="file" required type="file">
+    <select name="activity_id">
+        <option value="">往期活动照片</option>
+        {% for act in activities %}
+        <option value="{{ act.id }}">{{ act.title }}（{{ act.date }}）</option>
+        {% endfor %}
+    </select>
     <input type="submit" value="上传">
 </form>
 
-<h3>现有照片（点击删除）</h3>
+<h3>现有照片</h3>
 <div class="gallery-grid">
-    {% for img in images %}
+    {% for photo in photos %}
     <div class="gallery-item">
-        <img alt="{{ img }}" src="{{ url_for('static', filename='history_photos/' + img) }}">
-        <a href="{{ url_for('admin_gallery_delete', filename=img) }}" onclick="return confirm('确定删除？');">删除</a>
+        <img alt="{{ photo.filename }}" src="{{ url_for('static', filename='history_photos/' + photo.filename) }}">
+        <div style="padding:8px;">
+            <span style="font-size:0.8rem; color:#7f8c8d;">
+                {% if photo.activity %}
+                {{ photo.activity.title }}
+                {% else %}
+                往期活动
+                {% endif %}
+            </span>
+            <a href="{{ url_for('admin_gallery_delete', photo_id=photo.id) }}" onclick="return confirm('确定删除？');"
+               style="color:red; margin-left:10px;">删除</a>
+        </div>
     </div>
     {% endfor %}
 </div>
