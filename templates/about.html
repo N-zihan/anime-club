@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block title %}社团介绍{% endblock %}
 {% block content %}
-<h2>📖 社团简介</h2>
+<h2>社团简介</h2>
 <p>
     南平一中动漫社成立于XXXX年，是一个以“热爱、分享、创造”为核心的二次元同好聚集地。我们定期举办番剧放映、绘画教学、Cosplay交流、宅舞排练等活动。</p>
 <p>社团现有成员 {{ users|length }}
     人（统计来自社员名单），无论你是老二次元还是新入坑，都欢迎加入我们，一起创造属于我们的二次元回忆！</p>
 
-<!-- 运营团队 -->
+<!-- ===== 运营团队（卡片展示） ===== -->
 <h2 style="margin-top:50px;">🛠️ 运营团队</h2>
 <div class="members-grid">
     {% for member in staff %}
@@ -26,10 +26,10 @@
     {% endfor %}
 </div>
 
-<!-- ===== 关于本站 ===== -->
+<!-- ===== 关于本站（突出站长） ===== -->
 <h2 style="margin-top:50px;">⚙️ 关于本站</h2>
 <div style="background:#f8fafc; border-radius:16px; padding:24px; border:1px solid #e2e8f0;">
-    <p><strong>南平一中动漫社官网</strong> 由 <strong>{{ staff[0].username if staff else '管理员' }}</strong> 独立开发并维护。
+    <p><strong>南平一中动漫社官网</strong> 由 <strong>{{ owner.username if owner else '管理员' }}</strong> 独立开发并维护。
     </p>
     <p style="margin-top:12px; color:#4a6a7a; font-size:0.95rem; line-height:1.8;">
         <strong>技术栈</strong>：Python + Flask + SQLAlchemy + Supabase (PostgreSQL) + Vercel<br>

@@ -58,6 +58,7 @@ class User(db.Model):
     avatar = db.Column(db.LargeBinary, nullable=True)
     avatar_mime = db.Column(db.String(50), nullable=True)
     is_staff = db.Column(db.Boolean, default=False)
+    is_owner = db.Column(db.Boolean, default=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -136,8 +137,9 @@ def index():
 @app.route('/about')
 def about():
     users = User.query.all()
-    staff = User.query.filter_by(is_staff=True).all()  # 动态查询
-    return render_template('about.html', users=users, staff=staff)
+    staff = User.query.filter_by(is_staff=True).all()
+    owner = User.query.filter_by(is_owner=True).first()  # 取站长
+    return render_template('about.html', users=users, staff=staff, owner=owner)
 
 
 @app.route('/activities')
