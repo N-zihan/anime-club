@@ -399,6 +399,22 @@ def profile():
     return render_template('profile.html', user=user)
 
 
+@app.route('/user/<username>')
+def user_profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+
+    # 获取该用户的留言（按时间倒序）
+    messages = Message.query.filter_by(user_id=user.id).order_by(Message.timestamp.desc()).limit(10).all()
+    for msg in messages:
+        msg.timestamp = msg.timestamp + timedelta(hours=8)
+
+    # 获取该用户推荐并通过审核的番剧
+    anime = AnimeResource.query.filter_by(uploader=username, status='approved').order_by(
+        AnimeResource.upload_time.desc()).all()
+
+    return render_template('user_profile.html', user=user, messages=messages, anime=anime)
+
+
 # ---------- 后台管理 ----------
 @app.route('/admin/dashboard')
 @admin_required
@@ -641,6 +657,22 @@ def require_login():
     # 允许所有用户（包括游客）访问页面
     if not session.get('user_id') and request.endpoint not in public_routes:
         return redirect(url_for('login'))
+
+
+# ---------- 自定义错误页面 ----------
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
+
+
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('403.html'), 403
 
 
 if __name__ == '__main__':

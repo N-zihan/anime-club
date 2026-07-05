@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }} 的个人主页{% endblock %}
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <!-- 个人信息卡片 -->
+    <div style="text-align: center; background: white; border-radius: 24px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; margin-bottom: 30px;">
+        <img alt="{{ user.username }}" src="{{ url_for('get_avatar', user_id=user.id) }}"
+             style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid {% if user.is_owner %}gold{% elif user.is_staff %}#2c3e50{% else %}#e2e8f0{% endif %};">
+        <h2 style="margin: 15px 0 5px 0;">
+            {{ user.username }}
+            {% if user.is_owner %}👑{% elif user.is_staff %}🛠️{% endif %}
+        </h2>
+        <p style="color: #7f8c8d; font-size: 0.9rem;">
+            加入时间：{{ user.registered_at.strftime('%Y年%m月%d日') }}
+            {% if user.is_owner %} · 站长{% elif user.is_staff %} · 运营{% endif %}
+        </p>
+        <!-- 只有本人能看到“个人设置”入口 -->
+        {% if session.user_id == user.id %}
+        <p style="margin-top: 15px;">
+            <a class="btn-primary" href="{{ url_for('profile') }}">个人设置</a>
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- 该用户的留言 -->
+    <div style="background: white; border-radius: 24px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; margin-bottom: 30px;">
+        <h3>最近留言</h3>
+        {% if messages %}
+        <ul style="list-style: none; padding: 0;">
+            {% for msg in messages %}
+            <li style="border-bottom: 1px solid #e2e8f0; padding: 12px 0;">
+                <p style="margin: 0;">{{ msg.content }}</p>
+                <p style="margin: 0; color: #7f8c8d; font-size: 0.8rem;">{{ msg.timestamp.strftime('%Y-%m-%d %H:%M')
+                    }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color: #7f8c8d;">该用户还没有发表过留言</p>
+        {% endif %}
+    </div>
+
+    <!-- 该用户推荐的番剧 -->
+    <div style="background: white; border-radius: 24px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+        <h3>推荐的番剧</h3>
+        {% if anime %}
+        <ul style="list-style: none; padding: 0;">
+            {% for a in anime %}
+            <li style="border-bottom: 1px solid #e2e8f0; padding: 12px 0;">
+                <strong>{{ a.title }}</strong>
+                <p style="margin: 0; color: #7f8c8d; font-size: 0.9rem;">{{ a.description or '暂无描述' }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color: #7f8c8d;">该用户还没有推荐过番剧</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
