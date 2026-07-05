@@ -5,16 +5,18 @@
 <p class="member-count">共 {{ users|length }} 位成员</p>
 <div class="members-grid">
     {% for user in users %}
-    <div class="member-card">
-        <div class="member-avatar">
-            <img alt="{{ user.username }}" src="{{ url_for('get_avatar', user_id=user.id) }}"
-                 style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0;">
+    <a class="member-link" href="{{ url_for('user_profile', username=user.username) }}">
+        <div class="member-card">
+            <div class="member-avatar">
+                <img alt="{{ user.username }}" src="{{ url_for('get_avatar', user_id=user.id) }}"
+                     style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0;">
+            </div>
+            <div class="member-info">
+                <h3>{{ user.username }}</h3>
+                <p class="member-time">加入时间：{{ user.registered_at.strftime('%Y-%m-%d') }}</p>
+            </div>
         </div>
-        <div class="member-info">
-            <h3>{{ user.username }}</h3>
-            <p class="member-time">加入时间：{{ user.registered_at.strftime('%Y-%m-%d') }}</p>
-        </div>
-    </div>
+    </a>
     {% else %}
     <p>暂无社员，快来注册吧！</p>
     {% endfor %}
