@@ -9,8 +9,7 @@
     <div class="gallery-grid">
         {% for photo in uncategorized_photos %}
         <div class="gallery-item">
-            <img alt="{{ photo.filename }}" loading="lazy"
-                 src="{{ url_for('static', filename='history_photos/' + photo.filename) }}">
+            <img alt="{{ photo.filename }}" loading="lazy" src="{{ photo.url }}">
         </div>
         {% else %}
         <p>暂无往期活动照片</p>
@@ -26,8 +25,7 @@
     <div class="gallery-grid">
         {% for photo in activity.photos %}
         <div class="gallery-item">
-            <img alt="{{ photo.filename }}" loading="lazy"
-                 src="{{ url_for('static', filename='history_photos/' + photo.filename) }}">
+            <img alt="{{ photo.filename }}" loading="lazy" src="{{ photo.url }}">
         </div>
         {% endfor %}
     </div>

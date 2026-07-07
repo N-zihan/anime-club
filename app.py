@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, session, flash, Response, abort
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import joinedload
+from supabase import create_client, Client
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -19,6 +19,10 @@ def allowed_file(filename):
 
 
 load_dotenv()
+
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')  # 或 anon key
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__)
 app.secret_key = '20090929nzh'
@@ -159,10 +163,16 @@ def activities():
 
 @app.route('/gallery')
 def gallery():
-    # 获取所有活动及其照片
+    from sqlalchemy.orm import joinedload
     activities = Activity.query.options(joinedload(Activity.photos)).order_by(Activity.date.desc()).all()
-    # 获取未分类照片（activity_id 为 NULL）
     uncategorized_photos = Photo.query.filter_by(activity_id=None).all()
+
+    # 为每张照片生成公开 URL
+    for photo in uncategorized_photos:
+        photo.url = supabase.storage.from_('photos').get_public_url(photo.filename)
+    for activity in activities:
+        for photo in activity.photos:
+            photo.url = supabase.storage.from_('photos').get_public_url(photo.filename)
 
     return render_template('gallery.html', activities=activities, uncategorized_photos=uncategorized_photos)
 
@@ -509,16 +519,23 @@ def admin_gallery_upload():
         activity_id = int(activity_id)
 
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        base, ext = os.path.splitext(filename)
-        counter = 1
-        save_path = os.path.join(app.static_folder, 'history_photos', filename)
-        while os.path.exists(save_path):
-            filename = f"{base}_{counter}{ext}"
-            save_path = os.path.join(app.static_folder, 'history_photos', filename)
-            counter += 1
-        file.save(save_path)
+        # 生成唯一文件名
+        from datetime import datetime
+        import uuid
+        ext = file.filename.rsplit('.', 1)[1].lower()
+        filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}.{ext}"
 
+        # 上传到 Supabase Storage
+        try:
+            res = supabase.storage.from_('photos').upload(filename, file.read(),
+                                                          file_options={"content-type": file.content_type})
+            # 获取公开 URL
+            public_url = supabase.storage.from_('photos').get_public_url(filename)
+        except Exception as e:
+            flash(f'上传失败: {str(e)}', 'danger')
+            return redirect(url_for('admin_gallery'))
+
+        # 保存记录到数据库
         photo = Photo(
             filename=filename,
             activity_id=activity_id if activity_id else None,
@@ -536,9 +553,14 @@ def admin_gallery_upload():
 @admin_required
 def admin_gallery_delete(photo_id):
     photo = Photo.query.get_or_404(photo_id)
-    file_path = os.path.join(app.static_folder, 'history_photos', photo.filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
+
+    # 从 Supabase Storage 删除文件
+    try:
+        supabase.storage.from_('photos').remove([photo.filename])
+    except Exception as e:
+        flash(f'删除云文件失败: {str(e)}', 'warning')
+
+    # 删除数据库记录
     db.session.delete(photo)
     db.session.commit()
     flash('照片已删除', 'success')
