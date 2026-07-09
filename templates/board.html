@@ -16,7 +16,7 @@
         <li>
             <div style="display:flex; align-items:center; gap:10px;">
                 <img alt="{{ msg.user.username if msg.user else msg.nickname }}"
-                     src="{% if msg.user_id %}{{ url_for('get_avatar', user_id=msg.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}"
+                     src="{% if msg.user_id %}{{ url_for('user.get_avatar', user_id=msg.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}"
                      style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
                 <strong>{{ msg.user.username if msg.user else msg.nickname }}</strong>
                 <span class="msg-time">· {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
@@ -29,7 +29,7 @@
                 {% for reply in msg.replies %}
                 <div class="reply-item" style="border-bottom:1px solid #eee; margin-bottom:6px;">
                     <img alt="{{ reply.user.username if reply.user else reply.nickname }}"
-                         src="{% if reply.user_id %}{{ url_for('get_avatar', user_id=reply.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}"
+                         src="{% if reply.user_id %}{{ url_for('user.get_avatar', user_id=reply.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}"
                          style="width:20px; height:20px; border-radius:50%; object-fit:cover; margin-right:8px;">
                     <strong>{{ reply.user.username if reply.user else reply.nickname }}</strong>
                     <span class="msg-time">· {{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
@@ -39,7 +39,7 @@
             </div>
             {% endif %}
             <!-- 回复表单 -->
-            <form action="{{ url_for('add_reply', message_id=msg.id) }}" method="POST"
+            <form action="{{ url_for('public.add_reply', message_id=msg.id) }}" method="POST"
                   onsubmit="this.querySelector('input[type=submit]').disabled = true;"
                   style="margin-top: 10px;">
                 <textarea cols="50" name="content" placeholder="写回复..." required rows="2"></textarea>

@@ -5,7 +5,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="动漫社网站">
-      <change beforePath="$PROJECT_DIR$/templates/gallery.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/gallery.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/403.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/403.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/404.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/404.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/500.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/500.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/about.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/about.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_activities.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_activities.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_activity_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_activity_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_anime_resources.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_anime_resources.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_anime_resources_add.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_anime_resources_add.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_gallery.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_gallery.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_users.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_users.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/anime_resources.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/anime_resources.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/board.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/board.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/members.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/members.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/user_profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/user_profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vercel.json" beforeDir="false" afterPath="$PROJECT_DIR$/vercel.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,8 +38,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Flask Main" />
-        <option value="Python Script" />
         <option value="HTML File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -56,61 +78,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.2828690785262387" />
-      <entry key="MS500" value="2.791791680601109" />
-      <entry key="S2" value="6.106114360748992" />
-      <entry key="S5" value="8.060283497496153" />
-      <entry key="S10" value="8.95031192865006" />
-      <entry key="S30" value="9.966178512121722" />
-      <entry key="S60" value="11.651318374429326" />
-      <entry key="M2" value="14.56168063984952" />
-      <entry key="M5" value="21.500150228681864" />
-      <entry key="M10" value="28.49232381874272" />
-      <entry key="M15" value="32.20637050182334" />
-      <entry key="M30" value="37.38298448865247" />
-      <entry key="H1" value="42.168676188124415" />
-      <entry key="H2" value="48.65811281499275" />
-      <entry key="H4" value="58.305544229755014" />
-      <entry key="D1" value="81.34187403392235" />
-      <entry key="W1" value="88.63193604942734" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0000193130432076" />
+      <entry key="S5" value="1.0228878073166563" />
+      <entry key="S10" value="1.2568732832032405" />
+      <entry key="S30" value="2.3384293786816217" />
+      <entry key="S60" value="3.1973720084679473" />
+      <entry key="M2" value="4.090888226238331" />
+      <entry key="M5" value="5.198620970370431" />
+      <entry key="M10" value="7.664985883723779" />
+      <entry key="M15" value="11.554731629477136" />
+      <entry key="M30" value="24.40565613189867" />
+      <entry key="H1" value="42.1029079663412" />
+      <entry key="H2" value="60.16698393451537" />
+      <entry key="H4" value="77.88467235105637" />
+      <entry key="D1" value="111.18969797446657" />
+      <entry key="W1" value="121.14156665203137" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
       <entry key="MS500" value="0.0" />
       <entry key="S2" value="0.0" />
-      <entry key="S5" value="5.167099566761928E-294" />
-      <entry key="S10" value="3.1940551501522755E-147" />
-      <entry key="S30" value="2.3343822400851332E-49" />
-      <entry key="S60" value="6.831595938647862E-25" />
-      <entry key="M2" value="1.1689426730415707E-12" />
-      <entry key="M5" value="2.5969482348922063E-5" />
-      <entry key="M10" value="0.00786565165604431" />
-      <entry key="M15" value="0.056542436682534024" />
-      <entry key="M30" value="0.461242953230744" />
-      <entry key="H1" value="1.4513514911783312" />
-      <entry key="H2" value="2.7677413409452196" />
-      <entry key="H4" value="4.300082134645976" />
-      <entry key="D1" value="7.706442803548047" />
-      <entry key="W1" value="8.794768799488592" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="2.438755107703907E-270" />
+      <entry key="S30" value="2.133604396485335E-90" />
+      <entry key="S60" value="2.065347509214054E-45" />
+      <entry key="M2" value="6.427301826965848E-23" />
+      <entry key="M5" value="2.0443605209278535E-9" />
+      <entry key="M10" value="6.978816920631993E-5" />
+      <entry key="M15" value="0.002423292945029219" />
+      <entry key="M30" value="0.09548726252320318" />
+      <entry key="H1" value="0.660359534727896" />
+      <entry key="H2" value="1.8669359792116258" />
+      <entry key="H4" value="3.5316585917604475" />
+      <entry key="D1" value="7.457689309762495" />
+      <entry key="W1" value="8.753641562277263" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.2293867870773736" />
-      <entry key="MS500" value="2.7610397145398053" />
-      <entry key="S2" value="6.090829642486915" />
-      <entry key="S5" value="8.052677841839941" />
-      <entry key="S10" value="8.946183235345181" />
-      <entry key="S30" value="9.964678694221414" />
-      <entry key="S60" value="11.650462310543897" />
-      <entry key="M2" value="14.561113945809401" />
-      <entry key="M5" value="21.499633851897798" />
-      <entry key="M10" value="28.49969162284864" />
-      <entry key="M15" value="32.26242781143908" />
-      <entry key="M30" value="37.8434548850985" />
-      <entry key="H1" value="43.61876126613927" />
-      <entry key="H2" value="51.42442709974049" />
-      <entry key="H4" value="62.60430297847661" />
-      <entry key="D1" value="89.0478298149049" />
-      <entry key="W1" value="97.42662252273495" />
+      <entry key="MS100" value="0.9526379980439373" />
+      <entry key="MS500" value="0.9903428719330246" />
+      <entry key="S2" value="0.9975962055892799" />
+      <entry key="S5" value="1.0219013798196408" />
+      <entry key="S10" value="1.2562942097333578" />
+      <entry key="S30" value="2.3380635772882226" />
+      <entry key="S60" value="3.1969639249618145" />
+      <entry key="M2" value="4.090453565780813" />
+      <entry key="M5" value="5.198287554634975" />
+      <entry key="M10" value="7.664467080795208" />
+      <entry key="M15" value="11.556154069546897" />
+      <entry key="M30" value="24.499488849274396" />
+      <entry key="H1" value="42.761320070372605" />
+      <entry key="H2" value="62.03201950150193" />
+      <entry key="H4" value="81.41469441622877" />
+      <entry key="D1" value="118.64681129986423" />
+      <entry key="W1" value="129.89511097098793" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -125,39 +147,41 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Flask 服务器.anime-club.executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.动漫社网站.executor&quot;: &quot;Run&quot;,
-    &quot;HTTP 请求.generated-requests | #1.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.app (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python.index (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.test.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/NZH/Desktop/动漫社网站/static/avatars&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MTThemeTableConfigurable&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Flask 服务器.anime-club.executor": "Run",
+    "Flask 服务器.动漫社网站.executor": "Run",
+    "HTTP 请求.generated-requests | #1.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.app (1).executor": "Run",
+    "Python.app.executor": "Run",
+    "Python.app.py.executor": "Run",
+    "Python.index (1).executor": "Run",
+    "Python.public.executor": "Run",
+    "Python.run.executor": "Run",
+    "Python.test.executor": "Run",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/Users/NZH/Desktop/动漫社网站/static/avatars",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "MTThemeTableConfigurable",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\NZH\Desktop\动漫社网站\static\avatars" />
@@ -171,10 +195,7 @@
       <recent name="C:\Users\NZH\Desktop\动漫社网站\static" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.app.py">
-    <configuration name="generated-requests | #1" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$APPLICATION_CONFIG_DIR$/scratches/generated-requests.http" executionIdentifier="#1" runType="运行单个请求">
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.run">
     <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="anime-club" />
       <option name="ENV_FILES" value=".env" />
@@ -299,6 +320,54 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="public" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="动漫社网站" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/public.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="动漫社网站" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="动漫社网站" type="Python.FlaskServer">
       <module name="anime-club" />
       <option name="target" value="$PROJECT_DIR$/app.py" />
@@ -341,11 +410,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.run" />
+        <item itemvalue="Python.public" />
         <item itemvalue="Python.app.py" />
         <item itemvalue="Python.app" />
         <item itemvalue="Python.app" />
-        <item itemvalue="Python.app" />
-        <item itemvalue="HTTP 请求.generated-requests | #1" />
       </list>
     </recent_temporary>
   </component>
@@ -368,22 +437,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00053" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783159968921</created>
-      <option name="number" value="00053" />
-      <option name="presentableId" value="LOCAL-00053" />
-      <option name="project" value="LOCAL" />
-      <updated>1783159968921</updated>
-    </task>
-    <task id="LOCAL-00054" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783160706463</created>
-      <option name="number" value="00054" />
-      <option name="presentableId" value="LOCAL-00054" />
-      <option name="project" value="LOCAL" />
-      <updated>1783160706463</updated>
     </task>
     <task id="LOCAL-00055" summary="动漫社网站">
       <option name="closed" value="true" />
@@ -761,7 +814,23 @@
       <option name="project" value="LOCAL" />
       <updated>1783393764941</updated>
     </task>
-    <option name="localTasksCounter" value="102" />
+    <task id="LOCAL-00102" summary="动漫社网站">
+      <option name="closed" value="true" />
+      <created>1783393969485</created>
+      <option name="number" value="00102" />
+      <option name="presentableId" value="LOCAL-00102" />
+      <option name="project" value="LOCAL" />
+      <updated>1783393969485</updated>
+    </task>
+    <task id="LOCAL-00103" summary="动漫社网站">
+      <option name="closed" value="true" />
+      <created>1783394050962</created>
+      <option name="number" value="00103" />
+      <option name="presentableId" value="LOCAL-00103" />
+      <option name="project" value="LOCAL" />
+      <updated>1783394050962</updated>
+    </task>
+    <option name="localTasksCounter" value="104" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

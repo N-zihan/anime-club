@@ -2,29 +2,29 @@
 {% block title %}番剧资源管理{% endblock %}
 {% block content %}
 <div class="admin-header">
-    <h2>📦 番剧资源管理</h2>
-    <a class="btn-add" href="{{ url_for('admin_anime_resources_add') }}">➕ 手动添加</a>
+    <h2>番剧资源管理</h2>
+    <a class="btn-add" href="{{ url_for('admin.admin_anime_resources_add') }}">➕ 手动添加</a>
 </div>
 
 <!-- 待审核资源 -->
-<h3>⏳ 待审核资源</h3>
+<h3>待审核资源</h3>
 <div class="anime-grid">
     {% for res in pending_resources %}
     <div class="anime-card">
         <div class="card-header">
             <strong>{{ res.title }}</strong>
             <div class="card-actions">
-                <a class="edit-btn" href="{{ url_for('approve_anime_resource', id=res.id) }}"
-                   onclick="return confirm('批准该资源？')">✅ 通过</a>
-                <a class="delete-btn" href="{{ url_for('reject_anime_resource', id=res.id) }}"
-                   onclick="return confirm('拒绝并删除该资源？')">❌ 拒绝</a>
+                <a class="edit-btn" href="{{ url_for('admin.approve_anime_resource', id=res.id) }}"
+                   onclick="return confirm('批准该资源？')">通过</a>
+                <a class="delete-btn" href="{{ url_for('admin.reject_anime_resource', id=res.id) }}"
+                   onclick="return confirm('拒绝并删除该资源？')">拒绝</a>
             </div>
         </div>
         <p>{{ res.description or '无描述' }}</p>
         <p>🔗 链接：<a href="{{ res.link }}" target="_blank">{{ res.link[:50] }}{% if res.link|length > 50 %}...{% endif
             %}</a></p>
         {% if res.extract_code %}
-        <p>🔑 提取码：<strong>{{ res.extract_code }}</strong></p>
+        <p>提取码：<strong>{{ res.extract_code }}</strong></p>
         {% endif %}
         <p><small>提交人：{{ res.uploader or '未知' }} | 提交时间：{{ res.upload_time.strftime('%Y-%m-%d %H:%M')
             }}</small></p>
@@ -35,14 +35,14 @@
 </div>
 
 <!-- 已审核资源 -->
-<h3>✅ 已通过资源</h3>
+<h3>已通过资源</h3>
 <div class="anime-grid">
     {% for res in approved_resources %}
     <div class="anime-card">
         <div class="card-header">
             <strong>{{ res.title }}</strong>
             <div class="card-actions">
-                <a class="delete-btn" href="{{ url_for('admin_anime_resources_delete', id=res.id) }}"
+                <a class="delete-btn" href="{{ url_for('admin.admin_anime_resources_delete', id=res.id) }}"
                    onclick="return confirm('确定删除？')">🗑️ 删除</a>
             </div>
         </div>
@@ -50,7 +50,7 @@
         <p>🔗 链接：<a href="{{ res.link }}" target="_blank">{{ res.link[:50] }}{% if res.link|length > 50 %}...{% endif
             %}</a></p>
         {% if res.extract_code %}
-        <p>🔑 提取码：<strong>{{ res.extract_code }}</strong></p>
+        <p>提取码：<strong>{{ res.extract_code }}</strong></p>
         {% endif %}
         <p><small>提交人：{{ res.uploader or '未知' }} | 审核通过时间：{{ res.upload_time.strftime('%Y-%m-%d') }}</small>
         </p>

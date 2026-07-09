@@ -6,7 +6,7 @@
 
     <!-- 头像 -->
     <div style="text-align:center; margin-bottom:20px;">
-        <img alt="头像" src="{{ url_for('get_avatar', user_id=user.id) }}"
+        <img alt="头像" src="{{ url_for('user.get_avatar', user_id=user.id) }}"
              style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #ddd;">
     </div>
     <form enctype="multipart/form-data" method="POST">
@@ -52,6 +52,6 @@
         <button class="btn-primary" type="submit">修改密码</button>
     </form>
 
-    <p style="margin-top:20px;"><a href="{{ url_for('members') }}">返回社员列表</a></p>
+    <p style="margin-top:20px;"><a href="{{ url_for('public.members') }}">返回社员列表</a></p>
 </div>
 {% endblock %}

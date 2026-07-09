@@ -2,7 +2,7 @@
 {% block title %}手动添加番剧资源{% endblock %}
 {% block content %}
 <div class="card-form">
-    <h2>➕ 管理员手动添加资源</h2>
+    <h2>管理员手动添加资源</h2>
     <form method="POST">
         <div class="form-group">
             <label>标题：</label>
@@ -21,7 +21,7 @@
             <input name="extract_code" type="text">
         </div>
         <button class="btn-primary" type="submit">添加资源</button>
-        <a class="btn-cancel" href="{{ url_for('admin_anime_resources') }}">返回管理</a>
+        <a class="btn-cancel" href="{{ url_for('admin.admin_anime_resources') }}">返回管理</a>
     </form>
 </div>
 {% endblock %}
