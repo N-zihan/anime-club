@@ -4,31 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="动漫社网站">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/403.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/403.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/404.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/404.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/500.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/500.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/about.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/about.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_activities.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_activities.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_activity_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_activity_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_anime_resources.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_anime_resources.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_anime_resources_add.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_anime_resources_add.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_gallery.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_gallery.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_users.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_users.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/anime_resources.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/anime_resources.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/board.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/board.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/members.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/members.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/register.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/user_profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/user_profile.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vercel.json" beforeDir="false" afterPath="$PROJECT_DIR$/vercel.json" afterDir="false" />
-    </list>
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="refactor: 将 app.py 拆分为 7 个模块，引入蓝图架构&#10;&#10;- app/__init__.py: 应用工厂，注册蓝图&#10;- app/models.py: 所有数据模型 (User, Message, Activity, Reply, AnimeResource, Photo)&#10;- app/utils.py: 公共函数与 Supabase 客户端&#10;- app/auth.py: 认证相关路由 (注册/登录/注销/删除账号)&#10;- app/public.py: 公开路由 (首页/关于/活动/照片墙/留言板/番剧/社员名单)&#10;- app/user.py: 用户相关路由 (个人主页/个人设置/头像)&#10;- app/admin.py: 后台管理路由 (活动/照片墙/番剧/用户管理)&#10;&#10;变更影响：所有 url_for 已更新为蓝图前缀，原有功能完全保留。&#10;部署方式：替换 app.py 为新结构，重启服务即可，无需数据迁移。" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -80,59 +56,59 @@
     <decayedCancelled>
       <entry key="MS100" value="1.0" />
       <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0000193130432076" />
-      <entry key="S5" value="1.0228878073166563" />
-      <entry key="S10" value="1.2568732832032405" />
-      <entry key="S30" value="2.3384293786816217" />
-      <entry key="S60" value="3.1973720084679473" />
-      <entry key="M2" value="4.090888226238331" />
-      <entry key="M5" value="5.198620970370431" />
-      <entry key="M10" value="7.664985883723779" />
-      <entry key="M15" value="11.554731629477136" />
-      <entry key="M30" value="24.40565613189867" />
-      <entry key="H1" value="42.1029079663412" />
-      <entry key="H2" value="60.16698393451537" />
-      <entry key="H4" value="77.88467235105637" />
-      <entry key="D1" value="111.18969797446657" />
-      <entry key="W1" value="121.14156665203137" />
+      <entry key="S2" value="1.0000010296089017" />
+      <entry key="S5" value="1.0041199653394508" />
+      <entry key="S10" value="1.07976718665175" />
+      <entry key="S30" value="1.932757003750371" />
+      <entry key="S60" value="3.019367203589238" />
+      <entry key="M2" value="4.251087652222273" />
+      <entry key="M5" value="5.7421204441358755" />
+      <entry key="M10" value="8.320716222879977" />
+      <entry key="M15" value="12.206104592894192" />
+      <entry key="M30" value="25.03465498402947" />
+      <entry key="H1" value="42.78167003031712" />
+      <entry key="H2" value="60.937012571948266" />
+      <entry key="H4" value="78.73568372796859" />
+      <entry key="D1" value="112.15421983518681" />
+      <entry key="W1" value="122.13604395999785" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
       <entry key="MS500" value="0.0" />
       <entry key="S2" value="0.0" />
       <entry key="S5" value="0.0" />
-      <entry key="S10" value="2.438755107703907E-270" />
-      <entry key="S30" value="2.133604396485335E-90" />
-      <entry key="S60" value="2.065347509214054E-45" />
-      <entry key="M2" value="6.427301826965848E-23" />
-      <entry key="M5" value="2.0443605209278535E-9" />
-      <entry key="M10" value="6.978816920631993E-5" />
-      <entry key="M15" value="0.002423292945029219" />
-      <entry key="M30" value="0.09548726252320318" />
-      <entry key="H1" value="0.660359534727896" />
-      <entry key="H2" value="1.8669359792116258" />
-      <entry key="H4" value="3.5316585917604475" />
-      <entry key="D1" value="7.457689309762495" />
-      <entry key="W1" value="8.753641562277263" />
+      <entry key="S10" value="1.5477505686042142E-271" />
+      <entry key="S30" value="8.51056038808533E-91" />
+      <entry key="S60" value="1.3044134411247355E-45" />
+      <entry key="M2" value="5.1078691108528376E-23" />
+      <entry key="M5" value="1.8648414409764997E-9" />
+      <entry key="M10" value="6.665366254081026E-5" />
+      <entry key="M15" value="0.0023501778381371935" />
+      <entry key="M30" value="0.09403571851178469" />
+      <entry key="H1" value="0.6553211052175306" />
+      <entry key="H2" value="1.8598001418654804" />
+      <entry key="H4" value="3.5249027444939816" />
+      <entry key="D1" value="7.455309728336725" />
+      <entry key="W1" value="8.753242494741185" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9526379980439373" />
-      <entry key="MS500" value="0.9903428719330246" />
-      <entry key="S2" value="0.9975962055892799" />
-      <entry key="S5" value="1.0219013798196408" />
-      <entry key="S10" value="1.2562942097333578" />
-      <entry key="S30" value="2.3380635772882226" />
-      <entry key="S60" value="3.1969639249618145" />
-      <entry key="M2" value="4.090453565780813" />
-      <entry key="M5" value="5.198287554634975" />
-      <entry key="M10" value="7.664467080795208" />
-      <entry key="M15" value="11.556154069546897" />
-      <entry key="M30" value="24.499488849274396" />
-      <entry key="H1" value="42.761320070372605" />
-      <entry key="H2" value="62.03201950150193" />
-      <entry key="H4" value="81.41469441622877" />
-      <entry key="D1" value="118.64681129986423" />
-      <entry key="W1" value="129.89511097098793" />
+      <entry key="MS100" value="0.8585654364377537" />
+      <entry key="MS500" value="0.9699619103417348" />
+      <entry key="S2" value="0.9924054017999154" />
+      <entry key="S5" value="1.0010707906944107" />
+      <entry key="S10" value="1.0782066741895462" />
+      <entry key="S30" value="1.9321029134531678" />
+      <entry key="S60" value="3.018855348239124" />
+      <entry key="M2" value="4.250615152402216" />
+      <entry key="M5" value="5.741765476751679" />
+      <entry key="M10" value="8.320195306696043" />
+      <entry key="M15" value="12.207467171934324" />
+      <entry key="M30" value="25.127052837101644" />
+      <entry key="H1" value="43.43505432750849" />
+      <entry key="H2" value="62.79491744743208" />
+      <entry key="H4" value="82.25895201747568" />
+      <entry key="D1" value="119.60895358644659" />
+      <entry key="W1" value="130.88918919063786" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -437,14 +413,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00055" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783167233745</created>
-      <option name="number" value="00055" />
-      <option name="presentableId" value="LOCAL-00055" />
-      <option name="project" value="LOCAL" />
-      <updated>1783167233745</updated>
     </task>
     <task id="LOCAL-00056" summary="动漫社网站">
       <option name="closed" value="true" />
@@ -830,7 +798,15 @@
       <option name="project" value="LOCAL" />
       <updated>1783394050962</updated>
     </task>
-    <option name="localTasksCounter" value="104" />
+    <task id="LOCAL-00104" summary="refactor: 将 app.py 拆分为 7 个模块，引入蓝图架构&#10;&#10;- app/__init__.py: 应用工厂，注册蓝图&#10;- app/models.py: 所有数据模型 (User, Message, Activity, Reply, AnimeResource, Photo)&#10;- app/utils.py: 公共函数与 Supabase 客户端&#10;- app/auth.py: 认证相关路由 (注册/登录/注销/删除账号)&#10;- app/public.py: 公开路由 (首页/关于/活动/照片墙/留言板/番剧/社员名单)&#10;- app/user.py: 用户相关路由 (个人主页/个人设置/头像)&#10;- app/admin.py: 后台管理路由 (活动/照片墙/番剧/用户管理)&#10;&#10;变更影响：所有 url_for 已更新为蓝图前缀，原有功能完全保留。&#10;部署方式：替换 app.py 为新结构，重启服务即可，无需数据迁移。">
+      <option name="closed" value="true" />
+      <created>1783595577815</created>
+      <option name="number" value="00104" />
+      <option name="presentableId" value="LOCAL-00104" />
+      <option name="project" value="LOCAL" />
+      <updated>1783595577815</updated>
+    </task>
+    <option name="localTasksCounter" value="105" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -852,7 +828,9 @@
     <MESSAGE value="Merge remote-tracking branch 'origin/main'" />
     <MESSAGE value="最终版本：修复留言板、个人主页、头像容错等" />
     <MESSAGE value="动漫社网站" />
-    <option name="LAST_COMMIT_MESSAGE" value="动漫社网站" />
+    <MESSAGE value="修复admin_gallery模板中supabase未定义错误" />
+    <MESSAGE value="refactor: 将 app.py 拆分为 7 个模块，引入蓝图架构&#10;&#10;- app/__init__.py: 应用工厂，注册蓝图&#10;- app/models.py: 所有数据模型 (User, Message, Activity, Reply, AnimeResource, Photo)&#10;- app/utils.py: 公共函数与 Supabase 客户端&#10;- app/auth.py: 认证相关路由 (注册/登录/注销/删除账号)&#10;- app/public.py: 公开路由 (首页/关于/活动/照片墙/留言板/番剧/社员名单)&#10;- app/user.py: 用户相关路由 (个人主页/个人设置/头像)&#10;- app/admin.py: 后台管理路由 (活动/照片墙/番剧/用户管理)&#10;&#10;变更影响：所有 url_for 已更新为蓝图前缀，原有功能完全保留。&#10;部署方式：替换 app.py 为新结构，重启服务即可，无需数据迁移。" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor: 将 app.py 拆分为 7 个模块，引入蓝图架构&#10;&#10;- app/__init__.py: 应用工厂，注册蓝图&#10;- app/models.py: 所有数据模型 (User, Message, Activity, Reply, AnimeResource, Photo)&#10;- app/utils.py: 公共函数与 Supabase 客户端&#10;- app/auth.py: 认证相关路由 (注册/登录/注销/删除账号)&#10;- app/public.py: 公开路由 (首页/关于/活动/照片墙/留言板/番剧/社员名单)&#10;- app/user.py: 用户相关路由 (个人主页/个人设置/头像)&#10;- app/admin.py: 后台管理路由 (活动/照片墙/番剧/用户管理)&#10;&#10;变更影响：所有 url_for 已更新为蓝图前缀，原有功能完全保留。&#10;部署方式：替换 app.py 为新结构，重启服务即可，无需数据迁移。" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
