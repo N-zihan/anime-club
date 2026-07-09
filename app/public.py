@@ -1,6 +1,8 @@
+from datetime import timedelta
+
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from sqlalchemy.orm import joinedload
-from datetime import timedelta
+
 from .models import db, User, Activity, Photo, Message, Reply, AnimeResource
 from .utils import supabase
 

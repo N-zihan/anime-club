@@ -1,9 +1,11 @@
+import base64
+from datetime import timedelta
+
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, Response
 from sqlalchemy import func
-from datetime import timedelta
-import base64
-from .models import db, User, Message, AnimeResource, Photo
-from .utils import supabase, allowed_file
+
+from .models import db, User, Message, AnimeResource
+from .utils import allowed_file
 
 user_bp = Blueprint('user', __name__)
 

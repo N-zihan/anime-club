@@ -28,7 +28,8 @@
                 往期活动
                 {% endif %}
             </span>
-            <a href="{{ url_for('admin.admin_gallery_delete', photo_id=photo.id) }}" onclick="return confirm('确定删除？');"
+            <a href="{{ url_for('admin.admin_gallery_delete', photo_id=photo.id) }}"
+               onclick="return confirm('确定删除？');"
                style="color:red; margin-left:10px;">删除</a>
         </div>
     </div>
