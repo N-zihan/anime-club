@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from functools import wraps
-from datetime import datetime
-import os
 import uuid
-from .models import db, User, Activity, Photo, AnimeResource, Message, Reply
+from datetime import datetime
+from functools import wraps
+
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+
+from .models import db, User, Activity, Photo, AnimeResource
 from .utils import supabase, allowed_file
 
 admin_bp = Blueprint('admin', __name__)
@@ -15,6 +16,7 @@ def admin_required(f):
         if not session.get('admin_logged_in'):
             return redirect(url_for('admin.admin_login'))
         return f(*args, **kwargs)
+
     return decorated_function
 
 

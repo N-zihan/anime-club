@@ -1,24 +1,25 @@
-from flask import Flask, session, request, redirect, url_for
-from dotenv import load_dotenv
 import os
-from supabase import create_client, Client
-from .models import db
+
+from dotenv import load_dotenv
+from flask import Flask, session, request, redirect, url_for
+
+from .admin import admin_bp
 from .auth import auth_bp
+from .models import db
 from .public import public_bp, page_not_found, internal_server_error, forbidden
 from .user import user_bp
-from .admin import admin_bp
 from .utils import supabase
 
 load_dotenv()
 
+
 def create_app():
     # 获取项目根目录（run.py 所在目录）
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
     app = Flask(
         __name__,
         template_folder=os.path.join(base_dir, 'templates'),
-        static_folder=os.path.join(base_dir, 'static'),
+        static_folder=os.path.join(base_dir, 'app', 'static'),  # 指向 app/static
         static_url_path='/static'
     )
     app.secret_key = os.getenv('SECRET_KEY', '20090929nzh')
