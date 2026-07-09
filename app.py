@@ -500,6 +500,9 @@ def admin_activity_delete(id):
 def admin_gallery():
     activities = Activity.query.order_by(Activity.date.desc()).all()
     photos = Photo.query.order_by(Photo.upload_time.desc()).all()
+    # 为每张照片生成公开 URL
+    for photo in photos:
+        photo.url = supabase.storage.from_('photos').get_public_url(photo.filename)
     return render_template('admin_gallery.html', activities=activities, photos=photos)
 
 
