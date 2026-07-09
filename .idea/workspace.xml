@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="refactor: 将 app.py 拆分为 7 个模块，引入蓝图架构&#10;&#10;- app/__init__.py: 应用工厂，注册蓝图&#10;- app/models.py: 所有数据模型 (User, Message, Activity, Reply, AnimeResource, Photo)&#10;- app/utils.py: 公共函数与 Supabase 客户端&#10;- app/auth.py: 认证相关路由 (注册/登录/注销/删除账号)&#10;- app/public.py: 公开路由 (首页/关于/活动/照片墙/留言板/番剧/社员名单)&#10;- app/user.py: 用户相关路由 (个人主页/个人设置/头像)&#10;- app/admin.py: 后台管理路由 (活动/照片墙/番剧/用户管理)&#10;&#10;变更影响：所有 url_for 已更新为蓝图前缀，原有功能完全保留。&#10;部署方式：替换 app.py 为新结构，重启服务即可，无需数据迁移。">
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="创建README.md">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -63,17 +62,17 @@
       <entry key="S5" value="1.0" />
       <entry key="S10" value="1.0" />
       <entry key="S30" value="1.0" />
-      <entry key="S60" value="1.0" />
-      <entry key="M2" value="1.000000012982997" />
-      <entry key="M5" value="1.002254354725961" />
-      <entry key="M10" value="1.164867741545634" />
-      <entry key="M15" value="1.8937726738571965" />
-      <entry key="M30" value="7.774333969441556" />
-      <entry key="H1" value="23.25462240963336" />
-      <entry key="H2" value="44.95035702488141" />
-      <entry key="H4" value="67.86705979040687" />
-      <entry key="D1" value="110.14128331305689" />
-      <entry key="W1" value="122.66182866879373" />
+      <entry key="S60" value="1.00000001369026" />
+      <entry key="M2" value="1.000238799037138" />
+      <entry key="M5" value="1.08868244082163" />
+      <entry key="M10" value="1.6710758828460386" />
+      <entry key="M15" value="2.463235063363178" />
+      <entry key="M30" value="6.537879869485771" />
+      <entry key="H1" value="19.380274488699563" />
+      <entry key="H2" value="41.086470681665254" />
+      <entry key="H4" value="65.99975830034066" />
+      <entry key="D1" value="113.23853742450687" />
+      <entry key="W1" value="127.35779828507815" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -81,18 +80,18 @@
       <entry key="S2" value="0.0" />
       <entry key="S5" value="0.0" />
       <entry key="S10" value="0.0" />
-      <entry key="S30" value="7.403851831971816E-125" />
-      <entry key="S60" value="1.2166482783935E-62" />
-      <entry key="M2" value="1.5599642665131332E-31" />
-      <entry key="M5" value="7.321361780083981E-13" />
-      <entry key="M10" value="1.3206842433384513E-6" />
-      <entry key="M15" value="1.7208804942197772E-4" />
-      <entry key="M30" value="0.025445901397946637" />
-      <entry key="H1" value="0.3408918759680232" />
-      <entry key="H2" value="1.3413667126100735" />
-      <entry key="H4" value="2.993558592642572" />
-      <entry key="D1" value="7.255028588694318" />
-      <entry key="W1" value="8.719256446855244" />
+      <entry key="S30" value="4.947956041326183E-146" />
+      <entry key="S60" value="3.1452060526109736E-73" />
+      <entry key="M2" value="7.931524656944328E-37" />
+      <entry key="M5" value="5.585842410845036E-15" />
+      <entry key="M10" value="1.1535791611507837E-7" />
+      <entry key="M15" value="3.387788705336046E-5" />
+      <entry key="M30" value="0.011290174174200397" />
+      <entry key="H1" value="0.22706910716976947" />
+      <entry key="H2" value="1.09475824613939" />
+      <entry key="H4" value="2.7044136121438247" />
+      <entry key="D1" value="7.133237540666883" />
+      <entry key="W1" value="8.698194252475908" />
     </decayedSelected>
     <decayedShown>
       <entry key="MS100" value="0.9659363289248456" />
@@ -101,17 +100,17 @@
       <entry key="S5" value="0.9993070929904525" />
       <entry key="S10" value="0.9996534864594093" />
       <entry key="S30" value="0.9998844821426083" />
-      <entry key="S60" value="0.9999422394031608" />
-      <entry key="M2" value="0.9999711322660862" />
-      <entry key="M5" value="1.0022426629795949" />
-      <entry key="M10" value="1.1648516438355372" />
-      <entry key="M15" value="1.893868595738775" />
-      <entry key="M30" value="7.799334741901577" />
-      <entry key="H1" value="23.59450581357693" />
-      <entry key="H2" value="46.29035630967097" />
-      <entry key="H4" value="70.85923006527592" />
-      <entry key="D1" value="117.39575135774105" />
-      <entry key="W1" value="131.3809882234629" />
+      <entry key="S60" value="0.9999422530925896" />
+      <entry key="M2" value="1.0002099110823157" />
+      <entry key="M5" value="1.0886698159797046" />
+      <entry key="M10" value="1.6710652470519956" />
+      <entry key="M15" value="2.4632456867028183" />
+      <entry key="M30" value="6.548966395155428" />
+      <entry key="H1" value="19.606667965206196" />
+      <entry key="H2" value="42.180110699860855" />
+      <entry key="H4" value="68.70291651835181" />
+      <entry key="D1" value="120.37122362476357" />
+      <entry key="W1" value="136.0558958496688" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -418,22 +417,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00060" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783174215018</created>
-      <option name="number" value="00060" />
-      <option name="presentableId" value="LOCAL-00060" />
-      <option name="project" value="LOCAL" />
-      <updated>1783174215018</updated>
-    </task>
-    <task id="LOCAL-00061" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783174661786</created>
-      <option name="number" value="00061" />
-      <option name="presentableId" value="LOCAL-00061" />
-      <option name="project" value="LOCAL" />
-      <updated>1783174661786</updated>
     </task>
     <task id="LOCAL-00062" summary="动漫社网站">
       <option name="closed" value="true" />
@@ -811,7 +794,23 @@
       <option name="project" value="LOCAL" />
       <updated>1783598237614</updated>
     </task>
-    <option name="localTasksCounter" value="109" />
+    <task id="LOCAL-00109" summary="refactor: 将 app.py 拆分为 7 个模块，引入蓝图架构&#10;&#10;- app/__init__.py: 应用工厂，注册蓝图&#10;- app/models.py: 所有数据模型 (User, Message, Activity, Reply, AnimeResource, Photo)&#10;- app/utils.py: 公共函数与 Supabase 客户端&#10;- app/auth.py: 认证相关路由 (注册/登录/注销/删除账号)&#10;- app/public.py: 公开路由 (首页/关于/活动/照片墙/留言板/番剧/社员名单)&#10;- app/user.py: 用户相关路由 (个人主页/个人设置/头像)&#10;- app/admin.py: 后台管理路由 (活动/照片墙/番剧/用户管理)&#10;&#10;变更影响：所有 url_for 已更新为蓝图前缀，原有功能完全保留。&#10;部署方式：替换 app.py 为新结构，重启服务即可，无需数据迁移。">
+      <option name="closed" value="true" />
+      <created>1783599178892</created>
+      <option name="number" value="00109" />
+      <option name="presentableId" value="LOCAL-00109" />
+      <option name="project" value="LOCAL" />
+      <updated>1783599178892</updated>
+    </task>
+    <task id="LOCAL-00110" summary="创建README.md">
+      <option name="closed" value="true" />
+      <created>1783599226351</created>
+      <option name="number" value="00110" />
+      <option name="presentableId" value="LOCAL-00110" />
+      <option name="project" value="LOCAL" />
+      <updated>1783599226351</updated>
+    </task>
+    <option name="localTasksCounter" value="111" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -835,7 +834,8 @@
     <MESSAGE value="动漫社网站" />
     <MESSAGE value="修复admin_gallery模板中supabase未定义错误" />
     <MESSAGE value="refactor: 将 app.py 拆分为 7 个模块，引入蓝图架构&#10;&#10;- app/__init__.py: 应用工厂，注册蓝图&#10;- app/models.py: 所有数据模型 (User, Message, Activity, Reply, AnimeResource, Photo)&#10;- app/utils.py: 公共函数与 Supabase 客户端&#10;- app/auth.py: 认证相关路由 (注册/登录/注销/删除账号)&#10;- app/public.py: 公开路由 (首页/关于/活动/照片墙/留言板/番剧/社员名单)&#10;- app/user.py: 用户相关路由 (个人主页/个人设置/头像)&#10;- app/admin.py: 后台管理路由 (活动/照片墙/番剧/用户管理)&#10;&#10;变更影响：所有 url_for 已更新为蓝图前缀，原有功能完全保留。&#10;部署方式：替换 app.py 为新结构，重启服务即可，无需数据迁移。" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor: 将 app.py 拆分为 7 个模块，引入蓝图架构&#10;&#10;- app/__init__.py: 应用工厂，注册蓝图&#10;- app/models.py: 所有数据模型 (User, Message, Activity, Reply, AnimeResource, Photo)&#10;- app/utils.py: 公共函数与 Supabase 客户端&#10;- app/auth.py: 认证相关路由 (注册/登录/注销/删除账号)&#10;- app/public.py: 公开路由 (首页/关于/活动/照片墙/留言板/番剧/社员名单)&#10;- app/user.py: 用户相关路由 (个人主页/个人设置/头像)&#10;- app/admin.py: 后台管理路由 (活动/照片墙/番剧/用户管理)&#10;&#10;变更影响：所有 url_for 已更新为蓝图前缀，原有功能完全保留。&#10;部署方式：替换 app.py 为新结构，重启服务即可，无需数据迁移。" />
+    <MESSAGE value="创建README.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="创建README.md" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
