@@ -23,7 +23,7 @@
     <tr>
         <td>{{ user.id }}</td>
         <td>
-            <img alt="{{ user.username }}" src="{{ url_for('get_avatar', user_id=user.id) }}"
+            <img alt="{{ user.username }}" src="{{ url_for('user.get_avatar', user_id=user.id) }}"
                  style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
         </td>
         <td>{{ user.username }}</td>
@@ -44,16 +44,16 @@
             {% endif %}
         </td>
         <td>
-            <a href="{{ url_for('admin_toggle_staff', user_id=user.id) }}"
+            <a href="{{ url_for('admin.admin_toggle_staff', user_id=user.id) }}"
                style="color:{{ 'green' if user.is_staff else 'blue' }};">
                 {{ '取消运营' if user.is_staff else '设为运营' }}
             </a>
-            <a href="{{ url_for('admin_toggle_owner', user_id=user.id) }}"
+            <a href="{{ url_for('admin.admin_toggle_owner', user_id=user.id) }}"
                style="color:{{ 'gold' if user.is_owner else 'gray' }}; margin-left:10px;">
                 {{ '取消站长' if user.is_owner else '设为站长' }}
             </a>
             {% if user.id != session.user_id %}
-            <a href="{{ url_for('admin_delete_user', user_id=user.id) }}"
+            <a href="{{ url_for('admin.admin_delete_user', user_id=user.id) }}"
                onclick="return confirm('确定删除用户 {{ user.username }} 吗？')"
                style="color:red; margin-left:10px;">删除</a>
             {% else %}
@@ -64,5 +64,5 @@
     {% endfor %}
     </tbody>
 </table>
-<p style="margin-top:20px;"><a href="{{ url_for('admin_dashboard') }}">← 返回后台首页</a></p>
+<p style="margin-top:20px;"><a href="{{ url_for('admin.dashboard') }}">← 返回后台首页</a></p>
 {% endblock %}

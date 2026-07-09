@@ -2,25 +2,25 @@
 {% block title %}后台管理首页{% endblock %}
 {% block content %}
 <div class="admin-header">
-    <h2>🛠️ 后台管理面板</h2>
+    <h2>后台管理面板</h2>
 </div>
 <div class="card-grid">
-    <a class="card" href="{{ url_for('admin_activities') }}">
+    <a class="card" href="{{ url_for('admin.admin_activities') }}">
         <div class="card-icon">📅</div>
         <h3>活动管理</h3>
         <p>添加、编辑、删除社团活动</p>
     </a>
-    <a class="card" href="{{ url_for('admin_anime_resources') }}">
+    <a class="card" href="{{ url_for('admin.admin_anime_resources') }}">
         <div class="card-icon">📦</div>
         <h3>番剧资源管理</h3>
         <p>审核社员推荐、手动添加资源</p>
     </a>
-    <a class="card" href="{{ url_for('admin_gallery') }}">
+    <a class="card" href="{{ url_for('admin.admin_gallery') }}">
         <div class="card-icon">🖼️</div>
         <h3>照片墙管理</h3>
         <p>上传、删除历史照片</p>
     </a>
-    <a class="card" href="{{ url_for('admin_users') }}">
+    <a class="card" href="{{ url_for('admin.admin_users') }}">
         <div class="card-icon">👥</div>
         <h3>用户管理</h3>
         <p>查看、删除社员</p>

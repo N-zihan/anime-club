@@ -2,7 +2,7 @@
 {% block title %}管理活动{% endblock %}
 {% block content %}
 <h2>📋 活动管理</h2>
-<a href="{{ url_for('admin_activity_add') }}">➕ 添加新活动</a>
+<a href="{{ url_for('admin.admin_activity_add') }}">➕ 添加新活动</a>
 <table border="1" cellpadding="8" style="margin-top:20px; width:100%; border-collapse:collapse;">
     <thead>
     <tr>
@@ -21,9 +21,9 @@
         <td>{{ act.date }}</td>
         <td>{{ act.content[:50] }}{% if act.content|length > 50 %}...{% endif %}</td>
         <td>
-            <a href="{{ url_for('admin_activity_edit', id=act.id) }}">编辑</a> |
-            <a href="{{ url_for('admin_activity_delete', id=act.id) }}" onclick="return confirm('确定删除？')">删除</a>
-            <a href="{{ url_for('admin_gallery') }}">管理照片墙</a>
+            <a href="{{ url_for('admin.admin_activity_edit', id=act.id) }}">编辑</a> |
+            <a href="{{ url_for('admin.admin_activity_delete', id=act.id) }}" onclick="return confirm('确定删除？')">删除</a>
+            <a href="{{ url_for('admin.admin_gallery') }}">管理照片墙</a>
         </td>
     </tr>
     {% endfor %}

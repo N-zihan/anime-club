@@ -4,7 +4,7 @@
 <h2>社团简介</h2>
 <p>
     南平一中动漫社成立于2011年，是一个以“热爱、分享、创造”为核心的二次元同好聚集地。我们定期举办番剧放映、Cosplay交流、宅舞排练等活动。</p>
-<p>社团现有成员 {{ users|length }}
+<p>社团现有注册成员 {{ users|length }}
     人（统计来自社员名单），无论你是老二次元还是新入坑，都欢迎加入我们，一起创造属于我们的二次元回忆！</p>
 
 <!-- ===== 站长（单独突出） ===== -->
@@ -14,7 +14,7 @@
     <div class="member-card"
          style="border: 2px solid gold; box-shadow: 0 0 20px rgba(255,215,0,0.2); max-width: 250px; width: 100%;">
         <div class="member-avatar">
-            <img alt="{{ owner.username }}" src="{{ url_for('get_avatar', user_id=owner.id) }}"
+            <img alt="{{ owner.username }}" src="{{ url_for('user.get_avatar', user_id=owner.id) }}"
                  style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid gold;">
         </div>
         <div class="member-info">
@@ -33,7 +33,7 @@
     {% for member in staff %}
     <div class="member-card {% if member.is_owner %}owner-card{% endif %}">
         <div class="member-avatar">
-            <img alt="{{ member.username }}" src="{{ url_for('get_avatar', user_id=member.id) }}"
+            <img alt="{{ member.username }}" src="{{ url_for('user.get_avatar', user_id=member.id) }}"
                  style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid {% if member.is_owner %}gold{% else %}#e2e8f0{% endif %};">
         </div>
         <div class="member-info">

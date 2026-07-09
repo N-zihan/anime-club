@@ -21,21 +21,20 @@
         <h3>珍贵历史图片</h3>
         <p>记录社团点滴瞬间</p>
     </a>
-    <a class="card" href="/board">
+    <a class="card" href="{{ url_for('public.board') }}">
         <div class="card-icon">💬</div>
         <h3>留言板</h3>
         <p>社员交流、留下你的足迹</p>
     </a>
-    <a class="card" href="{{ url_for('anime_resources') }}">
+    <a class="card" href="{{ url_for('public.anime_resources') }}">
         <div class="card-icon">📦</div>
         <h3>番剧链接</h3>
         <p>下载动漫资源、查看番剧分享</p>
     </a>
-    <a class="card" href="{{ url_for('members') }}">
+    <a class="card" href="{{ url_for('public.members') }}">
         <div class="card-icon">👥</div>
         <h3>社员名单</h3>
         <p>查看全体社员信息</p>
     </a>
-</div>
 </div>
 {% endblock %}
