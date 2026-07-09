@@ -19,7 +19,7 @@
 <div class="gallery-grid">
     {% for photo in photos %}
     <div class="gallery-item">
-        <img alt="{{ photo.filename }}" src="{{ supabase.storage.from_('photos').get_public_url(photo.filename) }}">
+        <img alt="{{ photo.filename }}" src="{{ photo.url }}">
         <div style="padding:8px;">
             <span style="font-size:0.8rem; color:#7f8c8d;">
                 {% if photo.activity %}
