@@ -12,6 +12,14 @@ from .utils import supabase
 load_dotenv()
 
 def create_app():
+    # 获取项目根目录（run.py 所在目录）
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    app = Flask(
+        __name__,
+        template_folder=os.path.join(base_dir, 'templates'),
+        static_folder=os.path.join(base_dir, 'static')
+    )
     app = Flask(__name__, template_folder='../templates', static_folder='../static')
     app.secret_key = os.getenv('SECRET_KEY', '20090929nzh')
 
