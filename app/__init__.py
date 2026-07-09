@@ -18,9 +18,9 @@ def create_app():
     app = Flask(
         __name__,
         template_folder=os.path.join(base_dir, 'templates'),
-        static_folder=os.path.join(base_dir, 'static')
+        static_folder=os.path.join(base_dir, 'static'),
+        static_url_path='/static'
     )
-    app = Flask(__name__, template_folder='../templates', static_folder='../static')
     app.secret_key = os.getenv('SECRET_KEY', '20090929nzh')
 
     # 数据库配置
