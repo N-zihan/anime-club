@@ -19,8 +19,8 @@ def create_app():
     app = Flask(
         __name__,
         template_folder=os.path.join(base_dir, 'templates'),
-        static_folder=os.path.join(base_dir, 'app', 'static'),  # 指向 app/static
-        static_url_path='/static'
+        static_folder=os.path.join(base_dir, 'static'),
+        static_url_path='/static'  # 修复点
     )
     app.secret_key = os.getenv('SECRET_KEY', '20090929nzh')
 
