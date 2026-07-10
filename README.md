@@ -22,13 +22,13 @@
 
 ## 技术栈
 
-| 分类 | 技术 |
-|------|------|
-| 后端框架 | Python + Flask |
-| 数据库 | Supabase (PostgreSQL) |
-| 文件存储 | Supabase Storage |
-| 部署平台 | Vercel |
-| 前端 | HTML + CSS + Jinja2 模板 |
+| 分类   | 技术                     |
+|------|------------------------|
+| 后端框架 | Python + Flask         |
+| 数据库  | Supabase (PostgreSQL)  |
+| 文件存储 | Supabase Storage       |
+| 部署平台 | Vercel                 |
+| 前端   | HTML + CSS + Jinja2 模板 |
 
 ---
 
@@ -40,11 +40,12 @@
    ```bash
    git clone https://github.com/N-zihan/anime-club.git
    cd anime-club
+
 创建虚拟环境
 
 bash
 python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+source .venv/bin/activate # Windows: .venv\Scripts\activate
 安装依赖
 
 bash
@@ -68,21 +69,21 @@ python run.py
 📁 项目结构
 text
 anime-club/
-├── app/                    # 应用核心模块
-│   ├── __init__.py         # 应用工厂
-│   ├── models.py           # 数据模型
-│   ├── utils.py            # 工具函数
-│   ├── auth.py             # 认证路由
-│   ├── public.py           # 公开路由
-│   ├── user.py             # 用户路由
-│   └── admin.py            # 后台管理路由
-├── static/                 # 静态资源（CSS、图片、默认头像）
-├── templates/              # Jinja2 模板
-├── .env                    # 环境变量（不提交）
-├── requirements.txt        # Python 依赖
-├── run.py                  # 启动入口
-├── vercel.json             # Vercel 部署配置
-└── README.md               # 项目说明
+├── app/ # 应用核心模块
+│ ├── __init__.py # 应用工厂
+│ ├── models.py # 数据模型
+│ ├── utils.py # 工具函数
+│ ├── auth.py # 认证路由
+│ ├── public.py # 公开路由
+│ ├── user.py # 用户路由
+│ └── admin.py # 后台管理路由
+├── static/ # 静态资源（CSS、图片、默认头像）
+├── templates/ # Jinja2 模板
+├── .env # 环境变量（不提交）
+├── requirements.txt # Python 依赖
+├── run.py # 启动入口
+├── vercel.json # Vercel 部署配置
+└── README.md # 项目说明
 👥 运营团队
 站长：BlueArchive
 

@@ -145,3 +145,13 @@ def internal_server_error(e):
 
 def forbidden(e):
     return render_template('403.html'), 403
+
+
+@public_bp.app_errorhandler(405)
+def method_not_allowed(e):
+    return render_template('405.html'), 405
+
+
+@public_bp.app_errorhandler(400)
+def bad_request(e):
+    return render_template('400.html'), 400

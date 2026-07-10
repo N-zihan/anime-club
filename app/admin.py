@@ -79,9 +79,18 @@ def admin_activity_edit(id):
 @admin_required
 def admin_activity_delete(id):
     activity = Activity.query.get_or_404(id)
+
+    # 先删除该活动关联的所有照片（文件 + 数据库记录）
+    for photo in activity.photos:
+        try:
+            supabase.storage.from_('photos').remove([photo.filename])
+        except Exception:
+            pass  # 云文件删不掉也继续，至少删数据库记录
+        db.session.delete(photo)
+
     db.session.delete(activity)
     db.session.commit()
-    flash('活动已删除', 'success')
+    flash('活动及其所有照片已删除', 'success')
     return redirect(url_for('admin.admin_activities'))
 
 
