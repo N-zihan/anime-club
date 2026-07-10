@@ -1,33 +1,35 @@
 {% extends "base.html" %}
 {% block title %}管理活动{% endblock %}
 {% block content %}
-<h2>📋 活动管理</h2>
-<a href="{{ url_for('admin.admin_activity_add') }}">➕ 添加新活动</a>
+<div class="admin-header">
+    <h2>活动管理</h2>
+    <a class="btn-add" href="{{ url_for('admin.admin_activity_add') }}">添加新活动</a>
+</div>
+
 <table class="admin-table">
     <thead>
-    <tr>
-        <th>ID</th>
-        <th>标题</th>
-        <th>日期</th>
-        <th>内容</th>
-        <th>操作</th>
-    </tr>
+        <tr>
+            <th>ID</th>
+            <th>标题</th>
+            <th>日期</th>
+            <th>内容</th>
+            <th style="text-align:center;">操作</th>
+        </tr>
     </thead>
     <tbody>
-    {% for act in activities %}
-    <tr>
-        <td>{{ act.id }}</td>
-        <td>{{ act.title }}</td>
-        <td>{{ act.date }}</td>
-        <td>{{ act.content[:50] }}{% if act.content|length > 50 %}...{% endif %}</td>
-        <td>
-            <a href="{{ url_for('admin.admin_activity_edit', id=act.id) }}">编辑</a> |
-            <a href="{{ url_for('admin.admin_activity_delete', id=act.id) }}"
-               onclick="return confirm('确定删除？')">删除</a>
-            <a href="{{ url_for('admin.admin_gallery') }}">管理照片墙</a>
-        </td>
-    </tr>
-    {% endfor %}
+        {% for act in activities %}
+        <tr>
+            <td>{{ act.id }}</td>
+            <td><strong>{{ act.title }}</strong></td>
+            <td>{{ act.date }}</td>
+            <td>{{ act.content[:50] }}{% if act.content|length > 50 %}...{% endif %}</td>
+            <td style="text-align:center;">
+                <a class="btn-edit" href="{{ url_for('admin.admin_activity_edit', id=act.id) }}">编辑</a>
+                <a class="btn-delete" href="{{ url_for('admin.admin_activity_delete', id=act.id) }}" onclick="return confirm('确定删除？')">删除</a>
+                <a class="btn-edit" href="{{ url_for('admin.admin_gallery') }}">照片墙</a>
+            </td>
+        </tr>
+        {% endfor %}
     </tbody>
 </table>
 {% endblock %}

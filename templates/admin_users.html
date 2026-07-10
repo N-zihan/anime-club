@@ -5,63 +5,51 @@
     <h2>👥 用户管理</h2>
     <span class="member-count">共 {{ users|length }} 位社员</span>
 </div>
-<table border="1" cellpadding="8" style="width:100%; border-collapse:collapse; margin-top:20px;">
+
+<table class="admin-table">
     <thead>
-    <tr>
-        <th>ID</th>
-        <th>头像</th>
-        <th>用户名</th>
-        <th>QQ</th>
-        <th>注册时间</th>
-        <th>运营</th>
-        <th>站长</th>
-        <th>操作</th>
-    </tr>
+        <tr>
+            <th>ID</th>
+            <th>头像</th>
+            <th>用户名</th>
+            <th>QQ</th>
+            <th>注册时间</th>
+            <th style="text-align:center;">运营</th>
+            <th style="text-align:center;">站长</th>
+            <th style="text-align:center;">操作</th>
+        </tr>
     </thead>
     <tbody>
-    {% for user in users %}
-    <tr>
-        <td>{{ user.id }}</td>
-        <td>
-            <img alt="{{ user.username }}" src="{{ url_for('user.get_avatar', user_id=user.id) }}"
-                 style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
-        </td>
-        <td>{{ user.username }}</td>
-        <td>{{ user.qq }}</td>
-        <td>{{ user.registered_at.strftime('%Y-%m-%d') }}</td>
-        <td>
-            {% if user.is_staff %}
-            ✅ 运营
-            {% else %}
-            —
-            {% endif %}
-        </td>
-        <td>
-            {% if user.is_owner %}
-            👑 站长
-            {% else %}
-            —
-            {% endif %}
-        </td>
-        <td>
-            <a href="{{ url_for('admin.admin_toggle_staff', user_id=user.id) }}"
-               style="color:{{ 'green' if user.is_staff else 'blue' }};">
-                {{ '取消运营' if user.is_staff else '设为运营' }}
-            </a>
-            <a href="{{ url_for('admin.admin_toggle_owner', user_id=user.id) }}"
-               style="color:{{ 'gold' if user.is_owner else 'gray' }}; margin-left:10px;">
-                {{ '取消站长' if user.is_owner else '设为站长' }}
-            </a>
-            {% if user.id != session.user_id %}
-            <a href="{{ url_for('admin.admin_delete_user', user_id=user.id) }}"
-               onclick="return confirm('确定删除用户 {{ user.username }} 吗？')"
-               style="color:red; margin-left:10px;">删除</a>
-            {% else %}
-            <span style="color:#aaa; margin-left:10px;">（自己）</span>
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>
+                <img alt="{{ user.username }}" src="{{ url_for('user.get_avatar', user_id=user.id) }}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+            </td>
+            <td><strong>{{ user.username }}</strong></td>
+            <td>{{ user.qq }}</td>
+            <td>{{ user.registered_at.strftime('%Y-%m-%d') }}</td>
+            <td style="text-align:center;">
+                {% if user.is_staff %}✅{% else %}—{% endif %}
+            </td>
+            <td style="text-align:center;">
+                {% if user.is_owner %}👑{% else %}—{% endif %}
+            </td>
+            <td style="text-align:center;">
+                <a class="btn-edit" href="{{ url_for('admin.admin_toggle_staff', user_id=user.id) }}">
+                    {{ '取消运营' if user.is_staff else '设为运营' }}
+                </a>
+                <a class="btn-edit" href="{{ url_for('admin.admin_toggle_owner', user_id=user.id) }}" style="color:{{ 'gold' if user.is_owner else '#2c3e50' }};">
+                    {{ '取消站长' if user.is_owner else '设为站长' }}
+                </a>
+                {% if user.id != session.user_id %}
+                <a class="btn-delete" href="{{ url_for('admin.admin_delete_user', user_id=user.id) }}" onclick="return confirm('确定删除用户 {{ user.username }} 吗？')">删除</a>
+                {% else %}
+                <span style="color:#aaa; font-size:0.85rem;">（自己）</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
     </tbody>
 </table>
 <p style="margin-top:20px;"><a href="{{ url_for('admin.dashboard') }}">← 返回后台首页</a></p>

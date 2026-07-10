@@ -431,3 +431,63 @@ footer {
     background-color: #f5f5f5;
     font-weight: bold;
 }
+
+/* ---------- 后台管理表格（现代化） ---------- */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    font-size: 0.95rem;
+    background: white;
+}
+
+.admin-table thead {
+    background: #f1f4f9;
+}
+
+.admin-table th {
+    font-weight: 600;
+    color: #1e2a3a;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.admin-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.admin-table tbody tr:nth-child(even) {
+    background: #fafbfc;
+}
+
+.admin-table .btn-edit {
+    color: #2c3e50;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.85rem;
+    margin-right: 10px;
+}
+
+.admin-table .btn-delete {
+    color: #e74c3c;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.admin-table .btn-edit:hover,
+.admin-table .btn-delete:hover {
+    text-decoration: underline;
+}
