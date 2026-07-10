@@ -13,12 +13,30 @@ from .utils import supabase
 
 
 def get_version():
-    # 优先使用 Vercel 提供的 commit SHA（部署时自动注入）
+    # 1. 优先从 Git 标签获取（如果存在）
+    try:
+        # 获取最近的标签（不包含 -dirty 后缀，如果有则单独处理）
+        version = subprocess.check_output(
+            ['git', 'describe', '--tags', '--abbrev=0'],
+            stderr=subprocess.DEVNULL
+        ).decode().strip()
+        # 检查是否有未提交的修改
+        status = subprocess.check_output(
+            ['git', 'status', '--porcelain'],
+            stderr=subprocess.DEVNULL
+        ).decode().strip()
+        if status:
+            version += "-dirty"
+        return version
+    except Exception:
+        pass
+
+    # 2. 如果没标签，尝试用 Vercel 的 commit SHA
     commit_sha = os.getenv('VERCEL_GIT_COMMIT_SHA')
     if commit_sha and len(commit_sha) >= 7:
-        return f"v{commit_sha[:7]}"
+        return f"dev-{commit_sha[:7]}"
 
-    # 本地开发环境，尝试用 git describe 获取版本（需要安装 Git）
+    # 3. 本地开发兜底
     try:
         version = subprocess.check_output(
             ['git', 'describe', '--tags', '--always', '--dirty'],
@@ -72,7 +90,6 @@ def create_app():
 
     app.config['APP_VERSION'] = get_version()
 
-    # 将版本号注入到所有模板
     @app.context_processor
     def inject_version():
         return {'app_version': app.config['APP_VERSION']}
