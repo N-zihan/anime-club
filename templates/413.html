@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}文件太大了{% endblock %}
+{% block content %}
+<div style="text-align: center; padding: 80px 20px;">
+    <h1 style="font-size: 6rem; margin: 0; color: #e67e22;">413</h1>
+    <h2 style="color: #7f8c8d; margin-top: 0;">文件太大了！</h2>
+    <p style="color: #95a5a6; max-width: 500px; margin: 20px auto;">
+        您上传的文件超过了 2MB 限制，请压缩后再试。
+    </p>
+    <a class="btn-primary" href="{{ url_for('public.index') }}" style="display: inline-block; margin-top: 20px;">返回首页</a>
+</div>
+{% endblock %}

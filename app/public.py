@@ -155,3 +155,8 @@ def method_not_allowed(e):
 @public_bp.app_errorhandler(400)
 def bad_request(e):
     return render_template('400.html'), 400
+
+
+@public_bp.app_errorhandler(413)
+def request_entity_too_large(e):
+    return render_template('413.html'), 413

@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="注入版本号">
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="style: 后台表格现代化">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_activities.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_activities.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_users.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_users.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -421,14 +418,6 @@
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
     </task>
-    <task id="LOCAL-00068" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783181956829</created>
-      <option name="number" value="00068" />
-      <option name="presentableId" value="LOCAL-00068" />
-      <option name="project" value="LOCAL" />
-      <updated>1783181956830</updated>
-    </task>
     <task id="LOCAL-00069" summary="动漫社网站">
       <option name="closed" value="true" />
       <created>1783183724926</created>
@@ -813,7 +802,15 @@
       <option name="project" value="LOCAL" />
       <updated>1783656473155</updated>
     </task>
-    <option name="localTasksCounter" value="117" />
+    <task id="LOCAL-00117" summary="style: 后台表格现代化">
+      <option name="closed" value="true" />
+      <created>1783657439926</created>
+      <option name="number" value="00117" />
+      <option name="presentableId" value="LOCAL-00117" />
+      <option name="project" value="LOCAL" />
+      <updated>1783657439926</updated>
+    </task>
+    <option name="localTasksCounter" value="118" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -840,7 +837,8 @@
     <MESSAGE value="创建README.md" />
     <MESSAGE value="chore: 完善错误处理，补全400/405页面&#10;&#10;- 新增 400.html 和 405.html 自定义错误页面&#10;- 删除活动时自动删除关联照片，避免外键报错&#10;- 统一后台表格样式为现代化卡片风格&#10;- 修复部分模板中 url_for 蓝图前缀遗漏&#10;&#10;影响：无破坏性变更，用户体验提升。" />
     <MESSAGE value="注入版本号" />
-    <option name="LAST_COMMIT_MESSAGE" value="注入版本号" />
+    <MESSAGE value="style: 后台表格现代化" />
+    <option name="LAST_COMMIT_MESSAGE" value="style: 后台表格现代化" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
