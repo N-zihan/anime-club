@@ -13,38 +13,17 @@ from .utils import supabase
 
 
 def get_version():
-    # 1. 优先从 Git 标签获取（如果存在）
+    # 尝试从文件读取版本号（由构建脚本生成）
     try:
-        # 获取最近的标签（不包含 -dirty 后缀，如果有则单独处理）
-        version = subprocess.check_output(
-            ['git', 'describe', '--tags', '--abbrev=0'],
-            stderr=subprocess.DEVNULL
-        ).decode().strip()
-        # 检查是否有未提交的修改
-        status = subprocess.check_output(
-            ['git', 'status', '--porcelain'],
-            stderr=subprocess.DEVNULL
-        ).decode().strip()
-        if status:
-            version += "-dirty"
-        return version
-    except Exception:
+        with open(os.path.join(os.path.dirname(__file__), '..', 'version.txt'), 'r') as f:
+            return f.read().strip()
+    except FileNotFoundError:
         pass
-
-    # 2. 如果没标签，尝试用 Vercel 的 commit SHA
+    # 如果文件不存在，回退到 Vercel 环境变量或 dev
     commit_sha = os.getenv('VERCEL_GIT_COMMIT_SHA')
     if commit_sha and len(commit_sha) >= 7:
-        return f"dev-{commit_sha[:7]}"
-
-    # 3. 本地开发兜底
-    try:
-        version = subprocess.check_output(
-            ['git', 'describe', '--tags', '--always', '--dirty'],
-            stderr=subprocess.DEVNULL
-        ).decode().strip()
-        return version if version else 'dev'
-    except Exception:
-        return 'dev'
+        return f"v{commit_sha[:7]}"
+    return 'dev'
 
 load_dotenv()
 
