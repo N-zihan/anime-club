@@ -13,13 +13,19 @@ from .utils import supabase
 
 
 def get_version():
-    # 尝试从文件读取版本号（由构建脚本生成）
+    # 优先读取环境变量（Vercel 上手动设置）
+    env_version = os.getenv('APP_VERSION')
+    if env_version:
+        return env_version
+
+    # 其次尝试读取 version.txt
     try:
         with open(os.path.join(os.path.dirname(__file__), '..', 'version.txt'), 'r') as f:
             return f.read().strip()
     except FileNotFoundError:
         pass
-    # 如果文件不存在，回退到 Vercel 环境变量或 dev
+
+    # 兜底：使用 Vercel 的 commit SHA
     commit_sha = os.getenv('VERCEL_GIT_COMMIT_SHA')
     if commit_sha and len(commit_sha) >= 7:
         return f"v{commit_sha[:7]}"
