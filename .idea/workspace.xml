@@ -4,13 +4,8 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="创建README.md">
-      <change afterPath="$PROJECT_DIR$/templates/400.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/405.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/public.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/public.py" afterDir="false" />
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="chore: 完善错误处理，补全400/405页面&#10;&#10;- 新增 400.html 和 405.html 自定义错误页面&#10;- 删除活动时自动删除关联照片，避免外键报错&#10;- 统一后台表格样式为现代化卡片风格&#10;- 修复部分模板中 url_for 蓝图前缀遗漏&#10;&#10;影响：无破坏性变更，用户体验提升。">
+      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,54 +63,54 @@
       <entry key="S10" value="1.0" />
       <entry key="S30" value="1.0" />
       <entry key="S60" value="1.0" />
-      <entry key="M2" value="1.0" />
-      <entry key="M5" value="1.000000000076511" />
-      <entry key="M10" value="1.0000116189639463" />
-      <entry key="M15" value="1.000788387367056" />
-      <entry key="M30" value="1.100653220193671" />
-      <entry key="H1" value="3.2896945170753966" />
-      <entry key="H2" value="15.052516929927437" />
-      <entry key="H4" value="39.6905586610065" />
-      <entry key="D1" value="105.24073193429862" />
-      <entry key="W1" value="127.68915187733084" />
+      <entry key="M2" value="1.0000000008750138" />
+      <entry key="M5" value="1.0002381255425474" />
+      <entry key="M10" value="1.0154314962367756" />
+      <entry key="M15" value="1.0620313050526133" />
+      <entry key="M30" value="1.2740216259551347" />
+      <entry key="H1" value="2.6414313967057543" />
+      <entry key="H2" value="11.632679102738521" />
+      <entry key="H4" value="34.35830714627773" />
+      <entry key="D1" value="103.23587659788241" />
+      <entry key="W1" value="128.16183404986893" />
     </decayedCancelled>
     <decayedSelected>
-      <entry key="MS100" value="0.4233726561812636" />
-      <entry key="MS500" value="0.842062953608416" />
-      <entry key="S2" value="0.9579352182226964" />
-      <entry key="S5" value="0.9829568558550454" />
-      <entry key="S10" value="0.9914418065903038" />
-      <entry key="S30" value="0.9971390918734419" />
-      <entry key="S60" value="0.9985685213711886" />
-      <entry key="M2" value="0.9992840043607165" />
-      <entry key="M5" value="0.9997135402028134" />
-      <entry key="M10" value="0.9998567598427486" />
-      <entry key="M15" value="0.9999045093821499" />
-      <entry key="M30" value="1.000090780621495" />
-      <entry key="H1" value="1.025128503365967" />
-      <entry key="H2" value="1.3643464118358466" />
-      <entry key="H4" value="2.560187169603587" />
-      <entry key="D1" value="7.508348929040944" />
-      <entry key="W1" value="9.585016316390046" />
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="3.989269764604392E-218" />
+      <entry key="S10" value="1.9973156397035476E-109" />
+      <entry key="S30" value="5.845417932630244E-37" />
+      <entry key="S60" value="7.645533292472308E-19" />
+      <entry key="M2" value="8.743874022692864E-10" />
+      <entry key="M5" value="2.3805732913466767E-4" />
+      <entry key="M10" value="0.015429106556595207" />
+      <entry key="M15" value="0.0619765201394358" />
+      <entry key="M30" value="0.24898532687745262" />
+      <entry key="H1" value="0.5114998071549854" />
+      <entry key="H2" value="0.9637363405438948" />
+      <entry key="H4" value="2.1517336322982907" />
+      <entry key="D1" value="7.293968983819842" />
+      <entry key="W1" value="9.545433079240805" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.4234336913375136" />
-      <entry key="MS500" value="0.9856502479830453" />
-      <entry key="S2" value="1.5735074248951546" />
-      <entry key="S5" value="1.8065478731226186" />
-      <entry key="S10" value="1.8989609619074646" />
-      <entry key="S30" value="1.9653097878563248" />
-      <entry key="S60" value="1.9825251748793007" />
-      <entry key="M2" value="1.9912298967903954" />
-      <entry key="M5" value="1.996484079399892" />
-      <entry key="M10" value="1.9982523425014371" />
-      <entry key="M15" value="1.999615243451176" />
-      <entry key="M30" value="2.100202485672776" />
-      <entry key="H1" value="4.314478494983115" />
-      <entry key="H2" value="16.4163561842839" />
-      <entry key="H4" value="42.24995402125375" />
-      <entry key="D1" value="112.74856654571052" />
-      <entry key="W1" value="137.27407115260044" />
+      <entry key="MS100" value="0.9526379980439373" />
+      <entry key="MS500" value="0.9903428719330246" />
+      <entry key="S2" value="0.9975769252644544" />
+      <entry key="S5" value="0.9990300646389034" />
+      <entry key="S10" value="0.9995149146655609" />
+      <entry key="S30" value="0.9998382787361629" />
+      <entry key="S60" value="0.9999191360985962" />
+      <entry key="M2" value="0.9999595689742474" />
+      <entry key="M5" value="1.0004592405511346" />
+      <entry key="M10" value="1.0308275785405474" />
+      <entry key="M15" value="1.1239356384821637" />
+      <entry key="M30" value="1.5228694401778933" />
+      <entry key="H1" value="3.1527579510851376" />
+      <entry key="H2" value="12.596056527458455" />
+      <entry key="H4" value="36.50937495793263" />
+      <entry key="D1" value="110.52934589281969" />
+      <entry key="W1" value="137.7071704807174" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -422,14 +417,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00063" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783175231530</created>
-      <option name="number" value="00063" />
-      <option name="presentableId" value="LOCAL-00063" />
-      <option name="project" value="LOCAL" />
-      <updated>1783175231530</updated>
     </task>
     <task id="LOCAL-00064" summary="动漫社网站">
       <option name="closed" value="true" />
@@ -815,7 +802,15 @@
       <option name="project" value="LOCAL" />
       <updated>1783601450270</updated>
     </task>
-    <option name="localTasksCounter" value="112" />
+    <task id="LOCAL-00112" summary="chore: 完善错误处理，补全400/405页面&#10;&#10;- 新增 400.html 和 405.html 自定义错误页面&#10;- 删除活动时自动删除关联照片，避免外键报错&#10;- 统一后台表格样式为现代化卡片风格&#10;- 修复部分模板中 url_for 蓝图前缀遗漏&#10;&#10;影响：无破坏性变更，用户体验提升。">
+      <option name="closed" value="true" />
+      <created>1783651144082</created>
+      <option name="number" value="00112" />
+      <option name="presentableId" value="LOCAL-00112" />
+      <option name="project" value="LOCAL" />
+      <updated>1783651144082</updated>
+    </task>
+    <option name="localTasksCounter" value="113" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -840,7 +835,8 @@
     <MESSAGE value="修复admin_gallery模板中supabase未定义错误" />
     <MESSAGE value="refactor: 将 app.py 拆分为 7 个模块，引入蓝图架构&#10;&#10;- app/__init__.py: 应用工厂，注册蓝图&#10;- app/models.py: 所有数据模型 (User, Message, Activity, Reply, AnimeResource, Photo)&#10;- app/utils.py: 公共函数与 Supabase 客户端&#10;- app/auth.py: 认证相关路由 (注册/登录/注销/删除账号)&#10;- app/public.py: 公开路由 (首页/关于/活动/照片墙/留言板/番剧/社员名单)&#10;- app/user.py: 用户相关路由 (个人主页/个人设置/头像)&#10;- app/admin.py: 后台管理路由 (活动/照片墙/番剧/用户管理)&#10;&#10;变更影响：所有 url_for 已更新为蓝图前缀，原有功能完全保留。&#10;部署方式：替换 app.py 为新结构，重启服务即可，无需数据迁移。" />
     <MESSAGE value="创建README.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="创建README.md" />
+    <MESSAGE value="chore: 完善错误处理，补全400/405页面&#10;&#10;- 新增 400.html 和 405.html 自定义错误页面&#10;- 删除活动时自动删除关联照片，避免外键报错&#10;- 统一后台表格样式为现代化卡片风格&#10;- 修复部分模板中 url_for 蓝图前缀遗漏&#10;&#10;影响：无破坏性变更，用户体验提升。" />
+    <option name="LAST_COMMIT_MESSAGE" value="chore: 完善错误处理，补全400/405页面&#10;&#10;- 新增 400.html 和 405.html 自定义错误页面&#10;- 删除活动时自动删除关联照片，避免外键报错&#10;- 统一后台表格样式为现代化卡片风格&#10;- 修复部分模板中 url_for 蓝图前缀遗漏&#10;&#10;影响：无破坏性变更，用户体验提升。" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
