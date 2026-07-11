@@ -1,8 +1,9 @@
 {% extends "base.html" %}
-{% block title %}站长管理面板{% endblock %}
+{% block title %}运营管理面板{% endblock %}
 {% block content %}
 <div class="admin-header">
-    <h2>站长管理面板</h2>
+    <h2>运营管理面板</h2>
+    <p style="color:#7f8c8d; font-size:0.9rem;">欢迎，运营成员！你拥有内容管理权限。</p>
 </div>
 <div class="card-grid">
     <a class="card" href="{{ url_for('admin.admin_activities') }}">
@@ -20,11 +21,7 @@
         <h3>照片墙管理</h3>
         <p>上传、删除历史照片</p>
     </a>
-    <a class="card" href="{{ url_for('admin.admin_users') }}">
-        <div class="card-icon">👥</div>
-        <h3>用户管理</h3>
-        <p>查看、删除社员</p>
-    </a>
-    <!-- 以后可以扩展更多管理功能 -->
+    <!-- 没有“用户管理”卡片 -->
 </div>
+<p style="margin-top:30px; color:#95a5a6; font-size:0.85rem;">如有疑问，请联系站长。</p>
 {% endblock %}

@@ -4,16 +4,16 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="新增413错误页面以备用">
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="删除无用文件">
+      <change afterPath="$PROJECT_DIR$/templates/staff_dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build_version.py" beforeDir="false" afterPath="$PROJECT_DIR$/build_version.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/413.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/413.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/about.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/about.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/activities.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/activities.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_activities.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_activities.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_users.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_users.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/splash.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/splash.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_login.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,61 +64,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0000000000099392" />
-      <entry key="MS500" value="1.006301888743923" />
-      <entry key="S2" value="1.2819200254865057" />
-      <entry key="S5" value="1.6543512639716877" />
-      <entry key="S10" value="2.156422040949916" />
-      <entry key="S30" value="3.41160719299287" />
-      <entry key="S60" value="4.072033648646162" />
-      <entry key="M2" value="4.496256925782355" />
-      <entry key="M5" value="4.788009516226479" />
-      <entry key="M10" value="4.892169824219401" />
-      <entry key="M15" value="4.9276988175728125" />
-      <entry key="M30" value="4.963644876588745" />
-      <entry key="H1" value="4.995670584975452" />
-      <entry key="H2" value="5.902876537504366" />
-      <entry key="H4" value="14.657279657636987" />
-      <entry key="D1" value="107.71870781038777" />
-      <entry key="W1" value="167.7147670497313" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0000000000000004" />
+      <entry key="S2" value="1.0001877429968598" />
+      <entry key="S5" value="1.047977844036037" />
+      <entry key="S10" value="1.3338804494747225" />
+      <entry key="S30" value="2.3737835412369854" />
+      <entry key="S60" value="3.0144545873093365" />
+      <entry key="M2" value="3.453337395166107" />
+      <entry key="M5" value="3.7927920043238075" />
+      <entry key="M10" value="4.123004276807329" />
+      <entry key="M15" value="4.514834766739947" />
+      <entry key="M30" value="6.043968177947137" />
+      <entry key="H1" value="8.714838703116571" />
+      <entry key="H2" value="11.960793092904824" />
+      <entry key="H4" value="20.752102225217655" />
+      <entry key="D1" value="113.61911277542826" />
+      <entry key="W1" value="177.57850607609754" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
       <entry key="MS500" value="0.0" />
-      <entry key="S2" value="0.0" />
-      <entry key="S5" value="0.0" />
-      <entry key="S10" value="0.0" />
-      <entry key="S30" value="0.0" />
-      <entry key="S60" value="4.1243944479744796E-207" />
-      <entry key="M2" value="6.422596011274317E-104" />
-      <entry key="M5" value="5.400605299615444E-42" />
-      <entry key="M10" value="2.6389719490252664E-21" />
-      <entry key="M15" value="2.2345837702785066E-14" />
-      <entry key="M30" value="2.0948930132151495E-7" />
-      <entry key="H1" value="7.176340363449898E-4" />
-      <entry key="H2" value="0.0481111971850558" />
-      <entry key="H4" value="0.513511076633542" />
-      <entry key="D1" value="6.516558162479722" />
-      <entry key="W1" value="10.972868677748995" />
+      <entry key="S2" value="5.9366711038810175E-276" />
+      <entry key="S5" value="8.117404646113536E-111" />
+      <entry key="S10" value="9.009664059282975E-56" />
+      <entry key="S30" value="4.483008193558315E-19" />
+      <entry key="S60" value="6.695527009547729E-10" />
+      <entry key="M2" value="2.5875716433652088E-5" />
+      <entry key="M5" value="0.014627056982152104" />
+      <entry key="M10" value="0.12094237049997036" />
+      <entry key="M15" value="0.24456012691009907" />
+      <entry key="M30" value="0.4945302312645892" />
+      <entry key="H1" value="0.7034660793024363" />
+      <entry key="H2" value="0.8662740107989537" />
+      <entry key="H4" value="1.3052943468606135" />
+      <entry key="D1" value="7.208734866905265" />
+      <entry key="W1" value="11.898831870640704" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9726549474218199" />
-      <entry key="MS500" value="1.000719857175814" />
-      <entry key="S2" value="1.279949081935658" />
-      <entry key="S5" value="1.6532554992158304" />
-      <entry key="S10" value="2.155673556201465" />
-      <entry key="S30" value="3.411192426141077" />
-      <entry key="S60" value="4.071782816606067" />
-      <entry key="M2" value="4.496117550173096" />
-      <entry key="M5" value="4.787949924689291" />
-      <entry key="M10" value="4.892139342636667" />
-      <entry key="M15" value="4.9276783405548095" />
-      <entry key="M30" value="4.963634768539994" />
-      <entry key="H1" value="4.9963827942058865" />
-      <entry key="H2" value="5.950974222823689" />
-      <entry key="H4" value="15.170689421602013" />
-      <entry key="D1" value="114.23489618526246" />
-      <entry key="W1" value="178.6875398887922" />
+      <entry key="MS100" value="0.9726549474122855" />
+      <entry key="MS500" value="0.9944701686732148" />
+      <entry key="S2" value="0.9988020191099234" />
+      <entry key="S5" value="1.047383705590291" />
+      <entry key="S10" value="1.3334664045932767" />
+      <entry key="S30" value="2.3735077831880695" />
+      <entry key="S60" value="3.0142751526031395" />
+      <entry key="M2" value="3.4532587248850954" />
+      <entry key="M5" value="3.8071922969505088" />
+      <entry key="M10" value="4.243142620375414" />
+      <entry key="M15" value="4.7583110645976605" />
+      <entry key="M30" value="6.537390848824228" />
+      <entry key="H1" value="9.417508891197873" />
+      <entry key="H2" value="12.826582771289832" />
+      <entry key="H4" value="22.057058504037485" />
+      <entry key="D1" value="120.82744747755542" />
+      <entry key="W1" value="189.47723593000296" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -425,30 +425,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00070" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783184191719</created>
-      <option name="number" value="00070" />
-      <option name="presentableId" value="LOCAL-00070" />
-      <option name="project" value="LOCAL" />
-      <updated>1783184191719</updated>
-    </task>
-    <task id="LOCAL-00071" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783184195365</created>
-      <option name="number" value="00071" />
-      <option name="presentableId" value="LOCAL-00071" />
-      <option name="project" value="LOCAL" />
-      <updated>1783184195365</updated>
-    </task>
-    <task id="LOCAL-00072" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783184332934</created>
-      <option name="number" value="00072" />
-      <option name="presentableId" value="LOCAL-00072" />
-      <option name="project" value="LOCAL" />
-      <updated>1783184332934</updated>
     </task>
     <task id="LOCAL-00073" summary="动漫社网站">
       <option name="closed" value="true" />
@@ -818,7 +794,31 @@
       <option name="project" value="LOCAL" />
       <updated>1783697272269</updated>
     </task>
-    <option name="localTasksCounter" value="119" />
+    <task id="LOCAL-00119" summary="简化注释，调整格式">
+      <option name="closed" value="true" />
+      <created>1783776186613</created>
+      <option name="number" value="00119" />
+      <option name="presentableId" value="LOCAL-00119" />
+      <option name="project" value="LOCAL" />
+      <updated>1783776186614</updated>
+    </task>
+    <task id="LOCAL-00120" summary="删除无用文件">
+      <option name="closed" value="true" />
+      <created>1783776197703</created>
+      <option name="number" value="00120" />
+      <option name="presentableId" value="LOCAL-00120" />
+      <option name="project" value="LOCAL" />
+      <updated>1783776197703</updated>
+    </task>
+    <task id="LOCAL-00121" summary="删除无用文件">
+      <option name="closed" value="true" />
+      <created>1783776227623</created>
+      <option name="number" value="00121" />
+      <option name="presentableId" value="LOCAL-00121" />
+      <option name="project" value="LOCAL" />
+      <updated>1783776227623</updated>
+    </task>
+    <option name="localTasksCounter" value="122" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -847,7 +847,9 @@
     <MESSAGE value="注入版本号" />
     <MESSAGE value="style: 后台表格现代化" />
     <MESSAGE value="新增413错误页面以备用" />
-    <option name="LAST_COMMIT_MESSAGE" value="新增413错误页面以备用" />
+    <MESSAGE value="简化注释，调整格式" />
+    <MESSAGE value="删除无用文件" />
+    <option name="LAST_COMMIT_MESSAGE" value="删除无用文件" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

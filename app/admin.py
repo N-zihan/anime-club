@@ -10,32 +10,55 @@ from .utils import supabase, allowed_file
 admin_bp = Blueprint('admin', __name__)
 
 
+# ---------- 权限装饰器 ----------
 def admin_required(f):
+    """运营或站长均可访问，直接从 Session 读取角色"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session.get('admin_logged_in'):
-            return redirect(url_for('admin.admin_login'))
+        role = session.get('user_role')
+        if role not in ('owner', 'staff'):
+            flash('你没有管理权限', 'danger')
+            return redirect(url_for('public.index'))
         return f(*args, **kwargs)
-
     return decorated_function
 
 
-@admin_bp.route('/admin/login', methods=['GET', 'POST'])
-def admin_login():
-    import os
-    if request.method == 'POST':
-        if request.form.get('password') == os.getenv('ADMIN_PASSWORD'):
-            session['admin_logged_in'] = True
+def owner_required(f):
+    """仅站长可访问，直接从 Session 读取角色"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('user_role') != 'owner':
+            flash('该功能仅站长可用', 'danger')
             return redirect(url_for('admin.dashboard'))
-        else:
-            flash('密码错误', 'danger')
-    return render_template('admin_login.html')
+        return f(*args, **kwargs)
+    return decorated_function
 
 
+# ---------- 统一入口 ----------
+@admin_bp.route('/admin/entry')
+def admin_entry():
+    role = session.get('user_role')
+    if role == 'owner':
+        return redirect(url_for('admin.dashboard'))
+    elif role == 'staff':
+        return redirect(url_for('admin.staff_dashboard'))
+    else:
+        flash('你没有管理权限', 'danger')
+        return redirect(url_for('public.index'))
+
+
+# ---------- 站长后台 ----------
 @admin_bp.route('/admin/dashboard')
 @admin_required
 def dashboard():
     return render_template('admin_dashboard.html')
+
+
+# ---------- 运营后台 ----------
+@admin_bp.route('/staff/dashboard')
+@admin_required
+def staff_dashboard():
+    return render_template('staff_dashboard.html')
 
 
 # ---------- 活动管理 ----------
@@ -229,6 +252,7 @@ def admin_anime_resources_add():
 # ---------- 用户管理 ----------
 @admin_bp.route('/admin/users')
 @admin_required
+@owner_required
 def admin_users():
     users = User.query.order_by(User.registered_at.desc()).all()
     return render_template('admin_users.html', users=users)

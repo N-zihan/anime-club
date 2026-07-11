@@ -10,27 +10,6 @@ from .public import public_bp, page_not_found, internal_server_error, forbidden
 from .user import user_bp
 from .utils import supabase
 
-
-def get_version():
-    # 优先读取环境变量（Vercel 上手动设置）
-    env_version = os.getenv('APP_VERSION')
-    if env_version:
-        return env_version
-
-    # 其次尝试读取 version.txt
-    try:
-        with open(os.path.join(os.path.dirname(__file__), '..', 'version.txt'), 'r') as f:
-            return f.read().strip()
-    except FileNotFoundError:
-        pass
-
-    # 兜底：使用 Vercel 的 commit SHA
-    commit_sha = os.getenv('VERCEL_GIT_COMMIT_SHA')
-    if commit_sha and len(commit_sha) >= 7:
-        return f"v{commit_sha[:7]}"
-    return 'dev'
-
-
 load_dotenv()
 
 
@@ -41,7 +20,7 @@ def create_app():
         __name__,
         template_folder=os.path.join(base_dir, 'templates'),
         static_folder=os.path.join(base_dir, 'static'),
-        static_url_path='/static'  # 修复点
+        static_url_path='/static'
     )
     app.secret_key = os.getenv('SECRET_KEY', '20090929nzh')
 
@@ -73,10 +52,17 @@ def create_app():
         if not session.get('user_id') and request.endpoint not in public_routes and request.endpoint != 'static':
             return redirect(url_for('auth.login'))
 
-    app.config['APP_VERSION'] = get_version()
+    # 版本号（直接从环境变量读取）
+    app.config['APP_VERSION'] = os.getenv('APP_VERSION', 'dev')
 
     @app.context_processor
     def inject_version():
         return {'app_version': app.config['APP_VERSION']}
+
+    @app.context_processor
+    def inject_user():
+        role = session.get('user_role')
+        is_admin = role in ('owner', 'staff')
+        return dict(is_admin=is_admin)
 
     return app

@@ -53,6 +53,15 @@ def login():
             session['user_id'] = user.id
             session['username'] = user.username
             session.pop('is_guest', None)
+
+            # 🔥 登录时判定角色
+            if user.is_owner:
+                session['user_role'] = 'owner'
+            elif user.is_staff:
+                session['user_role'] = 'staff'
+            else:
+                session['user_role'] = 'member'
+
             flash('登录成功', 'success')
             return redirect(url_for('public.index'))
         else:
