@@ -1,5 +1,6 @@
 import subprocess
 
+
 def get_version():
     try:
         version = subprocess.check_output(
@@ -20,6 +21,7 @@ def get_version():
     except Exception:
         pass
     return 'dev'
+
 
 if __name__ == '__main__':
     version = get_version()
