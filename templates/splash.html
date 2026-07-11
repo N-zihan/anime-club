@@ -139,13 +139,12 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // 优化参数：线条少一些，步长大一些
-        const numLines = 45;            // 减少到45条，性能大幅提升
+        const numLines = 45;
         const amp = 55;
         const freq = 0.028;
         const speed = 0.5;
         const mouseInfluence = 70;
-        const step = 3;                 // 步长增加，减少绘制点数
+        const step = 3;
 
         const phases = [];
         for (let i = 0; i < numLines; i++) {

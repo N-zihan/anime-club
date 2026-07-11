@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 from dotenv import load_dotenv
 from flask import Flask, session, request, redirect, url_for
@@ -30,6 +29,7 @@ def get_version():
     if commit_sha and len(commit_sha) >= 7:
         return f"v{commit_sha[:7]}"
     return 'dev'
+
 
 load_dotenv()
 
