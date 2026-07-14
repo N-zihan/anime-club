@@ -1,65 +1,317 @@
 {% extends "base.html" %}
 {% block title %}留言板{% endblock %}
+
+{% block styles %}
+<style>
+    /* 留言卡片样式优化 */
+    .message-item {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 20px 0;
+        transition: background 0.2s;
+    }
+    .message-item:hover {
+        background: #fafbfc;
+        margin: 0 -16px;
+        padding-left: 16px;
+        padding-right: 16px;
+        border-radius: 12px;
+    }
+    .message-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+    .message-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e2e8f0;
+    }
+    .message-username {
+        font-weight: 600;
+        color: #1e2a3a;
+    }
+    .message-time {
+        font-size: 0.8rem;
+        color: #7f8c8d;
+        margin-left: auto;
+    }
+    .message-content {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #2c3e50;
+        margin: 6px 0 8px 0;
+        padding-left: 48px;
+    }
+    .replies-section {
+        margin-top: 12px;
+        margin-left: 48px;
+        background: #f8fafc;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border-left: 3px solid #4a90d9;
+    }
+    .reply-item {
+        border-bottom: 1px solid #edf2f7;
+        padding: 8px 0;
+    }
+    .reply-item:last-child {
+        border-bottom: none;
+    }
+    .reply-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+    .reply-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #e2e8f0;
+    }
+    .reply-username {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #1e2a3a;
+    }
+    .reply-time {
+        font-size: 0.7rem;
+        color: #95a5a6;
+    }
+    .reply-content {
+        font-size: 0.9rem;
+        color: #2c3e50;
+        margin: 2px 0 0 0;
+        padding-left: 32px;
+    }
+    .reply-toggle-btn {
+        background: transparent;
+        border: none;
+        color: #4a90d9;
+        cursor: pointer;
+        font-size: 0.85rem;
+        padding: 4px 0;
+        transition: color 0.2s;
+        font-weight: 500;
+    }
+    .reply-toggle-btn:hover {
+        color: #2c6b9e;
+        text-decoration: underline;
+    }
+    .reply-form-container {
+        margin-top: 10px;
+        padding-left: 48px;
+    }
+    .reply-form-container textarea {
+        width: 100%;
+        max-width: 500px;
+        padding: 10px 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 16px;
+        font-size: 0.9rem;
+        transition: border-color 0.2s;
+        resize: vertical;
+    }
+    .reply-form-container textarea:focus {
+        outline: none;
+        border-color: #4a90d9;
+        box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+    }
+    .reply-form-actions {
+        margin-top: 6px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    .btn-submit-reply {
+        background: #1e2a3a;
+        color: white;
+        border: none;
+        padding: 6px 20px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .btn-submit-reply:hover {
+        background: #2c3e50;
+    }
+    .btn-cancel-reply {
+        background: transparent;
+        border: none;
+        color: #95a5a6;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+    .btn-cancel-reply:hover {
+        color: #7f8c8d;
+        text-decoration: underline;
+    }
+    .message-form {
+        background: #f8fafc;
+        padding: 24px 28px;
+        border-radius: 24px;
+        margin-top: 30px;
+        border: 1px solid #e2e8f0;
+    }
+    .message-form textarea {
+        width: 100%;
+        max-width: 600px;
+        padding: 12px 16px;
+        border: 1px solid #cbd5e1;
+        border-radius: 16px;
+        font-size: 0.95rem;
+        resize: vertical;
+        transition: border-color 0.2s;
+    }
+    .message-form textarea:focus {
+        outline: none;
+        border-color: #4a90d9;
+        box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+    }
+    .btn-submit-message {
+        background: #1e2a3a;
+        color: white;
+        border: none;
+        padding: 8px 28px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: background 0.2s;
+        margin-top: 8px;
+    }
+    .btn-submit-message:hover {
+        background: #2c3e50;
+    }
+    @media (max-width: 600px) {
+        .message-content {
+            padding-left: 0;
+        }
+        .replies-section {
+            margin-left: 0;
+        }
+        .reply-form-container {
+            padding-left: 0;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 {% with messages = get_flashed_messages(with_categories=true) %}
-{% for category, message in messages if category in ['danger', 'warning'] %}
-<div class="alert alert-{{ category }}">{{ message }}</div>
-{% endfor %}
+    {% for category, message in messages if category in ['danger', 'warning'] %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
 {% endwith %}
 
 <h2>社员留言板</h2>
 
 <div class="messages-list">
     <h3>最新留言</h3>
-    <ul class="message-list">
+    <ul style="list-style: none; padding: 0;">
         {% for msg in messages %}
-        <li>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <img alt="{{ msg.user.username if msg.user else msg.nickname }}"
+        <li class="message-item">
+            <div class="message-header">
+                <img class="message-avatar"
                      src="{% if msg.user_id %}{{ url_for('user.get_avatar', user_id=msg.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}"
-                     style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
-                <strong>{{ msg.user.username if msg.user else msg.nickname }}</strong>
-                <span class="msg-time">· {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                     alt="{{ msg.user.username if msg.user else msg.nickname }}">
+                <span class="message-username">{{ msg.user.username if msg.user else msg.nickname }}</span>
+                <span class="message-time">· {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
             </div>
-            <p>{{ msg.content }}</p>
+            <div class="message-content">{{ msg.content }}</div>
+
             <!-- 显示已有回复 -->
             {% if msg.replies %}
-            <div class="replies-section"
-                 style="margin-top: 10px; margin-left: 20px; background:#f9f9f9; padding:8px; border-radius:6px;">
+            <div class="replies-section">
                 {% for reply in msg.replies %}
-                <div class="reply-item" style="border-bottom:1px solid #eee; margin-bottom:6px;">
-                    <img alt="{{ reply.user.username if reply.user else reply.nickname }}"
-                         src="{% if reply.user_id %}{{ url_for('user.get_avatar', user_id=reply.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}"
-                         style="width:20px; height:20px; border-radius:50%; object-fit:cover; margin-right:8px;">
-                    <strong>{{ reply.user.username if reply.user else reply.nickname }}</strong>
-                    <span class="msg-time">· {{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
-                    <p>{{ reply.content }}</p>
+                <div class="reply-item">
+                    <div class="reply-header">
+                        <img class="reply-avatar"
+                             src="{% if reply.user_id %}{{ url_for('user.get_avatar', user_id=reply.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}"
+                             alt="{{ reply.user.username if reply.user else reply.nickname }}">
+                        <span class="reply-username">{{ reply.user.username if reply.user else reply.nickname }}</span>
+                        <span class="reply-time">· {{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <div class="reply-content">{{ reply.content }}</div>
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
-            <!-- 回复表单 -->
-            <form action="{{ url_for('public.add_reply', message_id=msg.id) }}" method="POST"
-                  onsubmit="this.querySelector('input[type=submit]').disabled = true;"
-                  style="margin-top: 10px;">
-                <textarea cols="50" name="content" placeholder="写回复..." required rows="2"></textarea>
-                <input type="submit" value="回复">
-            </form>
+
+            <!-- 回复按钮 + 隐藏表单 -->
+            <div style="margin-top: 10px; padding-left: 48px;">
+                <button class="reply-toggle-btn" data-msg-id="{{ msg.id }}">💬 回复</button>
+                <div class="reply-form-container" id="reply-form-{{ msg.id }}" style="display: none;">
+                    <form action="{{ url_for('public.add_reply', message_id=msg.id) }}" method="POST"
+                          onsubmit="this.querySelector('.btn-submit-reply').disabled = true;">
+                        <textarea name="content" placeholder="写回复..." required rows="2"></textarea>
+                        <div class="reply-form-actions">
+                            <button class="btn-submit-reply" type="submit">提交回复</button>
+                            <button class="btn-cancel-reply" type="button" data-msg-id="{{ msg.id }}">取消</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </li>
         {% else %}
-        <li>暂无留言，来做第一个留言的人吧！</li>
+        <li style="padding: 20px 0; color: #7f8c8d;">暂无留言，来做第一个留言的人吧！</li>
         {% endfor %}
     </ul>
 </div>
 
+<!-- 发表新留言 -->
 <div class="message-form">
     <h3>发表新留言</h3>
-    <form method="POST" onsubmit="this.querySelector('.submit-btn').disabled = true;">
-        <p>
-            <label for="content">留言内容：</label><br>
-            <textarea cols="50" id="content" name="content" required rows="4"></textarea>
-        </p>
-        <p><input class="submit-btn" type="submit" value="提交留言"></p>
+    <form method="POST" onsubmit="this.querySelector('.btn-submit-message').disabled = true;">
+        <textarea name="content" required rows="4" placeholder="想说什么？"></textarea>
+        <div>
+            <button class="btn-submit-message" type="submit">提交留言</button>
+        </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 点击“回复”按钮 → 展开回复表单，隐藏按钮
+    document.querySelectorAll('.reply-toggle-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var msgId = this.dataset.msgId;
+            var container = document.getElementById('reply-form-' + msgId);
+            if (container) {
+                container.style.display = 'block';
+                this.style.display = 'none';
+                // 自动聚焦到 textarea
+                var textarea = container.querySelector('textarea');
+                if (textarea) {
+                    setTimeout(function() { textarea.focus(); }, 100);
+                }
+            }
+        });
+    });
+
+    // 点击“取消”按钮 → 收起表单，清空内容，显示回复按钮
+    document.querySelectorAll('.btn-cancel-reply').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var msgId = this.dataset.msgId;
+            var container = document.getElementById('reply-form-' + msgId);
+            var toggleBtn = document.querySelector('.reply-toggle-btn[data-msg-id="' + msgId + '"]');
+            if (container) {
+                container.style.display = 'none';
+                var textarea = container.querySelector('textarea');
+                if (textarea) textarea.value = '';
+            }
+            if (toggleBtn) {
+                toggleBtn.style.display = 'inline';
+            }
+        });
+    });
+});
+</script>
+
 {% endblock %}
