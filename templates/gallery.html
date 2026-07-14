@@ -1,9 +1,30 @@
 {% extends "base.html" %}
 {% block title %}珍贵历史图片 - 动漫社{% endblock %}
 {% block content %}
+
 <h1>📸 动漫社珍贵历史图片</h1>
 
-<!-- 往期活动照片 -->
+<!-- ========== 上传区域（仅登录用户可见） ========== -->
+{% if session.user_id %}
+<div style="background:#f8fafc; border-radius:20px; padding:20px; margin-bottom:30px; border:1px solid #e2e8f0;">
+    <h3 style="margin-top:0;">📤 上传新照片</h3>
+    <form action="{{ url_for('admin.admin_gallery_upload') }}" enctype="multipart/form-data" method="POST">
+        <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:center;">
+            <input accept="image/*" name="file" required type="file">
+            <select name="activity_id">
+                <option value="">往期活动照片</option>
+                {% for act in activities %}
+                <option value="{{ act.id }}">{{ act.title }}（{{ act.date }}）</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="上传" style="background:#1e2a3a; color:white; padding:6px 20px; border-radius:40px; border:none; cursor:pointer;">
+        </div>
+    </form>
+    <p style="font-size:0.8rem; color:#7f8c8d; margin-top:8px;">支持 png / jpg / jpeg / gif，单张不超过 2MB</p>
+</div>
+{% endif %}
+
+<!-- ========== 往期活动照片（未分类） ========== -->
 <div class="activity-photo-group">
     <h2>📂 往期活动照片</h2>
     <div class="gallery-grid">
@@ -17,7 +38,7 @@
     </div>
 </div>
 
-<!-- 按活动分类 -->
+<!-- ========== 按活动分类 ========== -->
 {% for activity in activities %}
 {% if activity.photos %}
 <div class="activity-photo-group">
@@ -32,9 +53,10 @@
 </div>
 {% endif %}
 {% endfor %}
+
 {% endblock %}
 
-<!-- ========== 添加样式让照片墙更美观 (放在模板最后) ========== -->
+<!-- ========== 样式（已在原文件末尾，保留不变） ========== -->
 {% block styles %}
 <style>
     .container {
@@ -42,47 +64,37 @@
         margin: 30px auto;
         padding: 0 20px;
     }
-
     h1 {
         text-align: center;
         color: #333;
         margin-bottom: 30px;
     }
-
-    /* 使用CSS Grid创建响应式图片网格 */
     .gallery-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 20px;
     }
-
-    /* 让图片在外框内优雅地居中，并保持比例 */
     .gallery-item {
         background-color: #f0f0f0;
         border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         transition: transform 0.3s ease;
     }
-
     .gallery-item:hover {
         transform: scale(1.02);
     }
-
     .gallery-item img {
         width: 100%;
-        height: 250px; /* 可以调整你喜欢的固定高度 */
-        object-fit: cover; /* 保证图片不变形地填满容器 */
+        height: 250px;
+        object-fit: cover;
         display: block;
     }
-
-    /* 简单的小屏幕适配 */
     @media (max-width: 768px) {
         .gallery-grid {
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
         }
-
         .gallery-item img {
             height: 150px;
         }

@@ -129,8 +129,11 @@ def admin_gallery():
 
 
 @admin_bp.route('/admin/gallery/upload', methods=['POST'])
-@admin_required
 def admin_gallery_upload():
+    if not session.get('user_id'):
+        flash('请先登录再上传照片', 'warning')
+        return redirect(url_for('auth.login'))
+
     if 'file' not in request.files:
         flash('没有文件', 'danger')
         return redirect(url_for('admin.admin_gallery'))
@@ -160,27 +163,13 @@ def admin_gallery_upload():
         photo = Photo(
             filename=filename,
             activity_id=activity_id if activity_id else None,
-            uploader=session.get('username', 'admin')
+            uploader=session.get('username', '社员')  # 记录上传者
         )
         db.session.add(photo)
         db.session.commit()
         flash('照片上传成功', 'success')
     else:
         flash('不支持的文件类型', 'danger')
-    return redirect(url_for('admin.admin_gallery'))
-
-
-@admin_bp.route('/admin/gallery/delete/<int:photo_id>')
-@admin_required
-def admin_gallery_delete(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
-    try:
-        supabase.storage.from_('photos').remove([photo.filename])
-    except Exception as e:
-        flash(f'删除云文件失败: {str(e)}', 'warning')
-    db.session.delete(photo)
-    db.session.commit()
-    flash('照片已删除', 'success')
     return redirect(url_for('admin.admin_gallery'))
 
 
