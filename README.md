@@ -66,24 +66,6 @@ bash
 python run.py
 打开浏览器访问 http://127.0.0.1:5000
 
-📁 项目结构
-text
-anime-club/
-├── app/ # 应用核心模块
-│ ├── __init__.py # 应用工厂
-│ ├── models.py # 数据模型
-│ ├── utils.py # 工具函数
-│ ├── auth.py # 认证路由
-│ ├── public.py # 公开路由
-│ ├── user.py # 用户路由
-│ └── admin.py # 后台管理路由
-├── static/ # 静态资源（CSS、图片、默认头像）
-├── templates/ # Jinja2 模板
-├── .env # 环境变量（不提交）
-├── requirements.txt # Python 依赖
-├── run.py # 启动入口
-├── vercel.json # Vercel 部署配置
-└── README.md # 项目说明
 👥 运营团队
 站长：BlueArchive
 
