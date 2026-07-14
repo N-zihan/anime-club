@@ -232,7 +232,7 @@ def admin_anime_resources_add():
             description=description,
             link=link,
             extract_code=extract_code,
-            uploader=session.get('username', 'admin'),
+            user_id=session.get('user_id'),  # 管理员添加时，以当前登录用户为提交人
             status='approved'
         )
         db.session.add(resource)

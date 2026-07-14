@@ -58,7 +58,8 @@ class AnimeResource(db.Model):
     link = db.Column(db.String(500), nullable=False)
     extract_code = db.Column(db.String(50))
     upload_time = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    uploader = db.Column(db.String(50))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    user = db.relationship('User', backref='anime_resources')
     status = db.Column(db.String(20), default='pending')
 
 

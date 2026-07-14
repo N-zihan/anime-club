@@ -86,7 +86,8 @@ def user_profile():
     messages = Message.query.filter_by(user_id=user.id).order_by(Message.timestamp.desc()).limit(10).all()
     for msg in messages:
         msg.timestamp = msg.timestamp + timedelta(hours=8)
-    anime = AnimeResource.query.filter_by(uploader=username, status='approved').order_by(
+    # 通过 user_id 查询推荐记录
+    anime = AnimeResource.query.filter_by(user_id=user.id, status='approved').order_by(
         AnimeResource.upload_time.desc()).all()
     return render_template('user_profile.html', user=user, messages=messages, anime=anime)
 

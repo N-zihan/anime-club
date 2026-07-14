@@ -118,7 +118,7 @@ def submit_anime():
             description=description,
             link=link,
             extract_code=extract_code,
-            uploader=session.get('username'),
+            user_id=session.get('user_id'),  # 只存 user_id
             status='pending'
         )
         db.session.add(new_resource)

@@ -26,7 +26,7 @@
         {% if res.extract_code %}
         <p>提取码：<strong>{{ res.extract_code }}</strong></p>
         {% endif %}
-        <p><small>提交人：{{ res.uploader or '未知' }} | 提交时间：{{ res.upload_time.strftime('%Y-%m-%d %H:%M')
+        <p><small>提交人：{{ res.user.username if res.user else '未知' }} | 提交时间：{{ res.upload_time.strftime('%Y-%m-%d %H:%M') }}</small></p>
             }}</small></p>
     </div>
     {% else %}
@@ -52,7 +52,7 @@
         {% if res.extract_code %}
         <p>提取码：<strong>{{ res.extract_code }}</strong></p>
         {% endif %}
-        <p><small>提交人：{{ res.uploader or '未知' }} | 审核通过时间：{{ res.upload_time.strftime('%Y-%m-%d') }}</small>
+        <p><small>提交人：{{ res.user.username if res.user else '未知' }} | 审核通过时间：{{ res.upload_time.strftime('%Y-%m-%d') }}</small></p>
         </p>
     </div>
     {% else %}
