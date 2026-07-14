@@ -13,6 +13,7 @@ admin_bp = Blueprint('admin', __name__)
 # ---------- 权限装饰器 ----------
 def admin_required(f):
     """运营或站长均可访问，直接从 Session 读取角色"""
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         role = session.get('user_role')
@@ -20,17 +21,20 @@ def admin_required(f):
             flash('你没有管理权限', 'danger')
             return redirect(url_for('public.index'))
         return f(*args, **kwargs)
+
     return decorated_function
 
 
 def owner_required(f):
     """仅站长可访问，直接从 Session 读取角色"""
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get('user_role') != 'owner':
             flash('该功能仅站长可用', 'danger')
             return redirect(url_for('admin.dashboard'))
         return f(*args, **kwargs)
+
     return decorated_function
 
 

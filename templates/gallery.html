@@ -17,7 +17,8 @@
                 <option value="{{ act.id }}">{{ act.title }}（{{ act.date }}）</option>
                 {% endfor %}
             </select>
-            <input type="submit" value="上传" style="background:#1e2a3a; color:white; padding:6px 20px; border-radius:40px; border:none; cursor:pointer;">
+            <input style="background:#1e2a3a; color:white; padding:6px 20px; border-radius:40px; border:none; cursor:pointer;" type="submit"
+                   value="上传">
         </div>
     </form>
     <p style="font-size:0.8rem; color:#7f8c8d; margin-top:8px;">支持 png / jpg / jpeg / gif，单张不超过 2MB</p>
@@ -64,37 +65,44 @@
         margin: 30px auto;
         padding: 0 20px;
     }
+
     h1 {
         text-align: center;
         color: #333;
         margin-bottom: 30px;
     }
+
     .gallery-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 20px;
     }
+
     .gallery-item {
         background-color: #f0f0f0;
         border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         transition: transform 0.3s ease;
     }
+
     .gallery-item:hover {
         transform: scale(1.02);
     }
+
     .gallery-item img {
         width: 100%;
         height: 250px;
         object-fit: cover;
         display: block;
     }
+
     @media (max-width: 768px) {
         .gallery-grid {
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 10px;
         }
+
         .gallery-item img {
             height: 150px;
         }
