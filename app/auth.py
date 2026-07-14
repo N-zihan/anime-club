@@ -18,8 +18,9 @@ def register():
         group = request.form.get('group')
         password = request.form.get('password')
 
-        if not re.match(r'^[A-Za-z0-9_]{2,20}$', username):
-            flash('用户名只允许字母、数字、下划线，长度2-20个字符', 'danger')
+        username_pattern = r'^[\u4e00-\u9fa5A-Za-z0-9_]{2,20}$'
+        if not re.match(username_pattern, username):
+            flash('用户名只允许中文、字母、数字、下划线，长度2-20个字符', 'danger')
             return redirect(url_for('auth.register'))
 
         if group != GROUP_VERIFICATION_CODE:
