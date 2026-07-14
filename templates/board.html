@@ -253,14 +253,22 @@
 
             <!-- 回复按钮 + 折叠表单（唯一一套） -->
             <div style="margin-top: 8px; padding-left: 40px;">
-                <button class="reply-toggle-btn" data-msg-id="{{ msg.id }}">💬 回复</button>
-                <div class="reply-form-container" id="reply-form-{{ msg.id }}" style="display: none; margin-top: 8px;">
+                <button class="reply-toggle-btn" data-msg-id="{{ msg.id }}"
+                        style="background:transparent; border:none; color:#4a90d9; cursor:pointer; font-size:0.85rem; padding:4px 0;">
+                    回复
+                </button>
+                <div id="reply-form-{{ msg.id }}" style="display: none; margin-top: 8px;">
                     <form action="{{ url_for('public.add_reply', message_id=msg.id) }}" method="POST"
-                          onsubmit="this.querySelector('.btn-submit-reply').disabled = true;">
-                        <textarea name="content" placeholder="写回复..." required rows="2"></textarea>
-                        <div style="margin-top: 6px; display: flex; gap: 8px; align-items: center;">
-                            <button class="btn-submit-reply" type="submit">提交回复</button>
-                            <button class="btn-cancel-reply" type="button" data-msg-id="{{ msg.id }}">取消</button>
+                          onsubmit="this.querySelector('input[type=submit]').disabled = true;">
+                        <textarea cols="50" name="content" placeholder="写回复..." required rows="2"
+                                  style="width:100%; max-width:500px; padding:8px; border:1px solid #cbd5e1; border-radius:12px;"></textarea>
+                        <div style="margin-top:6px;">
+                            <input style="background:#1e2a3a; color:white; border:none; padding:4px 16px; border-radius:30px; cursor:pointer; font-size:0.85rem;" type="submit"
+                                   value="提交回复">
+                            <button class="reply-cancel-btn" data-msg-id="{{ msg.id }}" style="background:transparent; border:none; color:#95a5a6; cursor:pointer; font-size:0.85rem; margin-left:8px;"
+                                    type="button">
+                                取消
+                            </button>
                         </div>
                     </form>
                 </div>
