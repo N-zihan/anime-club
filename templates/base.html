@@ -22,7 +22,7 @@
     </div>
     <div class="nav-right">
         {% if session.user_id %}
-        <a class="user-name" href="{{ url_for('user.user_profile', username=session.username) }}">{{ session.username
+        <a class="user-name" href="{{ url_for('user.user_profile', name=session.username) }}">{{ session.username
             }}</a>
         <a href="{{ url_for('auth.logout') }}">退出</a>
         <form action="{{ url_for('auth.delete_account') }}" class="inline-form" method="POST">

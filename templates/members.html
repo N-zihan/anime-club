@@ -5,7 +5,7 @@
 <p class="member-count">共 {{ users|length }} 位成员</p>
 <div class="members-grid">
     {% for user in users %}
-    <a class="member-link" href="{{ url_for('user.user_profile', username=user.username) }}">
+    <a class="member-link" href="{{ url_for('user.user_profile', name=user.username) }}">
         <div class="member-card">
             <div class="member-avatar">
                 <img alt="{{ user.username }}" src="{{ url_for('user.get_avatar', user_id=user.id) }}"

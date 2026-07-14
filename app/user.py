@@ -75,8 +75,11 @@ def profile():
     return render_template('profile.html', user=user)
 
 
-@user_bp.route('/user/<username>')
-def user_profile(username):
+@user_bp.route('/user')
+def user_profile():
+    username = request.args.get('name')
+    if not username:
+        abort(404)
     user = User.query.filter(func.lower(User.username) == func.lower(username.strip())).first()
     if not user:
         abort(404)
