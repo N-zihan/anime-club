@@ -24,10 +24,6 @@
         {% if session.user_id %}
         <a class="user-name" href="{{ url_for('user.user_profile', name=session.username) }}">{{ session.username
             }}</a>
-        <a href="{{ url_for('auth.logout') }}">退出</a>
-        <form action="{{ url_for('auth.delete_account') }}" class="inline-form" method="POST">
-            <button class="delete-btn" onclick="return confirm('永久注销账号？')" type="submit">注销</button>
-        </form>
         {% else %}
         <a href="{{ url_for('auth.login') }}">登录</a>
         <a href="{{ url_for('auth.register') }}">注册</a>
@@ -194,7 +190,7 @@
     <div id="onboarding-popup">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
             <div>
-                <div class="step-title" id="onboarding-title">✨ 欢迎来到南平一中动漫社</div>
+                <div class="step-title" id="onboarding-title">欢迎来到南平一中动漫社</div>
                 <div class="step-counter" id="onboarding-counter">1 / 6</div>
             </div>
         </div>
@@ -206,7 +202,7 @@
             <button class="onboarding-btn onboarding-btn-secondary" id="onboarding-prev" style="display:none;">上一步
             </button>
             <button class="onboarding-btn onboarding-btn-primary" id="onboarding-next">下一步 →</button>
-            <button class="onboarding-btn onboarding-btn-done" id="onboarding-done" style="display:none;">🎉 完成
+            <button class="onboarding-btn onboarding-btn-done" id="onboarding-done" style="display:none;">完成
             </button>
         </div>
     </div>
@@ -223,32 +219,32 @@
         // ---------- 引导步骤配置 ----------
         const steps = [
             {
-                title: '👋 欢迎回来！',
+                title: '欢迎回来！',
                 desc: '这里是南平一中动漫社官网。<br>接下来 30 秒，带你熟悉咱们的二次元据点。',
                 target: null,
             },
             {
-                title: '📰 首页导航',
+                title: '首页导航',
                 desc: '顶部导航栏有 <strong>「首页」</strong>、<strong>「社团介绍」</strong>、<strong>「活动」</strong> 等入口。<br>点击任意标签，快速探索社团内容。',
                 target: '.nav-links',
             },
             {
-                title: '💬 留言板',
+                title: '留言板',
                 desc: '在 <strong>「留言板」</strong> 可以畅所欲言，<br>也可以回复其他社员，一起打造热闹的交流区！',
                 target: 'a[href*="board"]',
             },
             {
-                title: '📦 番剧资源',
+                title: '番剧资源',
                 desc: '点击 <strong>「番剧链接」</strong>，<br>查看大家推荐的动漫资源，下载或在线观看。<br>你也可以点击「推荐番剧」分享你的宝藏！',
                 target: 'a[href*="anime_resources"]',
             },
             {
-                title: '📸 珍贵历史图片',
+                title: '珍贵历史图片',
                 desc: '在 <strong>「珍贵历史图片」</strong> 里，<br>记录着社团的点点滴滴。<br>你也可以上传活动照片，把回忆保存下来。',
                 target: 'a[href*="gallery"]',
             },
             {
-                title: '👤 你的个人主页',
+                title: '你的个人主页',
                 desc: '点击右上角的 <strong>用户名</strong>，<br>进入个人主页，查看自己的留言和推荐的番剧。<br>在「个人设置」里可以修改头像、用户名和密码。',
                 target: '.user-name',
             }

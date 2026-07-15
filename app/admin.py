@@ -2,11 +2,11 @@ import io
 import uuid
 from datetime import datetime
 from functools import wraps
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from flask import send_file
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
 
 from .models import db, User, Activity, Photo, AnimeResource
 from .utils import supabase, allowed_file

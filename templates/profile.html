@@ -51,6 +51,19 @@
         </div>
         <button class="btn-primary" type="submit">修改密码</button>
     </form>
+    <!-- 退出和注销 -->
+    <hr style="margin: 40px 0;">
+
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        <a class="btn-primary" href="{{ url_for('auth.logout') }}" style="background: #4a6a7a;">退出登录</a>
+        <form action="{{ url_for('auth.delete_account') }}" method="POST"
+              onsubmit="return confirm('⚠️ 确定要永久注销账号吗？此操作不可撤销！');">
+            <button style="background: #e74c3c; color: white; border: none; padding: 8px 20px; border-radius: 40px; cursor: pointer; font-size: 1rem; font-weight: 600;"
+                    type="submit">
+                注销账号
+            </button>
+        </form>
+    </div>
 
     <p style="margin-top:20px;"><a href="{{ url_for('public.members') }}">返回社员列表</a></p>
 </div>
