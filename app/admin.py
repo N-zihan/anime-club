@@ -1,6 +1,9 @@
 import uuid
 from datetime import datetime
 from functools import wraps
+import io
+import pandas as pd
+from flask import send_file
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
@@ -285,3 +288,36 @@ def admin_toggle_owner(user_id):
     db.session.commit()
     flash(f'用户 {user.username} 的站长状态已更新', 'success')
     return redirect(url_for('admin.admin_users'))
+
+
+@admin_bp.route('/admin/users/export')
+@admin_required
+def export_users_excel():
+    users = User.query.order_by(User.registered_at.desc()).all()
+
+    # 构造数据
+    data = []
+    for user in users:
+        data.append({
+            'ID': user.id,
+            '用户名': user.username,
+            'QQ号': user.qq,
+            '注册时间': user.registered_at.strftime('%Y-%m-%d %H:%M'),
+            '运营': '是' if user.is_staff else '否',
+            '站长': '是' if user.is_owner else '否',
+        })
+
+    df = pd.DataFrame(data)
+
+    # 写入内存中的 Excel 文件
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='社员名单')
+    output.seek(0)
+
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=f'社员名单_{datetime.now().strftime("%Y%m%d")}.xlsx'
+    )
