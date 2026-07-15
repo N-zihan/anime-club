@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="admin新增用户管理导出Excel文件">
-      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页">
+      <change beforePath="$PROJECT_DIR$/templates/about.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/about.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,61 +56,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0326215281989628" />
-      <entry key="MS500" value="1.7675722196122094" />
-      <entry key="S2" value="2.5922681612332443" />
-      <entry key="S5" value="3.6301601706067452" />
-      <entry key="S10" value="5.440808375842888" />
-      <entry key="S30" value="8.413541434189922" />
-      <entry key="S60" value="9.583590583902616" />
-      <entry key="M2" value="10.30045346962897" />
-      <entry key="M5" value="11.243544231620056" />
-      <entry key="M10" value="12.130422816349082" />
-      <entry key="M15" value="12.620359601254046" />
-      <entry key="M30" value="13.653019055633544" />
-      <entry key="H1" value="16.28499941879911" />
-      <entry key="H2" value="21.58244638479153" />
-      <entry key="H4" value="31.58380523406521" />
-      <entry key="D1" value="125.71275933236556" />
-      <entry key="W1" value="197.33102025592254" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0000000000000053" />
+      <entry key="S10" value="1.0000001408745052" />
+      <entry key="S30" value="1.014653767958289" />
+      <entry key="S60" value="1.2694161396888148" />
+      <entry key="M2" value="2.1592920190507985" />
+      <entry key="M5" value="3.7857312415590805" />
+      <entry key="M10" value="4.735886275435311" />
+      <entry key="M15" value="5.1738070506323846" />
+      <entry key="M30" value="6.474503672726006" />
+      <entry key="H1" value="10.032948755355429" />
+      <entry key="H2" value="16.932217522926535" />
+      <entry key="H4" value="28.54143502743177" />
+      <entry key="D1" value="124.88381590126643" />
+      <entry key="W1" value="201.76371873298106" />
     </decayedCancelled>
     <decayedSelected>
-      <entry key="MS100" value="1.2702084155446518E-13" />
-      <entry key="MS500" value="0.0026349658873822232" />
-      <entry key="S2" value="0.22656548456683356" />
-      <entry key="S5" value="0.5521759661187171" />
-      <entry key="S10" value="0.743085436621333" />
-      <entry key="S30" value="0.9057595392489061" />
-      <entry key="S60" value="0.9517140007633101" />
-      <entry key="M2" value="0.9755583020831253" />
-      <entry key="M5" value="0.9901506836587881" />
-      <entry key="M10" value="0.9950679434396829" />
-      <entry key="M15" value="0.9970335076097081" />
-      <entry key="M30" value="1.022583590433964" />
-      <entry key="H1" value="1.2160554290246839" />
-      <entry key="H2" value="1.6654753386294712" />
-      <entry key="H4" value="2.3767555866861834" />
-      <entry key="D1" value="8.532943202841187" />
-      <entry key="W1" value="13.741486538941253" />
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="4.1124550966712236E-210" />
+      <entry key="S30" value="1.602139727914596E-70" />
+      <entry key="S60" value="1.2657565832001803E-35" />
+      <entry key="M2" value="3.5577472973781875E-18" />
+      <entry key="M5" value="1.0482624737526607E-7" />
+      <entry key="M10" value="3.237703756330429E-4" />
+      <entry key="M15" value="0.00471663934873892" />
+      <entry key="M30" value="0.07033318378344142" />
+      <entry key="H1" value="0.318921721655619" />
+      <entry key="H2" value="0.8529107156767912" />
+      <entry key="H4" value="1.7008546655552053" />
+      <entry key="D1" value="8.07010716601009" />
+      <entry key="W1" value="13.632445829442297" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9836699987939799" />
-      <entry key="MS500" value="1.748672168754316" />
-      <entry key="S2" value="2.5925610880667453" />
-      <entry key="S5" value="3.763810089281031" />
-      <entry key="S10" value="5.806833245444988" />
-      <entry key="S30" value="9.128430823830625" />
-      <entry key="S60" value="10.429000256058115" />
-      <entry key="M2" value="11.219437807299204" />
-      <entry key="M5" value="12.208178783192059" />
-      <entry key="M10" value="13.11106101448844" />
-      <entry key="M15" value="13.607155851564885" />
-      <entry key="M30" value="14.670026289770464" />
-      <entry key="H1" value="17.497925830236493" />
-      <entry key="H2" value="23.246072229359623" />
-      <entry key="H4" value="33.9594442189378" />
-      <entry key="D1" value="134.24516663969942" />
-      <entry key="W1" value="211.07238142723767" />
+      <entry key="MS100" value="0.18946457081379975" />
+      <entry key="MS500" value="0.7169776240079136" />
+      <entry key="S2" value="0.9201876506248751" />
+      <entry key="S5" value="0.9672763296139374" />
+      <entry key="S10" value="0.9835022148336203" />
+      <entry key="S30" value="1.009121537045566" />
+      <entry key="S60" value="1.266625157982711" />
+      <entry key="M2" value="2.157858661682703" />
+      <entry key="M5" value="3.7851307107379504" />
+      <entry key="M10" value="4.735897113411337" />
+      <entry key="M15" value="5.1782676372760506" />
+      <entry key="M30" value="6.54434832837261" />
+      <entry key="H1" value="10.350997053878757" />
+      <entry key="H2" value="17.78415460292049" />
+      <entry key="H4" value="30.241477365803092" />
+      <entry key="D1" value="132.9534140256886" />
+      <entry key="W1" value="215.39603987330258" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -418,14 +418,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00084" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783225852403</created>
-      <option name="number" value="00084" />
-      <option name="presentableId" value="LOCAL-00084" />
-      <option name="project" value="LOCAL" />
-      <updated>1783225852403</updated>
     </task>
     <task id="LOCAL-00085" summary="动漫社网站">
       <option name="closed" value="true" />
@@ -811,7 +803,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784096824988</updated>
     </task>
-    <option name="localTasksCounter" value="133" />
+    <task id="LOCAL-00133" summary="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页">
+      <option name="closed" value="true" />
+      <created>1784103517966</created>
+      <option name="number" value="00133" />
+      <option name="presentableId" value="LOCAL-00133" />
+      <option name="project" value="LOCAL" />
+      <updated>1784103517966</updated>
+    </task>
+    <option name="localTasksCounter" value="134" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -847,7 +847,8 @@
     <MESSAGE value="上传图片功能面向全体社员，创建新手引导" />
     <MESSAGE value="优化留言板界面" />
     <MESSAGE value="admin新增用户管理导出Excel文件" />
-    <option name="LAST_COMMIT_MESSAGE" value="admin新增用户管理导出Excel文件" />
+    <MESSAGE value="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页" />
+    <option name="LAST_COMMIT_MESSAGE" value="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
