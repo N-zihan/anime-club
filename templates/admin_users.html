@@ -2,10 +2,10 @@
 {% block title %}用户管理{% endblock %}
 {% block content %}
 <div class="admin-header">
-    <h2>👥 用户管理</h2>
+    <h2>用户管理</h2>
     <span class="member-count">共 {{ users|length }} 位社员</span>
     <a class="btn-add" href="{{ url_for('admin.export_users_excel') }}" style="margin-left: 15px;">
-            📊 导出 Excel
+            导出 Excel
     </a>
 </div>
 
