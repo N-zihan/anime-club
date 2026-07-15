@@ -1,11 +1,12 @@
+import io
 import uuid
 from datetime import datetime
 from functools import wraps
-import io
-import pandas as pd
-from flask import send_file
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import send_file
 
 from .models import db, User, Activity, Photo, AnimeResource
 from .utils import supabase, allowed_file
@@ -295,24 +296,38 @@ def admin_toggle_owner(user_id):
 def export_users_excel():
     users = User.query.order_by(User.registered_at.desc()).all()
 
-    # 构造数据
-    data = []
-    for user in users:
-        data.append({
-            'ID': user.id,
-            '用户名': user.username,
-            'QQ号': user.qq,
-            '注册时间': user.registered_at.strftime('%Y-%m-%d %H:%M'),
-            '运营': '是' if user.is_staff else '否',
-            '站长': '是' if user.is_owner else '否',
-        })
+    wb = Workbook()
+    ws = wb.active
+    ws.title = '社员名单'
 
-    df = pd.DataFrame(data)
+    # 表头
+    headers = ['ID', '用户名', 'QQ号', '注册时间', '运营', '站长']
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
 
-    # 写入内存中的 Excel 文件
+    # 数据行
+    for row_idx, user in enumerate(users, 2):
+        ws.cell(row=row_idx, column=1, value=user.id)
+        ws.cell(row=row_idx, column=2, value=user.username)
+        ws.cell(row=row_idx, column=3, value=user.qq)
+        ws.cell(row=row_idx, column=4, value=user.registered_at.strftime('%Y-%m-%d %H:%M'))
+        ws.cell(row=row_idx, column=5, value='是' if user.is_staff else '否')
+        ws.cell(row=row_idx, column=6, value='是' if user.is_owner else '否')
+
+    # 列宽自适应
+    for col in range(1, 7):
+        max_length = 0
+        for row in range(1, len(users) + 2):
+            cell_value = ws.cell(row=row, column=col).value
+            if cell_value:
+                max_length = max(max_length, len(str(cell_value)))
+        ws.column_dimensions[chr(64 + col)].width = min(max_length + 2, 30)  # A=65, B=66, ...
+
+    # 写入内存
     output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='社员名单')
+    wb.save(output)
     output.seek(0)
 
     return send_file(
