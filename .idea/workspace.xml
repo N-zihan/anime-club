@@ -6,8 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="收录至各浏览器">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/public.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/public.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vercel.json" beforeDir="false" afterPath="$PROJECT_DIR$/vercel.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,6 +136,7 @@
     "Python.app (1).executor": "Run",
     "Python.app.executor": "Run",
     "Python.app.py.executor": "Run",
+    "Python.baidu_push.executor": "Run",
     "Python.index (1).executor": "Run",
     "Python.public.executor": "Run",
     "Python.run.executor": "Run",
@@ -179,7 +178,7 @@
       <recent name="C:\Users\NZH\Desktop\动漫社网站\static" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.run">
+  <component name="RunManager" selected="Python.baidu_push">
     <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="anime-club" />
       <option name="ENV_FILES" value=".env" />
@@ -280,7 +279,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="index" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="baidu_push" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="动漫社网站" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -295,7 +294,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="DEBUG_JUST_MY_CODE" value="false" />
       <option name="RUN_TOOL" value="" />
-      <option name="SCRIPT_NAME" value="C:\Users\NZH\Desktop\动漫社网站\index.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/baidu_push.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -394,10 +393,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.baidu_push" />
         <item itemvalue="Python.run" />
         <item itemvalue="Python.public" />
         <item itemvalue="Python.app.py" />
-        <item itemvalue="Python.app" />
         <item itemvalue="Python.app" />
       </list>
     </recent_temporary>
@@ -421,14 +420,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00095" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783241971213</created>
-      <option name="number" value="00095" />
-      <option name="presentableId" value="LOCAL-00095" />
-      <option name="project" value="LOCAL" />
-      <updated>1783241971213</updated>
     </task>
     <task id="LOCAL-00096" summary="动漫社网站">
       <option name="closed" value="true" />
@@ -814,7 +805,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784289042979</updated>
     </task>
-    <option name="localTasksCounter" value="144" />
+    <task id="LOCAL-00144" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784289489599</created>
+      <option name="number" value="00144" />
+      <option name="presentableId" value="LOCAL-00144" />
+      <option name="project" value="LOCAL" />
+      <updated>1784289489599</updated>
+    </task>
+    <option name="localTasksCounter" value="145" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
