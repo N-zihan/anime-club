@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="收录至各浏览器">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="收录至各浏览器" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -421,22 +419,6 @@
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
     </task>
-    <task id="LOCAL-00096" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783246116190</created>
-      <option name="number" value="00096" />
-      <option name="presentableId" value="LOCAL-00096" />
-      <option name="project" value="LOCAL" />
-      <updated>1783246116190</updated>
-    </task>
-    <task id="LOCAL-00097" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783246242800</created>
-      <option name="number" value="00097" />
-      <option name="presentableId" value="LOCAL-00097" />
-      <option name="project" value="LOCAL" />
-      <updated>1783246242800</updated>
-    </task>
     <task id="LOCAL-00098" summary="动漫社网站">
       <option name="closed" value="true" />
       <created>1783246692751</created>
@@ -813,7 +795,23 @@
       <option name="project" value="LOCAL" />
       <updated>1784289489599</updated>
     </task>
-    <option name="localTasksCounter" value="145" />
+    <task id="LOCAL-00145" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784298547350</created>
+      <option name="number" value="00145" />
+      <option name="presentableId" value="LOCAL-00145" />
+      <option name="project" value="LOCAL" />
+      <updated>1784298547350</updated>
+    </task>
+    <task id="LOCAL-00146" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784298706710</created>
+      <option name="number" value="00146" />
+      <option name="presentableId" value="LOCAL-00146" />
+      <option name="project" value="LOCAL" />
+      <updated>1784298706710</updated>
+    </task>
+    <option name="localTasksCounter" value="147" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
