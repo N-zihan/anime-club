@@ -1,6 +1,8 @@
 {
   "version": 2,
-  "regions": ["bom1"],
+  "regions": [
+    "bom1"
+  ],
   "builds": [
     {
       "src": "run.py",

@@ -1,3 +1,30 @@
+"""
+南平一中动漫社官网 · 数据库模型定义
+======================================
+
+本模块使用 SQLAlchemy ORM 定义了网站的所有数据表结构：
+
+用户表 (User)：
+    社员信息，包含用户名、QQ号、密码哈希、头像（二进制）、
+    注册时间、运营/站长身份标识。
+
+留言表 (Message) 与回复表 (Reply)：
+    构成留言板的双向数据模型，支持嵌套回复。
+
+活动表 (Activity)：
+    社团活动记录，包含标题、日期、内容描述。
+
+番剧资源表 (AnimeResource)：
+    社员推荐的番剧资源，包含标题、描述、链接、提取码、
+    提交人（外键关联 User）、审核状态。
+
+照片表 (Photo)：
+    活动照片记录，存储文件名（实际文件在 Supabase Storage），
+    可关联到具体活动或作为往期活动照片。
+
+所有模型均使用 UTC 时间存储，显示时转换为东八区。
+"""
+
 from datetime import datetime, timezone
 
 from flask_sqlalchemy import SQLAlchemy
