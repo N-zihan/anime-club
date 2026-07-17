@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="收录至各浏览器" />
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="收录至各浏览器">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -419,30 +422,6 @@
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
     </task>
-    <task id="LOCAL-00098" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783246692751</created>
-      <option name="number" value="00098" />
-      <option name="presentableId" value="LOCAL-00098" />
-      <option name="project" value="LOCAL" />
-      <updated>1783246692751</updated>
-    </task>
-    <task id="LOCAL-00099" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783247430437</created>
-      <option name="number" value="00099" />
-      <option name="presentableId" value="LOCAL-00099" />
-      <option name="project" value="LOCAL" />
-      <updated>1783247430437</updated>
-    </task>
-    <task id="LOCAL-00100" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783255504920</created>
-      <option name="number" value="00100" />
-      <option name="presentableId" value="LOCAL-00100" />
-      <option name="project" value="LOCAL" />
-      <updated>1783255504920</updated>
-    </task>
     <task id="LOCAL-00101" summary="动漫社网站">
       <option name="closed" value="true" />
       <created>1783393764940</created>
@@ -811,7 +790,31 @@
       <option name="project" value="LOCAL" />
       <updated>1784298706710</updated>
     </task>
-    <option name="localTasksCounter" value="147" />
+    <task id="LOCAL-00147" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784299200771</created>
+      <option name="number" value="00147" />
+      <option name="presentableId" value="LOCAL-00147" />
+      <option name="project" value="LOCAL" />
+      <updated>1784299200771</updated>
+    </task>
+    <task id="LOCAL-00148" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784299303950</created>
+      <option name="number" value="00148" />
+      <option name="presentableId" value="LOCAL-00148" />
+      <option name="project" value="LOCAL" />
+      <updated>1784299303951</updated>
+    </task>
+    <task id="LOCAL-00149" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784299429789</created>
+      <option name="number" value="00149" />
+      <option name="presentableId" value="LOCAL-00149" />
+      <option name="project" value="LOCAL" />
+      <updated>1784299429789</updated>
+    </task>
+    <option name="localTasksCounter" value="150" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
