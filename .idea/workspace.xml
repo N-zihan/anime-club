@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页">
-      <change beforePath="$PROJECT_DIR$/templates/about.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/about.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,58 +59,58 @@
       <entry key="MS100" value="1.0" />
       <entry key="MS500" value="1.0" />
       <entry key="S2" value="1.0" />
-      <entry key="S5" value="1.0000000000000053" />
-      <entry key="S10" value="1.0000001408745052" />
-      <entry key="S30" value="1.014653767958289" />
-      <entry key="S60" value="1.2694161396888148" />
-      <entry key="M2" value="2.1592920190507985" />
-      <entry key="M5" value="3.7857312415590805" />
-      <entry key="M10" value="4.735886275435311" />
-      <entry key="M15" value="5.1738070506323846" />
-      <entry key="M30" value="6.474503672726006" />
-      <entry key="H1" value="10.032948755355429" />
-      <entry key="H2" value="16.932217522926535" />
-      <entry key="H4" value="28.54143502743177" />
-      <entry key="D1" value="124.88381590126643" />
-      <entry key="W1" value="201.76371873298106" />
+      <entry key="S5" value="1.0" />
+      <entry key="S10" value="1.000000004571137" />
+      <entry key="S30" value="1.001683937355509" />
+      <entry key="S60" value="1.0517139897602101" />
+      <entry key="M2" value="1.435826259840372" />
+      <entry key="M5" value="2.995954261533469" />
+      <entry key="M10" value="4.438758428784239" />
+      <entry key="M15" value="5.179687672322747" />
+      <entry key="M30" value="6.81933397790643" />
+      <entry key="H1" value="10.511784329675868" />
+      <entry key="H2" value="17.486578671960405" />
+      <entry key="H4" value="29.163339807670074" />
+      <entry key="D1" value="125.6065539021859" />
+      <entry key="W1" value="202.69966523888317" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
       <entry key="MS500" value="0.0" />
       <entry key="S2" value="0.0" />
       <entry key="S5" value="0.0" />
-      <entry key="S10" value="4.1124550966712236E-210" />
-      <entry key="S30" value="1.602139727914596E-70" />
-      <entry key="S60" value="1.2657565832001803E-35" />
-      <entry key="M2" value="3.5577472973781875E-18" />
-      <entry key="M5" value="1.0482624737526607E-7" />
-      <entry key="M10" value="3.237703756330429E-4" />
-      <entry key="M15" value="0.00471663934873892" />
-      <entry key="M30" value="0.07033318378344142" />
-      <entry key="H1" value="0.318921721655619" />
-      <entry key="H2" value="0.8529107156767912" />
-      <entry key="H4" value="1.7008546655552053" />
-      <entry key="D1" value="8.07010716601009" />
-      <entry key="W1" value="13.632445829442297" />
+      <entry key="S10" value="1.87985929933993E-218" />
+      <entry key="S30" value="2.658939454794823E-73" />
+      <entry key="S60" value="5.156490526312272E-37" />
+      <entry key="M2" value="7.18087078724598E-19" />
+      <entry key="M5" value="5.5267630430906456E-8" />
+      <entry key="M10" value="2.3509181670466265E-4" />
+      <entry key="M15" value="0.0038103623014520494" />
+      <entry key="M30" value="0.06321600957452093" />
+      <entry key="H1" value="0.30235524055855695" />
+      <entry key="H2" value="0.8304629677196053" />
+      <entry key="H4" value="1.6783230367867945" />
+      <entry key="D1" value="8.052190240350074" />
+      <entry key="W1" value="13.628117966167574" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.18946457081379975" />
-      <entry key="MS500" value="0.7169776240079136" />
-      <entry key="S2" value="0.9201876506248751" />
-      <entry key="S5" value="0.9672763296139374" />
-      <entry key="S10" value="0.9835022148336203" />
-      <entry key="S30" value="1.009121537045566" />
-      <entry key="S60" value="1.266625157982711" />
-      <entry key="M2" value="2.157858661682703" />
-      <entry key="M5" value="3.7851307107379504" />
-      <entry key="M10" value="4.735897113411337" />
-      <entry key="M15" value="5.1782676372760506" />
-      <entry key="M30" value="6.54434832837261" />
-      <entry key="H1" value="10.350997053878757" />
-      <entry key="H2" value="17.78415460292049" />
-      <entry key="H4" value="30.241477365803092" />
-      <entry key="D1" value="132.9534140256886" />
-      <entry key="W1" value="215.39603987330258" />
+      <entry key="MS100" value="0.757858283255199" />
+      <entry key="MS500" value="0.9460576467255959" />
+      <entry key="S2" value="0.9862327044933592" />
+      <entry key="S5" value="0.9944701686732144" />
+      <entry key="S10" value="0.9972312558477923" />
+      <entry key="S30" value="1.0007509866642144" />
+      <entry key="S60" value="1.0511382982455544" />
+      <entry key="M2" value="1.435305932097999" />
+      <entry key="M5" value="2.995545227810839" />
+      <entry key="M10" value="4.438720089566119" />
+      <entry key="M15" value="5.1832603750113355" />
+      <entry key="M30" value="6.882095491461007" />
+      <entry key="H1" value="10.813303815713743" />
+      <entry key="H2" value="18.316089778293993" />
+      <entry key="H4" value="30.840859352958596" />
+      <entry key="D1" value="133.65823591020018" />
+      <entry key="W1" value="216.3276585096717" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -418,22 +418,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00085" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783225855982</created>
-      <option name="number" value="00085" />
-      <option name="presentableId" value="LOCAL-00085" />
-      <option name="project" value="LOCAL" />
-      <updated>1783225855982</updated>
-    </task>
-    <task id="LOCAL-00086" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783233264826</created>
-      <option name="number" value="00086" />
-      <option name="presentableId" value="LOCAL-00086" />
-      <option name="project" value="LOCAL" />
-      <updated>1783233264826</updated>
     </task>
     <task id="LOCAL-00087" summary="动漫社网站">
       <option name="closed" value="true" />
@@ -811,7 +795,23 @@
       <option name="project" value="LOCAL" />
       <updated>1784103517966</updated>
     </task>
-    <option name="localTasksCounter" value="134" />
+    <task id="LOCAL-00134" summary="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页">
+      <option name="closed" value="true" />
+      <created>1784103747937</created>
+      <option name="number" value="00134" />
+      <option name="presentableId" value="LOCAL-00134" />
+      <option name="project" value="LOCAL" />
+      <updated>1784103747937</updated>
+    </task>
+    <task id="LOCAL-00135" summary="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页">
+      <option name="closed" value="true" />
+      <created>1784104032656</created>
+      <option name="number" value="00135" />
+      <option name="presentableId" value="LOCAL-00135" />
+      <option name="project" value="LOCAL" />
+      <updated>1784104032656</updated>
+    </task>
+    <option name="localTasksCounter" value="136" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
