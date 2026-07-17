@@ -180,9 +180,3 @@ def bad_request(e):
 @public_bp.app_errorhandler(413)
 def request_entity_too_large(e):
     return render_template('413.html'), 413
-
-
-# -----------百度收录用------------
-@public_bp.route('/baidu_verify_codeva-mVPCgddV5r.html')
-def baidu_verify_codeva_v5r():
-    return render_template('baidu_verify_codeva-mVPCgddV5r.html')

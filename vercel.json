@@ -14,10 +14,6 @@
   ],
   "routes": [
     {
-      "src": "/baidu_verify_codeva-mVPCgddV5r.html",
-      "dest": "/baidu_verify_codeva-mVPCgddV5r.html"
-    },
-    {
       "src": "/(.*)",
       "dest": "run.py"
     }
