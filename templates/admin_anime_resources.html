@@ -21,13 +21,14 @@
             </div>
         </div>
         <p>{{ res.description or '无描述' }}</p>
-        <p>🔗 链接：<a href="{{ res.link }}" target="_blank">{{ res.link[:50] }}{% if res.link|length > 50 %}...{% endif
+        <p>链接：<a href="{{ res.link }}" target="_blank">{{ res.link[:50] }}{% if res.link|length > 50 %}...{% endif
             %}</a></p>
         {% if res.extract_code %}
         <p>提取码：<strong>{{ res.extract_code }}</strong></p>
         {% endif %}
-        <p><small>提交人：{{ res.uploader or '未知' }} | 提交时间：{{ res.upload_time.strftime('%Y-%m-%d %H:%M')
-            }}</small></p>
+        <p><small>提交人：{{ res.user.username if res.user else '未知' }} | 提交时间：{{
+            res.upload_time.strftime('%Y-%m-%d %H:%M') }}</small></p>
+        }}</small></p>
     </div>
     {% else %}
     <p>暂无待审核资源</p>
@@ -43,7 +44,7 @@
             <strong>{{ res.title }}</strong>
             <div class="card-actions">
                 <a class="delete-btn" href="{{ url_for('admin.admin_anime_resources_delete', id=res.id) }}"
-                   onclick="return confirm('确定删除？')">🗑️ 删除</a>
+                   onclick="return confirm('确定删除？')">删除</a>
             </div>
         </div>
         <p>{{ res.description or '无描述' }}</p>
@@ -52,7 +53,8 @@
         {% if res.extract_code %}
         <p>提取码：<strong>{{ res.extract_code }}</strong></p>
         {% endif %}
-        <p><small>提交人：{{ res.uploader or '未知' }} | 审核通过时间：{{ res.upload_time.strftime('%Y-%m-%d') }}</small>
+        <p><small>提交人：{{ res.user.username if res.user else '未知' }} | 审核通过时间：{{
+            res.upload_time.strftime('%Y-%m-%d') }}</small></p>
         </p>
     </div>
     {% else %}

@@ -4,15 +4,8 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="删除无用文件">
-      <change afterPath="$PROJECT_DIR$/templates/staff_dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="收录至各浏览器">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_login.html" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -24,8 +17,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Flask Main" />
-        <option value="Python Script" />
         <option value="HTML File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -65,60 +58,60 @@
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
       <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0000000000000004" />
-      <entry key="S2" value="1.0001877429968598" />
-      <entry key="S5" value="1.047977844036037" />
-      <entry key="S10" value="1.3338804494747225" />
-      <entry key="S30" value="2.3737835412369854" />
-      <entry key="S60" value="3.0144545873093365" />
-      <entry key="M2" value="3.453337395166107" />
-      <entry key="M5" value="3.7927920043238075" />
-      <entry key="M10" value="4.123004276807329" />
-      <entry key="M15" value="4.514834766739947" />
-      <entry key="M30" value="6.043968177947137" />
-      <entry key="H1" value="8.714838703116571" />
-      <entry key="H2" value="11.960793092904824" />
-      <entry key="H4" value="20.752102225217655" />
-      <entry key="D1" value="113.61911277542826" />
-      <entry key="W1" value="177.57850607609754" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0000000000004743" />
+      <entry key="S10" value="1.000001355217834" />
+      <entry key="S30" value="1.0431879980838175" />
+      <entry key="S60" value="1.6399830356825276" />
+      <entry key="M2" value="3.5125276525079245" />
+      <entry key="M5" value="6.745447462174829" />
+      <entry key="M10" value="8.578210754180366" />
+      <entry key="M15" value="9.322813819044654" />
+      <entry key="M30" value="10.454231933575876" />
+      <entry key="H1" value="12.940864862778412" />
+      <entry key="H2" value="19.19984360097475" />
+      <entry key="H4" value="31.25194993647136" />
+      <entry key="D1" value="129.5659302410747" />
+      <entry key="W1" value="212.80111759203086" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
-      <entry key="MS500" value="0.0" />
-      <entry key="S2" value="5.9366711038810175E-276" />
-      <entry key="S5" value="8.117404646113536E-111" />
-      <entry key="S10" value="9.009664059282975E-56" />
-      <entry key="S30" value="4.483008193558315E-19" />
-      <entry key="S60" value="6.695527009547729E-10" />
-      <entry key="M2" value="2.5875716433652088E-5" />
-      <entry key="M5" value="0.014627056982152104" />
-      <entry key="M10" value="0.12094237049997036" />
-      <entry key="M15" value="0.24456012691009907" />
-      <entry key="M30" value="0.4945302312645892" />
-      <entry key="H1" value="0.7034660793024363" />
-      <entry key="H2" value="0.8662740107989537" />
-      <entry key="H4" value="1.3052943468606135" />
-      <entry key="D1" value="7.208734866905265" />
-      <entry key="W1" value="11.898831870640704" />
+      <entry key="MS500" value="5.737335343177941E-146" />
+      <entry key="S2" value="6.462201417934836E-37" />
+      <entry key="S5" value="5.793542582412862E-15" />
+      <entry key="S10" value="1.3309998407616133E-7" />
+      <entry key="S30" value="0.012072422894204111" />
+      <entry key="S60" value="0.2172043924998165" />
+      <entry key="M2" value="0.9290925158682105" />
+      <entry key="M5" value="2.2289702050430344" />
+      <entry key="M10" value="2.9855299055506803" />
+      <entry key="M15" value="3.2912051380998517" />
+      <entry key="M30" value="3.631006254220334" />
+      <entry key="H1" value="3.872440203532939" />
+      <entry key="H2" value="4.282257279773676" />
+      <entry key="H4" value="5.084757937233732" />
+      <entry key="D1" value="11.533908577671564" />
+      <entry key="W1" value="17.500122343436068" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9726549474122855" />
-      <entry key="MS500" value="0.9944701686732148" />
-      <entry key="S2" value="0.9988020191099234" />
-      <entry key="S5" value="1.047383705590291" />
-      <entry key="S10" value="1.3334664045932767" />
-      <entry key="S30" value="2.3735077831880695" />
-      <entry key="S60" value="3.0142751526031395" />
-      <entry key="M2" value="3.4532587248850954" />
-      <entry key="M5" value="3.8071922969505088" />
-      <entry key="M10" value="4.243142620375414" />
-      <entry key="M15" value="4.7583110645976605" />
-      <entry key="M30" value="6.537390848824228" />
-      <entry key="H1" value="9.417508891197873" />
-      <entry key="H2" value="12.826582771289832" />
-      <entry key="H4" value="22.057058504037485" />
-      <entry key="D1" value="120.82744747755542" />
-      <entry key="W1" value="189.47723593000296" />
+      <entry key="MS100" value="3.4096897524176616E-5" />
+      <entry key="MS500" value="0.12780356632624026" />
+      <entry key="S2" value="0.597909898388062" />
+      <entry key="S5" value="0.814056029377258" />
+      <entry key="S10" value="0.9022519482398003" />
+      <entry key="S30" value="1.0198514520418214" />
+      <entry key="S60" value="1.825016798750934" />
+      <entry key="M2" value="4.400528518362524" />
+      <entry key="M5" value="8.93962567147015" />
+      <entry key="M10" value="11.540984315539657" />
+      <entry key="M15" value="12.597398761713267" />
+      <entry key="M30" value="14.076074498473243" />
+      <entry key="H1" value="16.80827206705019" />
+      <entry key="H2" value="23.479126920236936" />
+      <entry key="H4" value="36.33485700533209" />
+      <entry key="D1" value="141.09913793846843" />
+      <entry key="W1" value="230.30108408862864" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -133,46 +126,49 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Flask 服务器.anime-club.executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.动漫社网站.executor&quot;: &quot;Run&quot;,
-    &quot;HTTP 请求.generated-requests | #1.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.app (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python.index (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.public.executor&quot;: &quot;Run&quot;,
-    &quot;Python.run.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/NZH/Desktop/动漫社网站/static/avatars&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MTThemeTableConfigurable&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Flask 服务器.anime-club.executor": "Run",
+    "Flask 服务器.动漫社网站.executor": "Run",
+    "HTTP 请求.generated-requests | #1.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.app (1).executor": "Run",
+    "Python.app.executor": "Run",
+    "Python.app.py.executor": "Run",
+    "Python.baidu_push.executor": "Run",
+    "Python.index (1).executor": "Run",
+    "Python.public.executor": "Run",
+    "Python.run.executor": "Run",
+    "Python.test.executor": "Run",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/Users/NZH/Desktop/动漫社网站",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "MTThemeTableConfigurable",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\NZH\Desktop\动漫社网站\static\avatars" />
       <recent name="C:\Users\NZH\Desktop\动漫社网站" />
+      <recent name="C:\Users\NZH\Desktop\动漫社网站\static" />
+      <recent name="C:\Users\NZH\Desktop\动漫社网站\static\avatars" />
       <recent name="C:\Users\NZH\Desktop\动漫社网站\static\images" />
       <recent name="C:\Users\NZH\Desktop\动漫社网站\static\history_photos" />
     </key>
@@ -183,7 +179,7 @@
       <recent name="C:\Users\NZH\Desktop\动漫社网站\static" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.run">
+  <component name="RunManager" selected="Python.baidu_push">
     <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="anime-club" />
       <option name="ENV_FILES" value=".env" />
@@ -284,7 +280,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="index" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="baidu_push" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="动漫社网站" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -299,7 +295,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="DEBUG_JUST_MY_CODE" value="false" />
       <option name="RUN_TOOL" value="" />
-      <option name="SCRIPT_NAME" value="C:\Users\NZH\Desktop\动漫社网站\index.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/baidu_push.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -398,10 +394,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.baidu_push" />
         <item itemvalue="Python.run" />
         <item itemvalue="Python.public" />
         <item itemvalue="Python.app.py" />
-        <item itemvalue="Python.app" />
         <item itemvalue="Python.app" />
       </list>
     </recent_temporary>
@@ -425,230 +421,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00073" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783185101410</created>
-      <option name="number" value="00073" />
-      <option name="presentableId" value="LOCAL-00073" />
-      <option name="project" value="LOCAL" />
-      <updated>1783185101410</updated>
-    </task>
-    <task id="LOCAL-00074" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783186291178</created>
-      <option name="number" value="00074" />
-      <option name="presentableId" value="LOCAL-00074" />
-      <option name="project" value="LOCAL" />
-      <updated>1783186291178</updated>
-    </task>
-    <task id="LOCAL-00075" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783221003228</created>
-      <option name="number" value="00075" />
-      <option name="presentableId" value="LOCAL-00075" />
-      <option name="project" value="LOCAL" />
-      <updated>1783221003228</updated>
-    </task>
-    <task id="LOCAL-00076" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783221746235</created>
-      <option name="number" value="00076" />
-      <option name="presentableId" value="LOCAL-00076" />
-      <option name="project" value="LOCAL" />
-      <updated>1783221746235</updated>
-    </task>
-    <task id="LOCAL-00077" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783222894509</created>
-      <option name="number" value="00077" />
-      <option name="presentableId" value="LOCAL-00077" />
-      <option name="project" value="LOCAL" />
-      <updated>1783222894509</updated>
-    </task>
-    <task id="LOCAL-00078" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783223471957</created>
-      <option name="number" value="00078" />
-      <option name="presentableId" value="LOCAL-00078" />
-      <option name="project" value="LOCAL" />
-      <updated>1783223471958</updated>
-    </task>
-    <task id="LOCAL-00079" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783223903918</created>
-      <option name="number" value="00079" />
-      <option name="presentableId" value="LOCAL-00079" />
-      <option name="project" value="LOCAL" />
-      <updated>1783223903918</updated>
-    </task>
-    <task id="LOCAL-00080" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783224626318</created>
-      <option name="number" value="00080" />
-      <option name="presentableId" value="LOCAL-00080" />
-      <option name="project" value="LOCAL" />
-      <updated>1783224626318</updated>
-    </task>
-    <task id="LOCAL-00081" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783224870095</created>
-      <option name="number" value="00081" />
-      <option name="presentableId" value="LOCAL-00081" />
-      <option name="project" value="LOCAL" />
-      <updated>1783224870095</updated>
-    </task>
-    <task id="LOCAL-00082" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783225340582</created>
-      <option name="number" value="00082" />
-      <option name="presentableId" value="LOCAL-00082" />
-      <option name="project" value="LOCAL" />
-      <updated>1783225340582</updated>
-    </task>
-    <task id="LOCAL-00083" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783225693745</created>
-      <option name="number" value="00083" />
-      <option name="presentableId" value="LOCAL-00083" />
-      <option name="project" value="LOCAL" />
-      <updated>1783225693746</updated>
-    </task>
-    <task id="LOCAL-00084" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783225852403</created>
-      <option name="number" value="00084" />
-      <option name="presentableId" value="LOCAL-00084" />
-      <option name="project" value="LOCAL" />
-      <updated>1783225852403</updated>
-    </task>
-    <task id="LOCAL-00085" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783225855982</created>
-      <option name="number" value="00085" />
-      <option name="presentableId" value="LOCAL-00085" />
-      <option name="project" value="LOCAL" />
-      <updated>1783225855982</updated>
-    </task>
-    <task id="LOCAL-00086" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783233264826</created>
-      <option name="number" value="00086" />
-      <option name="presentableId" value="LOCAL-00086" />
-      <option name="project" value="LOCAL" />
-      <updated>1783233264826</updated>
-    </task>
-    <task id="LOCAL-00087" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783234019061</created>
-      <option name="number" value="00087" />
-      <option name="presentableId" value="LOCAL-00087" />
-      <option name="project" value="LOCAL" />
-      <updated>1783234019061</updated>
-    </task>
-    <task id="LOCAL-00088" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783235105191</created>
-      <option name="number" value="00088" />
-      <option name="presentableId" value="LOCAL-00088" />
-      <option name="project" value="LOCAL" />
-      <updated>1783235105191</updated>
-    </task>
-    <task id="LOCAL-00089" summary="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
-      <option name="closed" value="true" />
-      <created>1783235175382</created>
-      <option name="number" value="00089" />
-      <option name="presentableId" value="LOCAL-00089" />
-      <option name="project" value="LOCAL" />
-      <updated>1783235175382</updated>
-    </task>
-    <task id="LOCAL-00090" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783235475366</created>
-      <option name="number" value="00090" />
-      <option name="presentableId" value="LOCAL-00090" />
-      <option name="project" value="LOCAL" />
-      <updated>1783235475366</updated>
-    </task>
-    <task id="LOCAL-00091" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783235499239</created>
-      <option name="number" value="00091" />
-      <option name="presentableId" value="LOCAL-00091" />
-      <option name="project" value="LOCAL" />
-      <updated>1783235499239</updated>
-    </task>
-    <task id="LOCAL-00092" summary="Merge remote-tracking branch 'origin/main'">
-      <option name="closed" value="true" />
-      <created>1783237501753</created>
-      <option name="number" value="00092" />
-      <option name="presentableId" value="LOCAL-00092" />
-      <option name="project" value="LOCAL" />
-      <updated>1783237501753</updated>
-    </task>
-    <task id="LOCAL-00093" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783240565295</created>
-      <option name="number" value="00093" />
-      <option name="presentableId" value="LOCAL-00093" />
-      <option name="project" value="LOCAL" />
-      <updated>1783240565295</updated>
-    </task>
-    <task id="LOCAL-00094" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783241027347</created>
-      <option name="number" value="00094" />
-      <option name="presentableId" value="LOCAL-00094" />
-      <option name="project" value="LOCAL" />
-      <updated>1783241027347</updated>
-    </task>
-    <task id="LOCAL-00095" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783241971213</created>
-      <option name="number" value="00095" />
-      <option name="presentableId" value="LOCAL-00095" />
-      <option name="project" value="LOCAL" />
-      <updated>1783241971213</updated>
-    </task>
-    <task id="LOCAL-00096" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783246116190</created>
-      <option name="number" value="00096" />
-      <option name="presentableId" value="LOCAL-00096" />
-      <option name="project" value="LOCAL" />
-      <updated>1783246116190</updated>
-    </task>
-    <task id="LOCAL-00097" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783246242800</created>
-      <option name="number" value="00097" />
-      <option name="presentableId" value="LOCAL-00097" />
-      <option name="project" value="LOCAL" />
-      <updated>1783246242800</updated>
-    </task>
-    <task id="LOCAL-00098" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783246692751</created>
-      <option name="number" value="00098" />
-      <option name="presentableId" value="LOCAL-00098" />
-      <option name="project" value="LOCAL" />
-      <updated>1783246692751</updated>
-    </task>
-    <task id="LOCAL-00099" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783247430437</created>
-      <option name="number" value="00099" />
-      <option name="presentableId" value="LOCAL-00099" />
-      <option name="project" value="LOCAL" />
-      <updated>1783247430437</updated>
-    </task>
-    <task id="LOCAL-00100" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783255504920</created>
-      <option name="number" value="00100" />
-      <option name="presentableId" value="LOCAL-00100" />
-      <option name="project" value="LOCAL" />
-      <updated>1783255504920</updated>
     </task>
     <task id="LOCAL-00101" summary="动漫社网站">
       <option name="closed" value="true" />
@@ -818,7 +590,231 @@
       <option name="project" value="LOCAL" />
       <updated>1783776227623</updated>
     </task>
-    <option name="localTasksCounter" value="122" />
+    <task id="LOCAL-00122" summary="README.md太丑了，所以改了">
+      <option name="closed" value="true" />
+      <created>1784014646702</created>
+      <option name="number" value="00122" />
+      <option name="presentableId" value="LOCAL-00122" />
+      <option name="project" value="LOCAL" />
+      <updated>1784014646702</updated>
+    </task>
+    <task id="LOCAL-00123" summary="修复URL使用中文导致报错的问题">
+      <option name="closed" value="true" />
+      <created>1784017451062</created>
+      <option name="number" value="00123" />
+      <option name="presentableId" value="LOCAL-00123" />
+      <option name="project" value="LOCAL" />
+      <updated>1784017451062</updated>
+    </task>
+    <task id="LOCAL-00124" summary="上传图片功能面向全体社员，创建新手引导">
+      <option name="closed" value="true" />
+      <created>1784018340456</created>
+      <option name="number" value="00124" />
+      <option name="presentableId" value="LOCAL-00124" />
+      <option name="project" value="LOCAL" />
+      <updated>1784018340456</updated>
+    </task>
+    <task id="LOCAL-00125" summary="上传图片功能面向全体社员，创建新手引导">
+      <option name="closed" value="true" />
+      <created>1784018899349</created>
+      <option name="number" value="00125" />
+      <option name="presentableId" value="LOCAL-00125" />
+      <option name="project" value="LOCAL" />
+      <updated>1784018899349</updated>
+    </task>
+    <task id="LOCAL-00126" summary="优化留言板界面">
+      <option name="closed" value="true" />
+      <created>1784024594085</created>
+      <option name="number" value="00126" />
+      <option name="presentableId" value="LOCAL-00126" />
+      <option name="project" value="LOCAL" />
+      <updated>1784024594085</updated>
+    </task>
+    <task id="LOCAL-00127" summary="优化留言板界面">
+      <option name="closed" value="true" />
+      <created>1784024963535</created>
+      <option name="number" value="00127" />
+      <option name="presentableId" value="LOCAL-00127" />
+      <option name="project" value="LOCAL" />
+      <updated>1784024963535</updated>
+    </task>
+    <task id="LOCAL-00128" summary="优化留言板界面">
+      <option name="closed" value="true" />
+      <created>1784025438584</created>
+      <option name="number" value="00128" />
+      <option name="presentableId" value="LOCAL-00128" />
+      <option name="project" value="LOCAL" />
+      <updated>1784025438584</updated>
+    </task>
+    <task id="LOCAL-00129" summary="优化留言板界面">
+      <option name="closed" value="true" />
+      <created>1784026009006</created>
+      <option name="number" value="00129" />
+      <option name="presentableId" value="LOCAL-00129" />
+      <option name="project" value="LOCAL" />
+      <updated>1784026009006</updated>
+    </task>
+    <task id="LOCAL-00130" summary="admin新增用户管理导出Excel文件">
+      <option name="closed" value="true" />
+      <created>1784096084762</created>
+      <option name="number" value="00130" />
+      <option name="presentableId" value="LOCAL-00130" />
+      <option name="project" value="LOCAL" />
+      <updated>1784096084763</updated>
+    </task>
+    <task id="LOCAL-00131" summary="admin新增用户管理导出Excel文件">
+      <option name="closed" value="true" />
+      <created>1784096227047</created>
+      <option name="number" value="00131" />
+      <option name="presentableId" value="LOCAL-00131" />
+      <option name="project" value="LOCAL" />
+      <updated>1784096227047</updated>
+    </task>
+    <task id="LOCAL-00132" summary="admin新增用户管理导出Excel文件">
+      <option name="closed" value="true" />
+      <created>1784096824987</created>
+      <option name="number" value="00132" />
+      <option name="presentableId" value="LOCAL-00132" />
+      <option name="project" value="LOCAL" />
+      <updated>1784096824988</updated>
+    </task>
+    <task id="LOCAL-00133" summary="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页">
+      <option name="closed" value="true" />
+      <created>1784103517966</created>
+      <option name="number" value="00133" />
+      <option name="presentableId" value="LOCAL-00133" />
+      <option name="project" value="LOCAL" />
+      <updated>1784103517966</updated>
+    </task>
+    <task id="LOCAL-00134" summary="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页">
+      <option name="closed" value="true" />
+      <created>1784103747937</created>
+      <option name="number" value="00134" />
+      <option name="presentableId" value="LOCAL-00134" />
+      <option name="project" value="LOCAL" />
+      <updated>1784103747937</updated>
+    </task>
+    <task id="LOCAL-00135" summary="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页">
+      <option name="closed" value="true" />
+      <created>1784104032656</created>
+      <option name="number" value="00135" />
+      <option name="presentableId" value="LOCAL-00135" />
+      <option name="project" value="LOCAL" />
+      <updated>1784104032656</updated>
+    </task>
+    <task id="LOCAL-00136" summary="。">
+      <option name="closed" value="true" />
+      <created>1784270376576</created>
+      <option name="number" value="00136" />
+      <option name="presentableId" value="LOCAL-00136" />
+      <option name="project" value="LOCAL" />
+      <updated>1784270376577</updated>
+    </task>
+    <task id="LOCAL-00137" summary="。">
+      <option name="closed" value="true" />
+      <created>1784272296940</created>
+      <option name="number" value="00137" />
+      <option name="presentableId" value="LOCAL-00137" />
+      <option name="project" value="LOCAL" />
+      <updated>1784272296940</updated>
+    </task>
+    <task id="LOCAL-00138" summary="。">
+      <option name="closed" value="true" />
+      <created>1784278515453</created>
+      <option name="number" value="00138" />
+      <option name="presentableId" value="LOCAL-00138" />
+      <option name="project" value="LOCAL" />
+      <updated>1784278515453</updated>
+    </task>
+    <task id="LOCAL-00139" summary="。">
+      <option name="closed" value="true" />
+      <created>1784283506352</created>
+      <option name="number" value="00139" />
+      <option name="presentableId" value="LOCAL-00139" />
+      <option name="project" value="LOCAL" />
+      <updated>1784283506353</updated>
+    </task>
+    <task id="LOCAL-00140" summary="。">
+      <option name="closed" value="true" />
+      <created>1784283822528</created>
+      <option name="number" value="00140" />
+      <option name="presentableId" value="LOCAL-00140" />
+      <option name="project" value="LOCAL" />
+      <updated>1784283822528</updated>
+    </task>
+    <task id="LOCAL-00141" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784288481858</created>
+      <option name="number" value="00141" />
+      <option name="presentableId" value="LOCAL-00141" />
+      <option name="project" value="LOCAL" />
+      <updated>1784288481858</updated>
+    </task>
+    <task id="LOCAL-00142" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784288747443</created>
+      <option name="number" value="00142" />
+      <option name="presentableId" value="LOCAL-00142" />
+      <option name="project" value="LOCAL" />
+      <updated>1784288747443</updated>
+    </task>
+    <task id="LOCAL-00143" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784289042979</created>
+      <option name="number" value="00143" />
+      <option name="presentableId" value="LOCAL-00143" />
+      <option name="project" value="LOCAL" />
+      <updated>1784289042979</updated>
+    </task>
+    <task id="LOCAL-00144" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784289489599</created>
+      <option name="number" value="00144" />
+      <option name="presentableId" value="LOCAL-00144" />
+      <option name="project" value="LOCAL" />
+      <updated>1784289489599</updated>
+    </task>
+    <task id="LOCAL-00145" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784298547350</created>
+      <option name="number" value="00145" />
+      <option name="presentableId" value="LOCAL-00145" />
+      <option name="project" value="LOCAL" />
+      <updated>1784298547350</updated>
+    </task>
+    <task id="LOCAL-00146" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784298706710</created>
+      <option name="number" value="00146" />
+      <option name="presentableId" value="LOCAL-00146" />
+      <option name="project" value="LOCAL" />
+      <updated>1784298706710</updated>
+    </task>
+    <task id="LOCAL-00147" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784299200771</created>
+      <option name="number" value="00147" />
+      <option name="presentableId" value="LOCAL-00147" />
+      <option name="project" value="LOCAL" />
+      <updated>1784299200771</updated>
+    </task>
+    <task id="LOCAL-00148" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784299303950</created>
+      <option name="number" value="00148" />
+      <option name="presentableId" value="LOCAL-00148" />
+      <option name="project" value="LOCAL" />
+      <updated>1784299303951</updated>
+    </task>
+    <task id="LOCAL-00149" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784299429789</created>
+      <option name="number" value="00149" />
+      <option name="presentableId" value="LOCAL-00149" />
+      <option name="project" value="LOCAL" />
+      <updated>1784299429789</updated>
+    </task>
+    <option name="localTasksCounter" value="150" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -849,7 +845,15 @@
     <MESSAGE value="新增413错误页面以备用" />
     <MESSAGE value="简化注释，调整格式" />
     <MESSAGE value="删除无用文件" />
-    <option name="LAST_COMMIT_MESSAGE" value="删除无用文件" />
+    <MESSAGE value="README.md太丑了，所以改了" />
+    <MESSAGE value="修复URL使用中文导致报错的问题" />
+    <MESSAGE value="上传图片功能面向全体社员，创建新手引导" />
+    <MESSAGE value="优化留言板界面" />
+    <MESSAGE value="admin新增用户管理导出Excel文件" />
+    <MESSAGE value="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页" />
+    <MESSAGE value="。" />
+    <MESSAGE value="收录至各浏览器" />
+    <option name="LAST_COMMIT_MESSAGE" value="收录至各浏览器" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

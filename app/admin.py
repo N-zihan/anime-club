@@ -1,8 +1,31 @@
+"""
+南平一中动漫社官网 · 管理后台模块
+====================================
+
+本模块为社团管理层提供完整的后台管理功能，包含以下子系统：
+
+1. 活动管理 —— 增删改社团活动，支持活动关联照片的级联删除
+2. 照片墙管理 —— 上传/删除活动照片，存储至 Supabase Storage
+3. 番剧资源管理 —— 审核社员推荐的番剧，或手动添加资源
+4. 用户管理 —— 查看社员列表，切换运营/站长身份，删除用户
+
+权限体系：
+- admin_required 装饰器：允许站长或运营访问
+- owner_required 装饰器：仅允许站长访问（用于敏感操作）
+
+后台入口：
+- /admin/entry 统一入口，根据角色自动分流至站长或运营面板
+"""
+
+import io
 import uuid
 from datetime import datetime
 from functools import wraps
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import send_file
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
 
 from .models import db, User, Activity, Photo, AnimeResource
 from .utils import supabase, allowed_file
@@ -13,6 +36,7 @@ admin_bp = Blueprint('admin', __name__)
 # ---------- 权限装饰器 ----------
 def admin_required(f):
     """运营或站长均可访问，直接从 Session 读取角色"""
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         role = session.get('user_role')
@@ -20,17 +44,20 @@ def admin_required(f):
             flash('你没有管理权限', 'danger')
             return redirect(url_for('public.index'))
         return f(*args, **kwargs)
+
     return decorated_function
 
 
 def owner_required(f):
     """仅站长可访问，直接从 Session 读取角色"""
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get('user_role') != 'owner':
             flash('该功能仅站长可用', 'danger')
             return redirect(url_for('admin.dashboard'))
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -129,8 +156,11 @@ def admin_gallery():
 
 
 @admin_bp.route('/admin/gallery/upload', methods=['POST'])
-@admin_required
 def admin_gallery_upload():
+    if not session.get('user_id'):
+        flash('请先登录再上传照片', 'warning')
+        return redirect(url_for('auth.login'))
+
     if 'file' not in request.files:
         flash('没有文件', 'danger')
         return redirect(url_for('admin.admin_gallery'))
@@ -160,27 +190,13 @@ def admin_gallery_upload():
         photo = Photo(
             filename=filename,
             activity_id=activity_id if activity_id else None,
-            uploader=session.get('username', 'admin')
+            uploader=session.get('username', '社员')  # 记录上传者
         )
         db.session.add(photo)
         db.session.commit()
         flash('照片上传成功', 'success')
     else:
         flash('不支持的文件类型', 'danger')
-    return redirect(url_for('admin.admin_gallery'))
-
-
-@admin_bp.route('/admin/gallery/delete/<int:photo_id>')
-@admin_required
-def admin_gallery_delete(photo_id):
-    photo = Photo.query.get_or_404(photo_id)
-    try:
-        supabase.storage.from_('photos').remove([photo.filename])
-    except Exception as e:
-        flash(f'删除云文件失败: {str(e)}', 'warning')
-    db.session.delete(photo)
-    db.session.commit()
-    flash('照片已删除', 'success')
     return redirect(url_for('admin.admin_gallery'))
 
 
@@ -239,7 +255,7 @@ def admin_anime_resources_add():
             description=description,
             link=link,
             extract_code=extract_code,
-            uploader=session.get('username', 'admin'),
+            user_id=session.get('user_id'),  # 管理员添加时，以当前登录用户为提交人
             status='approved'
         )
         db.session.add(resource)
@@ -292,3 +308,50 @@ def admin_toggle_owner(user_id):
     db.session.commit()
     flash(f'用户 {user.username} 的站长状态已更新', 'success')
     return redirect(url_for('admin.admin_users'))
+
+
+@admin_bp.route('/admin/users/export')
+@admin_required
+def export_users_excel():
+    users = User.query.order_by(User.registered_at.desc()).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = '社员名单'
+
+    # 表头
+    headers = ['ID', '用户名', 'QQ号', '注册时间', '运营', '站长']
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+
+    # 数据行
+    for row_idx, user in enumerate(users, 2):
+        ws.cell(row=row_idx, column=1, value=user.id)
+        ws.cell(row=row_idx, column=2, value=user.username)
+        ws.cell(row=row_idx, column=3, value=user.qq)
+        ws.cell(row=row_idx, column=4, value=user.registered_at.strftime('%Y-%m-%d %H:%M'))
+        ws.cell(row=row_idx, column=5, value='是' if user.is_staff else '否')
+        ws.cell(row=row_idx, column=6, value='是' if user.is_owner else '否')
+
+    # 列宽自适应
+    for col in range(1, 7):
+        max_length = 0
+        for row in range(1, len(users) + 2):
+            cell_value = ws.cell(row=row, column=col).value
+            if cell_value:
+                max_length = max(max_length, len(str(cell_value)))
+        ws.column_dimensions[chr(64 + col)].width = min(max_length + 2, 30)  # A=65, B=66, ...
+
+    # 写入内存
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=f'社员名单_{datetime.now().strftime("%Y%m%d")}.xlsx'
+    )

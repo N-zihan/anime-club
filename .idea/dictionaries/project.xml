@@ -2,7 +2,9 @@
   <dictionary name="project">
     <words>
       <w>Ciallo</w>
+      <w>Supabase</w>
       <w>endblock</w>
+      <w>supabase</w>
     </words>
   </dictionary>
 </component>

@@ -1,3 +1,23 @@
+"""
+南平一中动漫社官网 · 用户认证模块
+====================================
+
+本模块处理社员账号的注册、登录、登出和注销功能。
+
+核心设计：
+- 注册时要求填写社团 QQ 群号作为验证码，防止校外人员注册
+- 用户名支持中文、字母、数字、下划线（2-20位）
+- QQ 号需为 5-12 位纯数字
+- 密码使用 werkzeug 进行哈希存储
+
+登录成功后自动判断用户角色：
+- is_owner=True → 站长身份（session.user_role = 'owner'）
+- is_staff=True → 运营身份（session.user_role = 'staff'）
+- 普通社员 → session.user_role = 'member'
+
+这些角色信息用于导航栏显示"管理"入口以及权限控制。
+"""
+
 import os
 import re
 
@@ -18,8 +38,9 @@ def register():
         group = request.form.get('group')
         password = request.form.get('password')
 
-        if not re.match(r'^[A-Za-z0-9_]{2,20}$', username):
-            flash('用户名只允许字母、数字、下划线，长度2-20个字符', 'danger')
+        username_pattern = r'^[\u4e00-\u9fa5A-Za-z0-9_]{2,20}$'
+        if not re.match(username_pattern, username):
+            flash('用户名只允许中文、字母、数字、下划线，长度2-20个字符', 'danger')
             return redirect(url_for('auth.register'))
 
         if group != GROUP_VERIFICATION_CODE:
