@@ -66,16 +66,16 @@ def register():
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    username = ''  # 默认空值，用于GET请求
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             session['user_id'] = user.id
             session['username'] = user.username
             session.pop('is_guest', None)
 
-            # 🔥 登录时判定角色
             if user.is_owner:
                 session['user_role'] = 'owner'
             elif user.is_staff:
@@ -87,7 +87,9 @@ def login():
             return redirect(url_for('public.index'))
         else:
             flash('用户名或密码错误', 'danger')
-    return render_template('login.html')
+            # 关键修改：登录失败时把用户名传回模板，不清空
+            return render_template('login.html', username=username)
+    return render_template('login.html', username=username)
 
 
 @auth_bp.route('/logout')
