@@ -85,9 +85,32 @@ def board():
             db.session.commit()
         return redirect(url_for('public.board'))
 
-    messages = db.session.query(Message).options(joinedload(Message.user)).order_by(Message.timestamp.desc()).all()
+    # 获取所有留言（预加载用户）
+    messages = db.session.query(Message).options(
+        joinedload(Message.user)
+    ).order_by(Message.timestamp.desc()).all()
+
+    # 获取所有回复（预加载用户和父回复用户）
+    all_replies = Reply.query.options(
+        joinedload(Reply.user),
+        joinedload(Reply.parent_reply).joinedload(Reply.user)
+    ).order_by(Reply.timestamp.asc()).all()
+
+    # 回复时间加8小时（东八区）
+    for reply in all_replies:
+        reply.timestamp = reply.timestamp + timedelta(hours=8)
+
+    # 为每条留言筛选出其对应的回复列表
+    reply_dict_by_msg = {}
+    for reply in all_replies:
+        if reply.message_id not in reply_dict_by_msg:
+            reply_dict_by_msg[reply.message_id] = []
+        reply_dict_by_msg[reply.message_id].append(reply)
+
     for msg in messages:
         msg.timestamp = msg.timestamp + timedelta(hours=8)
+        msg._replies = reply_dict_by_msg.get(msg.id, [])
+
     return render_template('board.html', messages=messages)
 
 
@@ -98,14 +121,18 @@ def add_reply(message_id):
     if session.get('is_guest'):
         flash('游客不能回复留言', 'warning')
         return redirect(url_for('public.board'))
+
     nickname = session.get('username', '匿名')
     content = request.form.get('content')
+    parent_reply_id = request.form.get('parent_reply_id')
+
     if content:
         reply = Reply(
             nickname=nickname,
             content=content,
             message_id=message_id,
-            user_id=session.get('user_id')
+            user_id=session.get('user_id'),
+            parent_reply_id=int(parent_reply_id) if parent_reply_id else None
         )
         db.session.add(reply)
         db.session.commit()
