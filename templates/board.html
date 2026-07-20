@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block title %}留言板{% endblock %}
-
 {% block content %}
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% for category, message in messages if category in ['danger', 'warning'] %}
@@ -24,28 +23,46 @@
                     <span class="msg-time">{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
                 </div>
             </div>
-            <p>{{ msg.content }}</p>
+            <p class="message-body">{{ msg.content }}</p>
 
-            {% if msg.replies %}
-            <div style="margin-top: 10px; margin-left: 20px; background:#f9f9f9; padding:8px; border-radius:6px;">
+            {% if msg.replies.all() %}
+            <div class="replies-section">
                 {% for reply in msg.replies %}
-                <div style="border-bottom:1px solid #eee; margin-bottom:6px;">
-                    <img alt="{{ reply.user.username if reply.user else reply.nickname }}"
-                         src="{% if reply.user_id %}{{ url_for('user.get_avatar', user_id=reply.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}"
-                         style="width:20px; height:20px; border-radius:50%; object-fit:cover; margin-right:8px;">
-                    <strong>{{ reply.user.username if reply.user else reply.nickname }}</strong>
-                    <span style="color:#7a8a9a; font-size:0.8rem;">· {{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
-                    <p>{{ reply.content }}</p>
+                <div class="reply-item">
+                    <img class="reply-avatar" alt="{{ reply.user.username if reply.user else reply.nickname }}"
+                         src="{% if reply.user_id %}{{ url_for('user.get_avatar', user_id=reply.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}">
+                    <div class="reply-content">
+                        <div class="reply-meta">
+                            <strong>{{ reply.user.username if reply.user else reply.nickname }}</strong>
+                            <span class="msg-time">{{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                        <p>{{ reply.content }}</p>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
 
-            <form action="{{ url_for('public.add_reply', message_id=msg.id) }}" method="POST"
-                  onsubmit="this.querySelector('input[type=submit]').disabled = true;"
-                  style="margin-top: 10px;">
-                <textarea cols="50" name="content" placeholder="写回复..." required rows="2"></textarea>
-                <input type="submit" value="回复">
+            <button class="reply-toggle" onclick="toggleReply(this)" title="回复">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 17 4 12 9 7"/>
+                    <path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
+                </svg>
+                回复
+            </button>
+
+            <form class="reply-form" action="{{ url_for('public.add_reply', message_id=msg.id) }}" method="POST"
+                  onsubmit="this.querySelector('.reply-submit').disabled = true;">
+                <div class="reply-input-row">
+                    <textarea name="content" placeholder="写下你的回复..." required rows="2"></textarea>
+                    <button class="reply-submit" type="submit">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                        发送
+                    </button>
+                </div>
             </form>
         </div>
         {% endfor %}
