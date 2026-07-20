@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="fix： 恢复新手引导代码，保留CSS版本号" />
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="fix： 恢复新手引导代码，保留CSS版本号">
+      <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -419,14 +421,6 @@
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
     </task>
-    <task id="LOCAL-00102" summary="动漫社网站">
-      <option name="closed" value="true" />
-      <created>1783393969485</created>
-      <option name="number" value="00102" />
-      <option name="presentableId" value="LOCAL-00102" />
-      <option name="project" value="LOCAL" />
-      <updated>1783393969485</updated>
-    </task>
     <task id="LOCAL-00103" summary="动漫社网站">
       <option name="closed" value="true" />
       <created>1783394050962</created>
@@ -811,7 +805,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784544305444</updated>
     </task>
-    <option name="localTasksCounter" value="151" />
+    <task id="LOCAL-00151" summary="fix： 恢复新手引导代码，保留CSS版本号">
+      <option name="closed" value="true" />
+      <created>1784544757399</created>
+      <option name="number" value="00151" />
+      <option name="presentableId" value="LOCAL-00151" />
+      <option name="project" value="LOCAL" />
+      <updated>1784544757399</updated>
+    </task>
+    <option name="localTasksCounter" value="152" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

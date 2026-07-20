@@ -77,6 +77,10 @@ class Reply(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     user = db.relationship('User', backref='replies')
 
+    # 新增：用于回复的回复
+    parent_reply_id = db.Column(db.Integer, db.ForeignKey('reply.id'), nullable=True)
+    parent_reply = db.relationship('Reply', remote_side=[id], backref=db.backref('children', lazy='dynamic'))
+
 
 class AnimeResource(db.Model):
     id = db.Column(db.Integer, primary_key=True)
