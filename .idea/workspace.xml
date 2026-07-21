@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="fix： 恢复新手引导代码，保留CSS版本号" />
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="优化登录功能">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -54,61 +57,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0" />
-      <entry key="S5" value="1.0000000000004743" />
-      <entry key="S10" value="1.000001355217834" />
-      <entry key="S30" value="1.0431879980838175" />
-      <entry key="S60" value="1.6399830356825276" />
-      <entry key="M2" value="3.5125276525079245" />
-      <entry key="M5" value="6.745447462174829" />
-      <entry key="M10" value="8.578210754180366" />
-      <entry key="M15" value="9.322813819044654" />
-      <entry key="M30" value="10.454231933575876" />
-      <entry key="H1" value="12.940864862778412" />
-      <entry key="H2" value="19.19984360097475" />
-      <entry key="H4" value="31.25194993647136" />
-      <entry key="D1" value="129.5659302410747" />
-      <entry key="W1" value="212.80111759203086" />
+      <entry key="MS100" value="1.2445919684161555" />
+      <entry key="MS500" value="2.0996435106669837" />
+      <entry key="S2" value="3.707573130463407" />
+      <entry key="S5" value="7.467486863272606" />
+      <entry key="S10" value="12.556387689686122" />
+      <entry key="S30" value="21.67430598996363" />
+      <entry key="S60" value="25.72125058439614" />
+      <entry key="M2" value="28.182145767355227" />
+      <entry key="M5" value="29.826630236798284" />
+      <entry key="M10" value="30.459258735988975" />
+      <entry key="M15" value="30.937808028296594" />
+      <entry key="M30" value="32.94590171956811" />
+      <entry key="H1" value="37.10164143896464" />
+      <entry key="H2" value="44.60830068122449" />
+      <entry key="H4" value="57.664980017702725" />
+      <entry key="D1" value="157.8286741169294" />
+      <entry key="W1" value="244.67918518052835" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
-      <entry key="MS500" value="5.737335343177941E-146" />
-      <entry key="S2" value="6.462201417934836E-37" />
-      <entry key="S5" value="5.793542582412862E-15" />
-      <entry key="S10" value="1.3309998407616133E-7" />
-      <entry key="S30" value="0.012072422894204111" />
-      <entry key="S60" value="0.2172043924998165" />
-      <entry key="M2" value="0.9290925158682105" />
-      <entry key="M5" value="2.2289702050430344" />
-      <entry key="M10" value="2.9855299055506803" />
-      <entry key="M15" value="3.2912051380998517" />
-      <entry key="M30" value="3.631006254220334" />
-      <entry key="H1" value="3.872440203532939" />
-      <entry key="H2" value="4.282257279773676" />
-      <entry key="H4" value="5.084757937233732" />
-      <entry key="D1" value="11.533908577671564" />
-      <entry key="W1" value="17.500122343436068" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="6.409766836985353E-290" />
+      <entry key="S10" value="4.4271783474322186E-145" />
+      <entry key="S30" value="1.802094017879079E-48" />
+      <entry key="S60" value="2.6537506042699337E-24" />
+      <entry key="M2" value="3.247541524769952E-12" />
+      <entry key="M5" value="5.8277721502442574E-5" />
+      <entry key="M10" value="0.01526583542217166" />
+      <entry key="M15" value="0.09768346413014473" />
+      <entry key="M30" value="0.62554714605418" />
+      <entry key="H1" value="1.6073159165012079" />
+      <entry key="H2" value="2.758868616223731" />
+      <entry key="H4" value="4.081308410661718" />
+      <entry key="D1" value="11.118973450580333" />
+      <entry key="W1" value="17.40876524547278" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="3.4096897524176616E-5" />
-      <entry key="MS500" value="0.12780356632624026" />
-      <entry key="S2" value="0.597909898388062" />
-      <entry key="S5" value="0.814056029377258" />
-      <entry key="S10" value="0.9022519482398003" />
-      <entry key="S30" value="1.0198514520418214" />
-      <entry key="S60" value="1.825016798750934" />
-      <entry key="M2" value="4.400528518362524" />
-      <entry key="M5" value="8.93962567147015" />
-      <entry key="M10" value="11.540984315539657" />
-      <entry key="M15" value="12.597398761713267" />
-      <entry key="M30" value="14.076074498473243" />
-      <entry key="H1" value="16.80827206705019" />
-      <entry key="H2" value="23.479126920236936" />
-      <entry key="H4" value="36.33485700533209" />
-      <entry key="D1" value="141.09913793846843" />
-      <entry key="W1" value="230.30108408862864" />
+      <entry key="MS100" value="1.2157449642495397" />
+      <entry key="MS500" value="2.088854279139374" />
+      <entry key="S2" value="3.702987818718366" />
+      <entry key="S5" value="7.4638309164019665" />
+      <entry key="S10" value="12.552905978839354" />
+      <entry key="S30" value="21.6718802630911" />
+      <entry key="S60" value="25.719724841379545" />
+      <entry key="M2" value="28.181284585377153" />
+      <entry key="M5" value="29.826316400366103" />
+      <entry key="M10" value="30.474217249433273" />
+      <entry key="M15" value="31.034867829821856" />
+      <entry key="M30" value="33.56979865402533" />
+      <entry key="H1" value="38.70682753707248" />
+      <entry key="H2" value="47.36523055822186" />
+      <entry key="H4" value="61.7447906356693" />
+      <entry key="D1" value="168.94696973393044" />
+      <entry key="W1" value="262.0877950793488" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -418,14 +421,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00104" summary="refactor: 将 app.py 拆分为 7 个模块，引入蓝图架构&#10;&#10;- app/__init__.py: 应用工厂，注册蓝图&#10;- app/models.py: 所有数据模型 (User, Message, Activity, Reply, AnimeResource, Photo)&#10;- app/utils.py: 公共函数与 Supabase 客户端&#10;- app/auth.py: 认证相关路由 (注册/登录/注销/删除账号)&#10;- app/public.py: 公开路由 (首页/关于/活动/照片墙/留言板/番剧/社员名单)&#10;- app/user.py: 用户相关路由 (个人主页/个人设置/头像)&#10;- app/admin.py: 后台管理路由 (活动/照片墙/番剧/用户管理)&#10;&#10;变更影响：所有 url_for 已更新为蓝图前缀，原有功能完全保留。&#10;部署方式：替换 app.py 为新结构，重启服务即可，无需数据迁移。">
-      <option name="closed" value="true" />
-      <created>1783595577815</created>
-      <option name="number" value="00104" />
-      <option name="presentableId" value="LOCAL-00104" />
-      <option name="project" value="LOCAL" />
-      <updated>1783595577815</updated>
     </task>
     <task id="LOCAL-00105" summary="refactor: 将 app.py 拆分为 7 个模块，引入蓝图架构&#10;&#10;- app/__init__.py: 应用工厂，注册蓝图&#10;- app/models.py: 所有数据模型 (User, Message, Activity, Reply, AnimeResource, Photo)&#10;- app/utils.py: 公共函数与 Supabase 客户端&#10;- app/auth.py: 认证相关路由 (注册/登录/注销/删除账号)&#10;- app/public.py: 公开路由 (首页/关于/活动/照片墙/留言板/番剧/社员名单)&#10;- app/user.py: 用户相关路由 (个人主页/个人设置/头像)&#10;- app/admin.py: 后台管理路由 (活动/照片墙/番剧/用户管理)&#10;&#10;变更影响：所有 url_for 已更新为蓝图前缀，原有功能完全保留。&#10;部署方式：替换 app.py 为新结构，重启服务即可，无需数据迁移。">
       <option name="closed" value="true" />
@@ -811,7 +806,15 @@
       <option name="project" value="LOCAL" />
       <updated>1784544984683</updated>
     </task>
-    <option name="localTasksCounter" value="153" />
+    <task id="LOCAL-00153" summary="优化登录功能">
+      <option name="closed" value="true" />
+      <created>1784552257053</created>
+      <option name="number" value="00153" />
+      <option name="presentableId" value="LOCAL-00153" />
+      <option name="project" value="LOCAL" />
+      <updated>1784552257053</updated>
+    </task>
+    <option name="localTasksCounter" value="154" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -851,7 +854,8 @@
     <MESSAGE value="。" />
     <MESSAGE value="收录至各浏览器" />
     <MESSAGE value="fix： 恢复新手引导代码，保留CSS版本号" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix： 恢复新手引导代码，保留CSS版本号" />
+    <MESSAGE value="优化登录功能" />
+    <option name="LAST_COMMIT_MESSAGE" value="优化登录功能" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

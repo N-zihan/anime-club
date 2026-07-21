@@ -240,7 +240,7 @@ main {
 }
 
 .message-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .message-header {
@@ -420,7 +420,7 @@ main {
 .reply-to-row textarea:focus {
     outline: none;
     border-color: #1e2a3a;
-    box-shadow: 0 0 0 3px rgba(30,42,58,0.08);
+    box-shadow: 0 0 0 3px rgba(30, 42, 58, 0.08);
     background: #fff;
     height: 30px;
 }
@@ -447,8 +447,14 @@ main {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .reply-input-row {
@@ -473,7 +479,7 @@ main {
 .reply-input-row textarea:focus {
     outline: none;
     border-color: #1e2a3a;
-    box-shadow: 0 0 0 3px rgba(30,42,58,0.08);
+    box-shadow: 0 0 0 3px rgba(30, 42, 58, 0.08);
     background: #fff;
 }
 
@@ -537,7 +543,7 @@ main {
 .new-message-form textarea:focus {
     outline: none;
     border-color: #1e2a3a;
-    box-shadow: 0 0 0 3px rgba(30,42,58,0.08);
+    box-shadow: 0 0 0 3px rgba(30, 42, 58, 0.08);
 }
 
 .new-msg-submit {

@@ -16,7 +16,7 @@
         {% for msg in messages %}
         <div class="message-card">
             <div class="message-header">
-                <img class="msg-avatar" alt="{{ msg.user.username if msg.user else msg.nickname }}"
+                <img alt="{{ msg.user.username if msg.user else msg.nickname }}" class="msg-avatar"
                      src="{% if msg.user_id %}{{ url_for('user.get_avatar', user_id=msg.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}">
                 <div class="msg-meta">
                     <strong>{{ msg.user.username if msg.user else msg.nickname }}</strong>
@@ -30,14 +30,14 @@
             <div class="replies-section">
                 {% for reply in msg._replies %}
                 <div class="reply-item">
-                    <img class="reply-avatar" alt="{{ reply.user.username if reply.user else reply.nickname }}"
+                    <img alt="{{ reply.user.username if reply.user else reply.nickname }}" class="reply-avatar"
                          src="{% if reply.user_id %}{{ url_for('user.get_avatar', user_id=reply.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}">
                     <div class="reply-content">
                         <div class="reply-meta">
                             <strong>{{ reply.user.username if reply.user else reply.nickname }}</strong>
                             {% if reply.parent_reply_id %}
-                                {% set parent = reply.parent_reply %}
-                                <span style="color:#4a90d9; font-size:0.8rem;">
+                            {% set parent = reply.parent_reply %}
+                            <span style="color:#4a90d9; font-size:0.8rem;">
                                     回复 @{{ parent.user.username if parent and parent.user else (parent.nickname if parent else '已删除') }}
                                 </span>
                             {% endif %}
@@ -45,22 +45,26 @@
                         </div>
                         <p>{{ reply.content }}</p>
                         <!-- 针对本条回复的回复按钮 -->
-                        <button class="reply-toggle" onclick="toggleReply(this)" data-target="reply-form-{{ reply.id }}" title="回复">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <button class="reply-toggle" data-target="reply-form-{{ reply.id }}" onclick="toggleReply(this)"
+                                title="回复">
+                            <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                 stroke-width="2" viewBox="0 0 24 24" width="14">
                                 <polyline points="9 17 4 12 9 7"/>
                                 <path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
                             </svg>
                             回复
                         </button>
                         <!-- 针对本条回复的回复表单（隐藏） -->
-                        <form class="reply-form" id="reply-form-{{ reply.id }}" action="{{ url_for('public.add_reply', message_id=reply.message_id) }}" method="POST"
+                        <form action="{{ url_for('public.add_reply', message_id=reply.message_id) }}" class="reply-form"
+                              id="reply-form-{{ reply.id }}" method="POST"
                               onsubmit="this.querySelector('.reply-submit').disabled = true;" style="display: none;">
-                            <input type="hidden" name="parent_reply_id" value="{{ reply.id }}">
+                            <input name="parent_reply_id" type="hidden" value="{{ reply.id }}">
                             <div class="reply-input-row">
                                 <textarea name="content" placeholder="写下你的回复..." required rows="2"></textarea>
                                 <button class="reply-submit" type="submit">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                         stroke-width="2" viewBox="0 0 24 24" width="14">
+                                        <line x1="22" x2="11" y1="2" y2="13"/>
                                         <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                                     </svg>
                                     发送
@@ -74,8 +78,10 @@
             {% endif %}
 
             <!-- 留言级别的回复按钮（回复主评论） -->
-            <button class="reply-toggle" onclick="toggleReply(this)" data-target="reply-form-msg-{{ msg.id }}" title="回复">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button class="reply-toggle" data-target="reply-form-msg-{{ msg.id }}" onclick="toggleReply(this)"
+                    title="回复">
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                     viewBox="0 0 24 24" width="16">
                     <polyline points="9 17 4 12 9 7"/>
                     <path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
                 </svg>
@@ -83,14 +89,16 @@
             </button>
 
             <!-- 留言级别的回复表单（回复主评论，默认隐藏） -->
-            <form class="reply-form" id="reply-form-msg-{{ msg.id }}" action="{{ url_for('public.add_reply', message_id=msg.id) }}" method="POST"
+            <form action="{{ url_for('public.add_reply', message_id=msg.id) }}" class="reply-form"
+                  id="reply-form-msg-{{ msg.id }}" method="POST"
                   onsubmit="this.querySelector('.reply-submit').disabled = true;" style="display: none;">
-                <input type="hidden" name="parent_reply_id" value="">
+                <input name="parent_reply_id" type="hidden" value="">
                 <div class="reply-input-row">
                     <textarea name="content" placeholder="写下你的回复..." required rows="2"></textarea>
                     <button class="reply-submit" type="submit">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="22" y1="2" x2="11" y2="13"/>
+                        <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                             stroke-width="2" viewBox="0 0 24 24" width="14">
+                            <line x1="22" x2="11" y1="2" y2="13"/>
                             <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                         </svg>
                         发送
@@ -110,8 +118,9 @@
     <form class="new-message-form" method="POST" onsubmit="this.querySelector('.new-msg-submit').disabled = true;">
         <textarea id="content" name="content" placeholder="分享你的想法..." required rows="3"></textarea>
         <button class="new-msg-submit" type="submit">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"/>
+            <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                 viewBox="0 0 24 24" width="16">
+                <line x1="22" x2="11" y1="2" y2="13"/>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
             提交留言
@@ -120,17 +129,17 @@
 </div>
 
 <script>
-function toggleReply(btn) {
-    var targetId = btn.dataset.target;
-    var form = document.getElementById(targetId);
-    if (form) {
-        if (form.style.display === 'block') {
-            form.style.display = 'none';
-        } else {
-            form.style.display = 'block';
-            form.querySelector('textarea').focus();
+    function toggleReply(btn) {
+        var targetId = btn.dataset.target;
+        var form = document.getElementById(targetId);
+        if (form) {
+            if (form.style.display === 'block') {
+                form.style.display = 'none';
+            } else {
+                form.style.display = 'block';
+                form.querySelector('textarea').focus();
+            }
         }
     }
-}
 </script>
 {% endblock %}

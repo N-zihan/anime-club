@@ -27,7 +27,7 @@ from flask import send_file
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
-from .models import db, User, Activity, Photo, AnimeResource
+from .models import db, User, Activity, Photo, AnimeResource, Message, Reply
 from .utils import supabase, allowed_file
 
 admin_bp = Blueprint('admin', __name__)
@@ -355,3 +355,37 @@ def export_users_excel():
         as_attachment=True,
         download_name=f'社员名单_{datetime.now().strftime("%Y%m%d")}.xlsx'
     )
+
+
+# ---------- 留言管理 ----------
+@admin_bp.route('/admin/messages')
+@admin_required
+def admin_messages():
+    """留言管理页面，显示所有留言及回复"""
+    messages = Message.query.order_by(Message.timestamp.desc()).all()
+    return render_template('admin_messages.html', messages=messages)
+
+
+@admin_bp.route('/admin/messages/delete/<int:message_id>')
+@admin_required
+def admin_delete_message(message_id):
+    """删除留言及其所有回复"""
+    message = Message.query.get_or_404(message_id)
+    # 删除所有回复（如果有外键级联，可以直接删除message，但为了明确，手动删除回复）
+    for reply in message.replies.all():
+        db.session.delete(reply)
+    db.session.delete(message)
+    db.session.commit()
+    flash('留言及其所有回复已删除', 'success')
+    return redirect(url_for('admin.admin_messages'))
+
+
+@admin_bp.route('/admin/replies/delete/<int:reply_id>')
+@admin_required
+def admin_delete_reply(reply_id):
+    """删除单条回复，保留留言和其他回复"""
+    reply = Reply.query.get_or_404(reply_id)
+    db.session.delete(reply)
+    db.session.commit()
+    flash('回复已删除', 'success')
+    return redirect(url_for('admin.admin_messages'))

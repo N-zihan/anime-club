@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}留言管理{% endblock %}
+{% block content %}
+<div class="admin-header">
+    <h2>留言管理</h2>
+</div>
+
+{% if messages %}
+<table class="admin-table">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>留言内容</th>
+        <th>作者</th>
+        <th>时间</th>
+        <th>回复数</th>
+        <th style="text-align:center;">操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for msg in messages %}
+    <tr>
+        <td>{{ msg.id }}</td>
+        <td>{{ msg.content[:30] }}{% if msg.content|length > 30 %}...{% endif %}</td>
+        <td>{{ msg.user.username if msg.user else msg.nickname }}</td>
+        <td>{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>{{ msg.replies.count() }}</td>
+        <td style="text-align:center;">
+            <a class="btn-delete" href="{{ url_for('admin.admin_delete_message', message_id=msg.id) }}"
+               onclick="return confirm('确定删除该留言及其所有回复吗？此操作不可撤销！')">删除留言</a>
+        </td>
+    </tr>
+    <!-- 显示该留言下的回复列表 -->
+    {% if msg.replies %}
+    <tr>
+        <td colspan="6" style="padding:0;">
+            <table style="width:100%; margin:0; background:#f9fafb; border-left: 3px solid #e2e8f0;">
+                <thead>
+                <tr>
+                    <th style="padding:8px 16px; font-size:0.8rem; color:#64748b; background:#f1f4f9; border-bottom:1px solid #e2e8f0;">
+                        回复ID
+                    </th>
+                    <th style="padding:8px 16px; font-size:0.8rem; color:#64748b; background:#f1f4f9; border-bottom:1px solid #e2e8f0;">
+                        回复内容
+                    </th>
+                    <th style="padding:8px 16px; font-size:0.8rem; color:#64748b; background:#f1f4f9; border-bottom:1px solid #e2e8f0;">
+                        作者
+                    </th>
+                    <th style="padding:8px 16px; font-size:0.8rem; color:#64748b; background:#f1f4f9; border-bottom:1px solid #e2e8f0;">
+                        时间
+                    </th>
+                    <th style="padding:8px 16px; font-size:0.8rem; color:#64748b; background:#f1f4f9; border-bottom:1px solid #e2e8f0; text-align:center;">
+                        操作
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for reply in msg.replies %}
+                <tr>
+                    <td style="padding:6px 16px;">{{ reply.id }}</td>
+                    <td style="padding:6px 16px;">{{ reply.content[:30] }}{% if reply.content|length > 30 %}...{% endif
+                        %}
+                    </td>
+                    <td style="padding:6px 16px;">{{ reply.user.username if reply.user else reply.nickname }}</td>
+                    <td style="padding:6px 16px;">{{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td style="padding:6px 16px; text-align:center;">
+                        <a class="btn-delete" href="{{ url_for('admin.admin_delete_reply', reply_id=reply.id) }}"
+                           onclick="return confirm('确定删除该回复吗？')" style="font-size:0.8rem;">删除回复</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty-hint">暂无留言</p>
+{% endif %}
+{% endblock %}
