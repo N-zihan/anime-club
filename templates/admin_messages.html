@@ -1,83 +1,253 @@
 {% extends "base.html" %}
 {% block title %}留言管理{% endblock %}
+
+{% block styles %}
+<style>
+    .msg-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        transition: box-shadow 0.2s;
+    }
+
+    .msg-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .msg-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+    }
+
+    .msg-id {
+        background: #eef2f7;
+        color: #1e2a3a;
+        padding: 2px 10px;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .msg-author {
+        font-weight: 600;
+        color: #1e2a3a;
+    }
+
+    .msg-time {
+        color: #94a3b8;
+        font-size: 0.8rem;
+        margin-left: auto;
+    }
+
+    .msg-content {
+        color: #334155;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 6px 0 12px 0;
+        padding: 8px 12px;
+        background: #f8fafc;
+        border-radius: 10px;
+        border-left: 3px solid #4a90d9;
+    }
+
+    .msg-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-delete-msg {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 4px 16px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: background 0.2s;
+    }
+
+    .btn-delete-msg:hover {
+        background: #c0392b;
+    }
+
+    .btn-toggle-replies {
+        background: transparent;
+        border: none;
+        color: #4a90d9;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 500;
+        padding: 4px 0;
+    }
+
+    .btn-toggle-replies:hover {
+        text-decoration: underline;
+    }
+
+    .reply-count {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-left: 4px;
+    }
+
+    .replies-container {
+        margin-top: 12px;
+        padding: 12px 16px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border-left: 3px solid #94a3b8;
+        display: none;
+    }
+
+    .replies-container.open {
+        display: block;
+    }
+
+    .reply-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .reply-item:last-child {
+        border-bottom: none;
+    }
+
+    .reply-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .reply-info {
+        flex: 1;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 6px 12px;
+    }
+
+    .reply-author {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #1e2a3a;
+    }
+
+    .reply-time {
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    .reply-content {
+        color: #334155;
+        font-size: 0.9rem;
+        word-break: break-word;
+    }
+
+    .btn-delete-reply {
+        background: transparent;
+        border: none;
+        color: #e74c3c;
+        cursor: pointer;
+        font-size: 0.8rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        transition: background 0.2s;
+    }
+
+    .btn-delete-reply:hover {
+        background: #fee2e2;
+    }
+
+    .empty-hint {
+        text-align: center;
+        color: #94a3b8;
+        padding: 40px 0;
+        font-size: 1.05rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="admin-header">
     <h2>留言管理</h2>
+    <a class="btn-add" href="{{ url_for('admin.dashboard') }}">← 返回后台</a>
 </div>
 
 {% if messages %}
-<table class="admin-table">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>留言内容</th>
-        <th>作者</th>
-        <th>时间</th>
-        <th>回复数</th>
-        <th style="text-align:center;">操作</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for msg in messages %}
-    <tr>
-        <td>{{ msg.id }}</td>
-        <td>{{ msg.content[:30] }}{% if msg.content|length > 30 %}...{% endif %}</td>
-        <td>{{ msg.user.username if msg.user else msg.nickname }}</td>
-        <td>{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-        <td>{{ msg.replies.count() }}</td>
-        <td style="text-align:center;">
-            <a class="btn-delete" href="{{ url_for('admin.admin_delete_message', message_id=msg.id) }}"
-               onclick="return confirm('确定删除该留言及其所有回复吗？此操作不可撤销！')">删除留言</a>
-        </td>
-    </tr>
-    <!-- 显示该留言下的回复列表 -->
-    {% if msg.replies %}
-    <tr>
-        <td colspan="6" style="padding:0;">
-            <table style="width:100%; margin:0; background:#f9fafb; border-left: 3px solid #e2e8f0;">
-                <thead>
-                <tr>
-                    <th style="padding:8px 16px; font-size:0.8rem; color:#64748b; background:#f1f4f9; border-bottom:1px solid #e2e8f0;">
-                        回复ID
-                    </th>
-                    <th style="padding:8px 16px; font-size:0.8rem; color:#64748b; background:#f1f4f9; border-bottom:1px solid #e2e8f0;">
-                        回复内容
-                    </th>
-                    <th style="padding:8px 16px; font-size:0.8rem; color:#64748b; background:#f1f4f9; border-bottom:1px solid #e2e8f0;">
-                        作者
-                    </th>
-                    <th style="padding:8px 16px; font-size:0.8rem; color:#64748b; background:#f1f4f9; border-bottom:1px solid #e2e8f0;">
-                        时间
-                    </th>
-                    <th style="padding:8px 16px; font-size:0.8rem; color:#64748b; background:#f1f4f9; border-bottom:1px solid #e2e8f0; text-align:center;">
-                        操作
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for reply in msg.replies %}
-                <tr>
-                    <td style="padding:6px 16px;">{{ reply.id }}</td>
-                    <td style="padding:6px 16px;">{{ reply.content[:30] }}{% if reply.content|length > 30 %}...{% endif
-                        %}
-                    </td>
-                    <td style="padding:6px 16px;">{{ reply.user.username if reply.user else reply.nickname }}</td>
-                    <td style="padding:6px 16px;">{{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                    <td style="padding:6px 16px; text-align:center;">
-                        <a class="btn-delete" href="{{ url_for('admin.admin_delete_reply', reply_id=reply.id) }}"
-                           onclick="return confirm('确定删除该回复吗？')" style="font-size:0.8rem;">删除回复</a>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </td>
-    </tr>
-    {% endif %}
-    {% endfor %}
-    </tbody>
-</table>
+{% for msg in messages %}
+<div class="msg-card">
+    <div class="msg-header">
+        <span class="msg-id">#{{ msg.id }}</span>
+        <span class="msg-author">{{ msg.user.username if msg.user else msg.nickname }}</span>
+        <span class="msg-time">{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+    </div>
+    <div class="msg-content">{{ msg.content }}</div>
+
+    <div class="msg-actions">
+        <button class="btn-toggle-replies" data-msg-id="{{ msg.id }}">
+            查看回复 <span class="reply-count">({{ msg.replies.count() }})</span>
+        </button>
+        <button class="btn-delete-msg"
+                onclick="if(confirm('确定删除该留言及其所有回复吗？')) { location.href='{{ url_for('admin.admin_delete_message', message_id=msg.id) }}'; }">
+            删除留言
+        </button>
+    </div>
+
+    <div class="replies-container" id="replies-{{ msg.id }}">
+        {% if msg.replies.count() %}
+        {% for reply in msg.replies %}
+        <div class="reply-item">
+            <img alt="avatar"
+                 class="reply-avatar"
+                 src="{% if reply.user_id %}{{ url_for('user.get_avatar', user_id=reply.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}">
+            <div class="reply-info">
+                <span class="reply-author">{{ reply.user.username if reply.user else reply.nickname }}</span>
+                <span class="reply-time">{{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                <span class="reply-content">{{ reply.content }}</span>
+            </div>
+            <button class="btn-delete-reply"
+                    onclick="if(confirm('确定删除该回复吗？')) { location.href='{{ url_for('admin.admin_delete_reply', reply_id=reply.id) }}'; }">
+                ✕
+            </button>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p style="color: #94a3b8; margin: 8px 0; font-size: 0.9rem;">暂无回复</p>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
 {% else %}
 <p class="empty-hint">暂无留言</p>
 {% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.btn-toggle-replies').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var msgId = this.dataset.msgId;
+                var container = document.getElementById('replies-' + msgId);
+                if (container) {
+                    container.classList.toggle('open');
+                    this.innerHTML = container.classList.contains('open') ?
+                        '收起回复 <span class="reply-count">(' + container.querySelectorAll('.reply-item').length + ')</span>' :
+                        '查看回复 <span class="reply-count">(' + container.querySelectorAll('.reply-item').length + ')</span>';
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

@@ -47,7 +47,8 @@
                         <!-- 针对本条回复的回复按钮 -->
                         <button class="reply-toggle" data-target="reply-form-{{ reply.id }}" onclick="toggleReply(this)"
                                 title="回复">
-                            <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                            <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round"
+                                 stroke-linejoin="round"
                                  stroke-width="2" viewBox="0 0 24 24" width="14">
                                 <polyline points="9 17 4 12 9 7"/>
                                 <path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
@@ -62,7 +63,8 @@
                             <div class="reply-input-row">
                                 <textarea name="content" placeholder="写下你的回复..." required rows="2"></textarea>
                                 <button class="reply-submit" type="submit">
-                                    <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round"
+                                         stroke-linejoin="round"
                                          stroke-width="2" viewBox="0 0 24 24" width="14">
                                         <line x1="22" x2="11" y1="2" y2="13"/>
                                         <polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -80,7 +82,8 @@
             <!-- 留言级别的回复按钮（回复主评论） -->
             <button class="reply-toggle" data-target="reply-form-msg-{{ msg.id }}" onclick="toggleReply(this)"
                     title="回复">
-                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                     stroke-width="2"
                      viewBox="0 0 24 24" width="16">
                     <polyline points="9 17 4 12 9 7"/>
                     <path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
@@ -96,7 +99,8 @@
                 <div class="reply-input-row">
                     <textarea name="content" placeholder="写下你的回复..." required rows="2"></textarea>
                     <button class="reply-submit" type="submit">
-                        <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round"
+                             stroke-linejoin="round"
                              stroke-width="2" viewBox="0 0 24 24" width="14">
                             <line x1="22" x2="11" y1="2" y2="13"/>
                             <polygon points="22 2 15 22 11 13 2 9 22 2"/>
@@ -118,7 +122,8 @@
     <form class="new-message-form" method="POST" onsubmit="this.querySelector('.new-msg-submit').disabled = true;">
         <textarea id="content" name="content" placeholder="分享你的想法..." required rows="3"></textarea>
         <button class="new-msg-submit" type="submit">
-            <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                 stroke-width="2"
                  viewBox="0 0 24 24" width="16">
                 <line x1="22" x2="11" y1="2" y2="13"/>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"/>
