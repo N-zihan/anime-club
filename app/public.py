@@ -18,17 +18,18 @@
 400、403、404、405、413、500 均有对应的自定义页面。
 """
 
-from datetime import timedelta, datetime, timezone
+import io
 import uuid
+from datetime import timedelta, datetime, timezone
 
+from PIL import Image
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from sqlalchemy.orm import joinedload
 
-from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote, Candidate
+from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote, \
+    Candidate
 from .utils import supabase
 
-from PIL import Image
-import io
 
 def compress_image(file_data, max_size=(400, 400), quality=85):
     """压缩图片到指定尺寸和品质，返回压缩后的字节数据"""
@@ -42,6 +43,7 @@ def compress_image(file_data, max_size=(400, 400), quality=85):
     output = io.BytesIO()
     img.save(output, format='JPEG', quality=quality, optimize=True)
     return output.getvalue()
+
 
 public_bp = Blueprint('public', __name__)
 
@@ -355,7 +357,8 @@ def contest_detail(contest_id):
         def count_votes(candidates):
             result = []
             for c in candidates:
-                total = ContestVote.query.filter_by(candidate_id=c.id, round_id=None, round_number=0).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+                total = ContestVote.query.filter_by(candidate_id=c.id, round_id=None, round_number=0).with_entities(
+                    sa_func.sum(ContestVote.weight)).scalar() or 0
                 result.append({'candidate': c, 'total_votes': total})
             result.sort(key=lambda x: x['total_votes'], reverse=True)
             return result
@@ -375,7 +378,7 @@ def contest_detail(contest_id):
             random.shuffle(candidates)
             groups = []
             for i in range(group_count):
-                groups.append(candidates[i*4:(i+1)*4])
+                groups.append(candidates[i * 4:(i + 1) * 4])
             return groups
 
         female_groups = generate_groups(female_top32)
@@ -387,8 +390,12 @@ def contest_detail(contest_id):
         contest.config['male_groups'] = [[c.id for c in group] for group in male_groups]
         contest.config['female_top32'] = [c.id for c in female_top32]
         contest.config['male_top32'] = [c.id for c in male_top32]
-        contest.config['female_result'] = [{'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item in female_result[:32]]
-        contest.config['male_result'] = [{'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item in male_result[:32]]
+        contest.config['female_result'] = [
+            {'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item
+            in female_result[:32]]
+        contest.config['male_result'] = [
+            {'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item
+            in male_result[:32]]
 
         contest.status = 'group_stage'
         db.session.commit()

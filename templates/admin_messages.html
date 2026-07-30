@@ -9,53 +9,55 @@
 {% if messages %}
 <table class="admin-table">
     <thead>
-        <tr>
-            <th style="width:50px;">ID</th>
-            <th>留言内容</th>
-            <th style="width:100px;">作者</th>
-            <th style="width:160px;">时间</th>
-            <th style="width:80px; text-align:center;">回复数</th>
-            <th style="width:150px; text-align:center;">操作</th>
-        </tr>
+    <tr>
+        <th style="width:50px;">ID</th>
+        <th>留言内容</th>
+        <th style="width:100px;">作者</th>
+        <th style="width:160px;">时间</th>
+        <th style="width:80px; text-align:center;">回复数</th>
+        <th style="width:150px; text-align:center;">操作</th>
+    </tr>
     </thead>
     <tbody>
-        {% for msg in messages %}
-        <tr class="msg-row">
-            <td>{{ msg.id }}</td>
-            <td>{{ msg.content[:50] }}{% if msg.content|length > 50 %}...{% endif %}</td>
-            <td>{{ msg.user.username if msg.user else msg.nickname }}</td>
-            <td>{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-            <td style="text-align:center;">{{ msg.replies.count() }}</td>
-            <td style="text-align:center;">
-                <button class="toggle-reply-btn" data-msg-id="{{ msg.id }}" style="background:none; border:none; cursor:pointer; color:#4a90d9; font-size:0.85rem;">
-                    查看回复
-                </button>
-                <a class="btn-delete" href="{{ url_for('admin.admin_delete_message', message_id=msg.id) }}"
-                   onclick="return confirm('确定删除该留言及其所有回复吗？')">删除</a>
-            </td>
-        </tr>
-        <!-- 回复行（默认隐藏） -->
-        <tr class="reply-row" data-msg-id="{{ msg.id }}" style="display:none; background:#f9fafb;">
-            <td colspan="6" style="padding:0;">
-                <div style="padding:12px 20px;">
-                    {% if msg.replies.count() %}
-                        {% for reply in msg.replies %}
-                        <div style="display:flex; align-items:center; gap:12px; padding:4px 0; border-bottom:1px solid #edf2f7; font-size:0.9rem;">
-                            <span style="color:#94a3b8; font-size:0.75rem; min-width:30px;">#{{ reply.id }}</span>
-                            <span style="font-weight:600; min-width:80px;">{{ reply.user.username if reply.user else reply.nickname }}</span>
-                            <span style="color:#94a3b8; font-size:0.75rem; min-width:140px;">{{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
-                            <span style="flex:1; color:#334155;">{{ reply.content }}</span>
-                            <a class="btn-delete" href="{{ url_for('admin.admin_delete_reply', reply_id=reply.id) }}"
-                               onclick="return confirm('确定删除该回复吗？')" style="font-size:0.8rem; white-space:nowrap;">删除</a>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p style="color:#94a3b8; font-size:0.85rem; margin:0;">暂无回复</p>
-                    {% endif %}
+    {% for msg in messages %}
+    <tr class="msg-row">
+        <td>{{ msg.id }}</td>
+        <td>{{ msg.content[:50] }}{% if msg.content|length > 50 %}...{% endif %}</td>
+        <td>{{ msg.user.username if msg.user else msg.nickname }}</td>
+        <td>{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td style="text-align:center;">{{ msg.replies.count() }}</td>
+        <td style="text-align:center;">
+            <button class="toggle-reply-btn" data-msg-id="{{ msg.id }}"
+                    style="background:none; border:none; cursor:pointer; color:#4a90d9; font-size:0.85rem;">
+                查看回复
+            </button>
+            <a class="btn-delete" href="{{ url_for('admin.admin_delete_message', message_id=msg.id) }}"
+               onclick="return confirm('确定删除该留言及其所有回复吗？')">删除</a>
+        </td>
+    </tr>
+    <!-- 回复行（默认隐藏） -->
+    <tr class="reply-row" data-msg-id="{{ msg.id }}" style="display:none; background:#f9fafb;">
+        <td colspan="6" style="padding:0;">
+            <div style="padding:12px 20px;">
+                {% if msg.replies.count() %}
+                {% for reply in msg.replies %}
+                <div style="display:flex; align-items:center; gap:12px; padding:4px 0; border-bottom:1px solid #edf2f7; font-size:0.9rem;">
+                    <span style="color:#94a3b8; font-size:0.75rem; min-width:30px;">#{{ reply.id }}</span>
+                    <span style="font-weight:600; min-width:80px;">{{ reply.user.username if reply.user else reply.nickname }}</span>
+                    <span style="color:#94a3b8; font-size:0.75rem; min-width:140px;">{{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                    <span style="flex:1; color:#334155;">{{ reply.content }}</span>
+                    <a class="btn-delete" href="{{ url_for('admin.admin_delete_reply', reply_id=reply.id) }}"
+                       onclick="return confirm('确定删除该回复吗？')"
+                       style="font-size:0.8rem; white-space:nowrap;">删除</a>
                 </div>
-            </td>
-        </tr>
-        {% endfor %}
+                {% endfor %}
+                {% else %}
+                <p style="color:#94a3b8; font-size:0.85rem; margin:0;">暂无回复</p>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
     </tbody>
 </table>
 {% else %}
@@ -63,22 +65,22 @@
 {% endif %}
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.toggle-reply-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var msgId = this.dataset.msgId;
-            var replyRow = document.querySelector('.reply-row[data-msg-id="' + msgId + '"]');
-            if (replyRow) {
-                if (replyRow.style.display === 'none') {
-                    replyRow.style.display = 'table-row';
-                    this.textContent = '收起回复';
-                } else {
-                    replyRow.style.display = 'none';
-                    this.textContent = '查看回复';
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.toggle-reply-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var msgId = this.dataset.msgId;
+                var replyRow = document.querySelector('.reply-row[data-msg-id="' + msgId + '"]');
+                if (replyRow) {
+                    if (replyRow.style.display === 'none') {
+                        replyRow.style.display = 'table-row';
+                        this.textContent = '收起回复';
+                    } else {
+                        replyRow.style.display = 'none';
+                        this.textContent = '查看回复';
+                    }
                 }
-            }
+            });
         });
     });
-});
 </script>
 {% endblock %}

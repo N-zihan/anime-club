@@ -12,37 +12,47 @@
     <form method="POST">
         <div class="form-group">
             <label>标题</label>
-            <input type="text" name="title" value="{{ contest.title }}" required>
+            <input name="title" required type="text" value="{{ contest.title }}">
         </div>
         <div class="form-group">
             <label>描述</label>
-            <textarea name="description" rows="4" required>{{ contest.description }}</textarea>
+            <textarea name="description" required rows="4">{{ contest.description }}</textarea>
         </div>
         <div class="form-group">
             <label>性别分组</label>
             <select name="gender_mode">
-                <option value="separate" {% if contest.gender_mode == 'separate' %}selected{% endif %}>男女分别进行</option>
-                <option value="mixed" {% if contest.gender_mode == 'mixed' %}selected{% endif %}>混合进行</option>
+                <option contest.gender_mode== if value="separate" {%
+                'separate' %}selected{% endif %}>男女分别进行</option>
+                <option contest.gender_mode== if value="mixed" {%
+                'mixed' %}selected{% endif %}>混合进行</option>
             </select>
         </div>
         <div class="form-group">
             <label>状态</label>
             <select name="status">
-                <option value="draft" {% if contest.status == 'draft' %}selected{% endif %}>草稿</option>
-                <option value="open" {% if contest.status == 'open' %}selected{% endif %}>开放中</option>
-                <option value="closed" {% if contest.status == 'closed' %}selected{% endif %}>已结束</option>
-                <option value="archived" {% if contest.status == 'archived' %}selected{% endif %}>已归档</option>
+                <option contest.status== if value="draft" {%
+                'draft' %}selected{% endif %}>草稿</option>
+                <option contest.status== if value="open" {%
+                'open' %}selected{% endif %}>开放中</option>
+                <option contest.status== if value="closed" {%
+                'closed' %}selected{% endif %}>已结束</option>
+                <option contest.status== if value="archived" {%
+                'archived' %}selected{% endif %}>已归档</option>
             </select>
         </div>
         <div class="form-group">
             <label>开始时间</label>
-            <input type="datetime-local" name="open_at" value="{{ contest.open_at.strftime('%Y-%m-%dT%H:%M') if contest.open_at else '' }}" required>
+            <input name="open_at" required
+                   type="datetime-local" value="{{ contest.open_at.strftime('%Y-%m-%dT%H:%M') if contest.open_at else '' }}">
             <small style="color:#94a3b8; display:block; margin-top:4px;">修改开始时间将自动更新结束时间</small>
         </div>
         <div class="form-group">
             <label>结束时间（自动计算）</label>
-            <input type="text" value="{{ contest.close_at.strftime('%Y-%m-%d %H:%M') if contest.close_at else '未设置' }}" readonly disabled style="background:#f5f5f5; color:#555;">
-            <small style="color:#94a3b8; display:block; margin-top:4px;">结束时间 = 开始时间 + 48天（不可手动修改）</small>
+            <input disabled
+                   readonly style="background:#f5f5f5; color:#555;"
+                   type="text" value="{{ contest.close_at.strftime('%Y-%m-%d %H:%M') if contest.close_at else '未设置' }}">
+            <small style="color:#94a3b8; display:block; margin-top:4px;">结束时间 = 开始时间 +
+                48天（不可手动修改）</small>
         </div>
         <button class="btn-primary" type="submit">保存修改</button>
     </form>
@@ -54,33 +64,33 @@
 <div class="card-form" style="max-width:100%;">
     <h3>待审核提名</h3>
     {% if nominations %}
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>角色名</th>
-                    <th>作品名</th>
-                    <th>性别</th>
-                    <th>提名者</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for n in nominations %}
-                <tr>
-                    <td>{{ n.name }}</td>
-                    <td>{{ n.source }}</td>
-                    <td>{{ n.gender }}</td>
-                    <td>{{ n.user.username }}</td>
-                    <td>
-                        <a class="btn-edit" href="{{ url_for('admin.admin_nomination_approve', nomination_id=n.id) }}">通过</a>
-                        <a class="btn-delete" href="{{ url_for('admin.admin_nomination_reject', nomination_id=n.id) }}">拒绝</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <table class="admin-table">
+        <thead>
+        <tr>
+            <th>角色名</th>
+            <th>作品名</th>
+            <th>性别</th>
+            <th>提名者</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for n in nominations %}
+        <tr>
+            <td>{{ n.name }}</td>
+            <td>{{ n.source }}</td>
+            <td>{{ n.gender }}</td>
+            <td>{{ n.user.username }}</td>
+            <td>
+                <a class="btn-edit" href="{{ url_for('admin.admin_nomination_approve', nomination_id=n.id) }}">通过</a>
+                <a class="btn-delete" href="{{ url_for('admin.admin_nomination_reject', nomination_id=n.id) }}">拒绝</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
     {% else %}
-        <p style="color:#94a3b8;">暂无待审核提名</p>
+    <p style="color:#94a3b8;">暂无待审核提名</p>
     {% endif %}
 </div>
 
@@ -90,30 +100,31 @@
 <div class="card-form" style="max-width:100%;">
     <h3>候选池</h3>
     {% if candidates %}
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>角色名</th>
-                    <th>作品名</th>
-                    <th>性别</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in candidates %}
-                <tr>
-                    <td>{{ c.name }}</td>
-                    <td>{{ c.source }}</td>
-                    <td>{{ c.gender }}</td>
-                    <td>
-                        <a class="btn-delete" href="{{ url_for('admin.admin_candidate_delete', candidate_id=c.id) }}" onclick="return confirm('确定移除？')">移除</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <table class="admin-table">
+        <thead>
+        <tr>
+            <th>角色名</th>
+            <th>作品名</th>
+            <th>性别</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for c in candidates %}
+        <tr>
+            <td>{{ c.name }}</td>
+            <td>{{ c.source }}</td>
+            <td>{{ c.gender }}</td>
+            <td>
+                <a class="btn-delete" href="{{ url_for('admin.admin_candidate_delete', candidate_id=c.id) }}"
+                   onclick="return confirm('确定移除？')">移除</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
     {% else %}
-        <p style="color:#94a3b8;">暂无候选人</p>
+    <p style="color:#94a3b8;">暂无候选人</p>
     {% endif %}
 </div>
 {% endblock %}

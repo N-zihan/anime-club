@@ -18,7 +18,8 @@
 
         <h3 style="margin-top:24px;">二、投票规则</h3>
         <ul style="padding-left:20px; line-height:1.8;">
-            <li><strong>海选</strong>：每人 <strong>30票</strong>，最多投给 <strong>10个</strong> 角色(男女组各5个)，每个角色最多 <strong>3票</strong></li>
+            <li><strong>海选</strong>：每人 <strong>30票</strong>，最多投给 <strong>10个</strong> 角色(男女组各5个)，每个角色最多
+                <strong>3票</strong></li>
             <li><strong>小组赛</strong>：每人每轮 <strong>1票</strong>，组内单循环，共3轮</li>
             <li><strong>淘汰赛</strong>：每人每轮 <strong>1票</strong>，1v1单败淘汰，共4轮</li>
         </ul>
@@ -43,40 +44,42 @@
             <li>各阶段有明确起止时间，<strong>过期自动关闭</strong></li>
         </ul>
 
-        <p style="margin-top:20px; color:#94a3b8; font-size:0.9rem; text-align:center;">—— 最终解释权归社团管理层所有 ——</p>
+        <p style="margin-top:20px; color:#94a3b8; font-size:0.9rem; text-align:center;">—— 最终解释权归社团管理层所有
+            ——</p>
     </div>
 
     <div style="display:flex; align-items:center; gap:12px; justify-content:center; margin:20px 0;">
-        <input type="checkbox" id="agreeCheckbox" onchange="toggleEnterButton()">
+        <input id="agreeCheckbox" onchange="toggleEnterButton()" type="checkbox">
         <label for="agreeCheckbox" style="font-weight:500;">我已阅读并同意上述规则与赛程</label>
     </div>
 
     <div style="text-align:center;">
-        <a id="enterBtn" href="{{ url_for('public.contest_detail', contest_id=contest.id) }}"
+        <a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}" id="enterBtn"
            style="display:inline-block; padding:12px 48px; background:#94a3b8; color:white; border-radius:40px; text-decoration:none; font-weight:600; pointer-events:none; opacity:0.6; transition:0.2s;">
             进入赛事 →
         </a>
         <p style="color:#94a3b8; font-size:0.85rem; margin-top:8px;">请先勾选同意后进入</p>
     </div>
 
-    <p style="text-align:center; margin-top:24px;"><a href="{{ url_for('public.contest_center') }}">← 返回赛事中心</a></p>
+    <p style="text-align:center; margin-top:24px;"><a href="{{ url_for('public.contest_center') }}">← 返回赛事中心</a>
+    </p>
 </div>
 
 <script>
-function toggleEnterButton() {
-    const checkbox = document.getElementById('agreeCheckbox');
-    const btn = document.getElementById('enterBtn');
-    if (checkbox.checked) {
-        btn.style.pointerEvents = 'auto';
-        btn.style.opacity = '1';
-        btn.style.background = '#1e2a3a';
-        btn.textContent = '进入赛事 →';
-    } else {
-        btn.style.pointerEvents = 'none';
-        btn.style.opacity = '0.6';
-        btn.style.background = '#94a3b8';
-        btn.textContent = '进入赛事 →';
+    function toggleEnterButton() {
+        const checkbox = document.getElementById('agreeCheckbox');
+        const btn = document.getElementById('enterBtn');
+        if (checkbox.checked) {
+            btn.style.pointerEvents = 'auto';
+            btn.style.opacity = '1';
+            btn.style.background = '#1e2a3a';
+            btn.textContent = '进入赛事 →';
+        } else {
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.6';
+            btn.style.background = '#94a3b8';
+            btn.textContent = '进入赛事 →';
+        }
     }
-}
 </script>
 {% endblock %}

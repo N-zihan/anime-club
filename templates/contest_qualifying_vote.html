@@ -9,23 +9,32 @@
 </p>
 <p style="color:#e74c3c; font-size:0.9rem;">提交后不可修改，请谨慎分配</p>
 
-<form method="POST" action="{{ url_for('public.qualifying_vote_submit', contest_id=contest.id) }}" id="voteForm">
-    <input type="hidden" name="gender" value="{{ gender }}">
+<form action="{{ url_for('public.qualifying_vote_submit', contest_id=contest.id) }}" id="voteForm" method="POST">
+    <input name="gender" type="hidden" value="{{ gender }}">
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:16px; margin:20px 0;">
         {% for c in candidates %}
-        <div class="candidate-card" data-cid="{{ c.id }}" style="background:#f8fafc; border-radius:12px; padding:16px; text-align:center; border:1px solid #e2e8f0;">
+        <div class="candidate-card" data-cid="{{ c.id }}"
+             style="background:#f8fafc; border-radius:12px; padding:16px; text-align:center; border:1px solid #e2e8f0;">
             {% if c.image_url %}
-                <img src="{{ c.image_url }}" alt="{{ c.name }}" style="width:80px; height:80px; object-fit:cover; border-radius:50%; margin-bottom:8px;">
+            <img alt="{{ c.name }}" src="{{ c.image_url }}"
+                 style="width:80px; height:80px; object-fit:cover; border-radius:50%; margin-bottom:8px;">
             {% endif %}
             <div><strong>{{ c.name }}</strong></div>
             <div style="font-size:0.85rem; color:#64748b;">{{ c.source }}</div>
             <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px;">
-                <button type="button" class="vote-btn" data-action="decrease" style="background:#e2e8f0; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;">−</button>
-                <span class="vote-count" style="font-size:1.2rem; font-weight:600; width:30px; text-align:center;">0</span>
-                <button type="button" class="vote-btn" data-action="increase" style="background:#1e2a3a; color:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;">+</button>
+                <button class="vote-btn" data-action="decrease" style="background:#e2e8f0; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;"
+                        type="button">
+                    −
+                </button>
+                <span class="vote-count"
+                      style="font-size:1.2rem; font-weight:600; width:30px; text-align:center;">0</span>
+                <button class="vote-btn" data-action="increase" style="background:#1e2a3a; color:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;"
+                        type="button">
+                    +
+                </button>
             </div>
             <div style="font-size:0.7rem; color:#94a3b8; margin-top:4px;">最多3票</div>
-            <input type="hidden" name="vote_{{ c.id }}" class="vote-input" value="0">
+            <input class="vote-input" name="vote_{{ c.id }}" type="hidden" value="0">
         </div>
         {% endfor %}
     </div>
@@ -36,13 +45,14 @@
     </div>
 
     <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-        <button type="submit" class="btn-primary" style="padding:12px 40px;">确认投票</button>
-        <a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}" style="padding:12px 24px; background:#e2e8f0; border-radius:40px; text-decoration:none; color:#1e2a3a;">取消</a>
+        <button class="btn-primary" style="padding:12px 40px;" type="submit">确认投票</button>
+        <a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}"
+           style="padding:12px 24px; background:#e2e8f0; border-radius:40px; text-decoration:none; color:#1e2a3a;">取消</a>
     </div>
 </form>
 
 <script>
-    (function() {
+    (function () {
         const MAX_CANDIDATES = 5;
         const MAX_VOTES = 15;
         const MAX_PER_CANDIDATE = 3;
@@ -105,7 +115,7 @@
 
         // 为所有加减按钮绑定事件
         document.querySelectorAll('.vote-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
+            btn.addEventListener('click', function (e) {
                 const card = this.closest('.candidate-card');
                 if (!card) return;
                 const cid = parseInt(card.dataset.cid);
@@ -116,7 +126,7 @@
         });
 
         // 表单提交验证
-        document.getElementById('voteForm').addEventListener('submit', function(e) {
+        document.getElementById('voteForm').addEventListener('submit', function (e) {
             e.preventDefault(); // 先阻止提交，验证通过后再提交
             if (usedVotes === 0) {
                 alert('请至少投出1票');
@@ -141,6 +151,7 @@
     })();
 </script>
 
-<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
+<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a>
+</p>
 
 {% endblock %}

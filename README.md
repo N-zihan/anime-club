@@ -22,13 +22,13 @@
 
 ## 技术栈
 
-| 分类   | 技术                     |
-|------|------------------------|
-| 后端框架 | Python + Flask         |
-| 数据库  | Supabase (PostgreSQL)  |
-| 文件存储 | Supabase Storage       |
-| 部署平台 | Vercel                 |
-| 前端   | HTML + CSS + Jinja2 模板 |
+| 分类     | 技术                     |
+|----------|--------------------------|
+| 后端框架 | Python + Flask           |
+| 数据库   | Supabase (PostgreSQL)    |
+| 文件存储 | Supabase Storage         |
+| 部署平台 | Vercel                   |
+| 前端     | HTML + CSS + Jinja2 模板 |
 
 ---
 
@@ -43,45 +43,27 @@
 
 创建虚拟环境
 
-bash
-python -m venv .venv
-source .venv/bin/activate # Windows: .venv\Scripts\activate
-安装依赖
+bash python -m venv .venv source .venv/bin/activate # Windows: .venv\Scripts\activate 安装依赖
 
-bash
-pip install -r requirements.txt
-配置环境变量
-在项目根目录创建 .env 文件，填入以下内容（替换为你的实际值）：
+bash pip install -r requirements.txt 配置环境变量 在项目根目录创建 .env 文件，填入以下内容（替换为你的实际值）：
 
-env
-DATABASE_URL=postgresql://...
-SUPABASE_URL=https://...
-SUPABASE_KEY=...
-ADMIN_PASSWORD=你的管理员密码
-GROUP_VERIFICATION_CODE=社团QQ群号
-SECRET_KEY=你的Flask密钥
-运行应用
+env DATABASE_URL=postgresql://... SUPABASE_URL=https://... SUPABASE_KEY=... ADMIN_PASSWORD=你的管理员密码
+GROUP_VERIFICATION_CODE=社团QQ群号 SECRET_KEY=你的Flask密钥 运行应用
 
-bash
-python run.py
-打开浏览器访问 http://127.0.0.1:5000
+bash python run.py 打开浏览器访问 http://127.0.0.1:5000
 
-👥 运营团队
-站长：BlueArchive
+👥 运营团队 站长：BlueArchive
 
 运营：待定（可在后台设置）
 
-📌 后续计划
-社团通知公告系统
+📌 后续计划 社团通知公告系统
 
 活动报名功能
 
 社员私信（可选）
 
-📝 许可证
-本项目仅供学习交流使用，如需引用请注明来源。
+📝 许可证 本项目仅供学习交流使用，如需引用请注明来源。
 
-💬 反馈与建议
-如果你发现 Bug 或有功能建议，欢迎在网站的 留言板 中反馈，或联系站长。
+💬 反馈与建议 如果你发现 Bug 或有功能建议，欢迎在网站的 留言板 中反馈，或联系站长。
 
 Made with ❤️ by 南平一中动漫社

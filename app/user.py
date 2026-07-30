@@ -26,12 +26,12 @@
 import base64
 from datetime import timedelta
 
-from .utils import compress_image
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, Response
 from sqlalchemy import func
 
 from .models import db, User, Message, AnimeResource
 from .utils import allowed_file
+from .utils import compress_image
 
 user_bp = Blueprint('user', __name__)
 

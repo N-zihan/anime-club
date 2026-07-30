@@ -16,9 +16,10 @@
 本模块是整个项目中唯一与 Supabase SDK 直接交互的地方。
 """
 
-import os
-from PIL import Image
 import io
+import os
+
+from PIL import Image
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -33,8 +34,6 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
 
 
 def compress_image(file_data, max_size=(800, 800), quality=85, output_format='JPEG'):

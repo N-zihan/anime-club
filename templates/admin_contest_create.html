@@ -6,11 +6,11 @@
     <form method="POST">
         <div class="form-group">
             <label>赛事标题</label>
-            <input type="text" name="title" required>
+            <input name="title" required type="text">
         </div>
         <div class="form-group">
             <label>赛事描述</label>
-            <textarea name="description" rows="4" required></textarea>
+            <textarea name="description" required rows="4"></textarea>
         </div>
         <div class="form-group">
             <label>性别分组</label>
@@ -21,7 +21,7 @@
         </div>
         <div class="form-group">
             <label>比赛开始时间</label>
-            <input type="datetime-local" name="open_at" required>
+            <input name="open_at" required type="datetime-local">
             <small style="color:#94a3b8; display:block; margin-top:4px;">
                 系统将自动计算结束时间（开始时间 + 48天）
             </small>

@@ -26,6 +26,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from flask import send_file
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
+
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, Candidate
 from .utils import supabase, allowed_file, compress_image
 
