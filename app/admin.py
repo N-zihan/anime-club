@@ -19,16 +19,15 @@
 
 import io
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from flask import send_file
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
-
-from .models import db, User, Activity, Photo, AnimeResource, Message, Reply
-from .utils import supabase, allowed_file
+from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, Candidate
+from .utils import supabase, allowed_file, compress_image
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -178,10 +177,13 @@ def admin_gallery_upload():
         filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}.{ext}"
 
         try:
+            raw_data = file.read()
+            # 照片墙压缩到 1200x1200，品质85
+            compressed = compress_image(raw_data, max_size=(1200, 1200), quality=85)
             supabase.storage.from_('photos').upload(
                 filename,
-                file.read(),
-                file_options={"content-type": file.content_type}
+                compressed,
+                file_options={"content-type": 'image/jpeg'}
             )
         except Exception as e:
             flash(f'上传失败: {str(e)}', 'danger')
@@ -389,3 +391,139 @@ def admin_delete_reply(reply_id):
     db.session.commit()
     flash('回复已删除', 'success')
     return redirect(url_for('admin.admin_messages'))
+
+
+# ========== 萌战系统 · 管理后台 ==========
+
+@admin_bp.route('/admin/contests/manage')
+@admin_required
+def admin_contests_manage():
+    contests = Contest.query.order_by(Contest.created_at.desc()).all()
+    return render_template('admin_contests_manage.html', contests=contests)
+
+
+@admin_bp.route('/admin/contests/create', methods=['GET', 'POST'])
+@admin_required
+def admin_contest_create():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        gender_mode = request.form.get('gender_mode', 'separate')
+        open_at_str = request.form.get('open_at')
+
+        if not title or not description or not open_at_str:
+            flash('标题、描述和开始时间不能为空', 'danger')
+            return redirect(url_for('admin.admin_contest_create'))
+
+        open_at = datetime.strptime(open_at_str, '%Y-%m-%dT%H:%M')
+
+        contest = Contest(
+            title=title,
+            description=description,
+            type='saimoe',
+            gender_mode=gender_mode,
+            status='draft',
+            created_by=session.get('user_id'),
+            open_at=open_at,
+            close_at=open_at + timedelta(days=48),  # 自动计算结束时间
+        )
+        db.session.add(contest)
+        db.session.commit()
+        flash(f'赛事 "{title}" 创建成功', 'success')
+        return redirect(url_for('admin.admin_contest_edit', contest_id=contest.id))
+
+    return render_template('admin_contest_create.html')
+
+
+@admin_bp.route('/admin/contests/edit/<int:contest_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_contest_edit(contest_id):
+    contest = Contest.query.get_or_404(contest_id)
+
+    if request.method == 'POST':
+        contest.title = request.form.get('title')
+        contest.description = request.form.get('description')
+        contest.gender_mode = request.form.get('gender_mode', 'separate')
+        contest.status = request.form.get('status')
+
+        open_at_str = request.form.get('open_at')
+        if open_at_str:
+            contest.open_at = datetime.strptime(open_at_str, '%Y-%m-%dT%H:%M')
+            contest.close_at = contest.open_at + timedelta(days=48)  # 更新开始时间时自动刷新结束时间
+
+        db.session.commit()
+        flash('赛事信息已更新', 'success')
+        return redirect(url_for('admin.admin_contest_edit', contest_id=contest.id))
+
+    pending_nominations = contest.nominations.filter_by(status='pending').all()
+    candidates = contest.candidates.all()
+    return render_template('admin_contest_edit.html',
+                           contest=contest,
+                           nominations=pending_nominations,
+                           candidates=candidates)
+
+
+@admin_bp.route('/admin/contests/delete/<int:contest_id>')
+@admin_required
+def admin_contest_delete(contest_id):
+    contest = Contest.query.get_or_404(contest_id)
+    db.session.delete(contest)
+    db.session.commit()
+    flash('赛事已删除', 'success')
+    return redirect(url_for('admin.admin_contests_manage'))
+
+
+# ---------- 提名审核 ----------
+@admin_bp.route('/admin/nominations/approve/<int:nomination_id>')
+@admin_required
+def admin_nomination_approve(nomination_id):
+    nomination = Nomination.query.get_or_404(nomination_id)
+    contest = nomination.contest
+
+    existing = Candidate.query.filter_by(
+        contest_id=contest.id,
+        name=nomination.name
+    ).first()
+    if existing:
+        flash(f'角色 "{nomination.name}" 已存在于候选池', 'danger')
+        nomination.status = 'rejected'
+        db.session.commit()
+        return redirect(url_for('admin.admin_contest_edit', contest_id=contest.id))
+
+    candidate = Candidate(
+        contest_id=contest.id,
+        nomination_id=nomination.id,
+        name=nomination.name,
+        source=nomination.source,
+        gender=nomination.gender,
+        image_url=nomination.image_url,
+        description=nomination.description,
+        stage='pending'  # 初始状态
+    )
+    db.session.add(candidate)
+    nomination.status = 'approved'
+    db.session.commit()
+    flash(f'已通过提名: {nomination.name}', 'success')
+    return redirect(url_for('admin.admin_contest_edit', contest_id=contest.id))
+
+
+@admin_bp.route('/admin/nominations/reject/<int:nomination_id>')
+@admin_required
+def admin_nomination_reject(nomination_id):
+    nomination = Nomination.query.get_or_404(nomination_id)
+    contest_id = nomination.contest_id
+    nomination.status = 'rejected'
+    db.session.commit()
+    flash(f'已拒绝提名: {nomination.name}', 'warning')
+    return redirect(url_for('admin.admin_contest_edit', contest_id=contest_id))
+
+
+@admin_bp.route('/admin/candidates/delete/<int:candidate_id>')
+@admin_required
+def admin_candidate_delete(candidate_id):
+    candidate = Candidate.query.get_or_404(candidate_id)
+    contest_id = candidate.contest_id
+    db.session.delete(candidate)
+    db.session.commit()
+    flash('已从候选池移除该角色', 'success')
+    return redirect(url_for('admin.admin_contest_edit', contest_id=contest_id))

@@ -5,7 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="管理界面新增删除留言功能">
-      <change beforePath="$PROJECT_DIR$/templates/admin_messages.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_messages.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin_contest_create.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin_contest_edit.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin_contests_manage.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/contest_center.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/contest_detail.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/contest_group_vote.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/contest_knockout_vote.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/contest_qualifying_vote.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/contest_rules.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/public.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/public.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,6 +62,37 @@
     &quot;accountId&quot;: &quot;9864df25-fa90-4eda-ad53-ffb50cec7a37&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/app/__init__.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/admin.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/auth.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/models.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/public.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/user.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/utils.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/run.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/static/sitemap.xml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/400.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/413.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/500.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/about.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/activities.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_activities.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_activity_form.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_anime_resources.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_dashboard.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_gallery.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_messages.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_users.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/anime_resources.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/base.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/board.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/gallery.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/login.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/members.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/profile.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/staff_dashboard.html" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="HttpClientOnboardingState">{
   &quot;isOnboardingCommentShown&quot;: true
 }</component>
@@ -57,60 +103,60 @@
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
       <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0000734433055731" />
-      <entry key="S2" value="1.327363455278798" />
-      <entry key="S5" value="3.9119969422874985" />
-      <entry key="S10" value="8.947962839352904" />
-      <entry key="S30" value="19.976421573815273" />
-      <entry key="S60" value="25.44523867823474" />
-      <entry key="M2" value="28.91163944632247" />
-      <entry key="M5" value="31.282599817147688" />
-      <entry key="M10" value="32.18042363771833" />
-      <entry key="M15" value="32.748809451832855" />
-      <entry key="M30" value="34.84530983282126" />
-      <entry key="H1" value="39.04514440046599" />
-      <entry key="H2" value="46.57447269081549" />
-      <entry key="H4" value="59.64321878415546" />
-      <entry key="D1" value="159.81885217812226" />
-      <entry key="W1" value="246.6770146792139" />
+      <entry key="MS500" value="1.0002947950662808" />
+      <entry key="S2" value="1.131032809439616" />
+      <entry key="S5" value="1.4435596387366807" />
+      <entry key="S10" value="1.666002731778692" />
+      <entry key="S30" value="1.8732903681383537" />
+      <entry key="S60" value="1.93450006320939" />
+      <entry key="M2" value="1.9666954360750577" />
+      <entry key="M5" value="1.9870947051955095" />
+      <entry key="M10" value="2.0519375874839962" />
+      <entry key="M15" value="2.3607574512766885" />
+      <entry key="M30" value="5.410792271563212" />
+      <entry key="H1" value="15.163920464210582" />
+      <entry key="H2" value="31.490623915988856" />
+      <entry key="H4" value="52.80190394929745" />
+      <entry key="D1" value="164.49290787298077" />
+      <entry key="W1" value="259.384959432081" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
       <entry key="MS500" value="0.0" />
       <entry key="S2" value="0.0" />
-      <entry key="S5" value="2.2014771621641213E-290" />
-      <entry key="S10" value="2.5945556731582333E-145" />
-      <entry key="S30" value="1.5080744094589365E-48" />
-      <entry key="S60" value="2.4276315262587222E-24" />
-      <entry key="M2" value="3.1061043674474767E-12" />
-      <entry key="M5" value="5.724889338971203E-5" />
-      <entry key="M10" value="0.015130484755038505" />
-      <entry key="M15" value="0.09710521705718052" />
-      <entry key="M30" value="0.623692903320322" />
-      <entry key="H1" value="1.6049319509250402" />
-      <entry key="H2" value="2.756821884676816" />
-      <entry key="H4" value="4.079794222475386" />
-      <entry key="D1" value="11.118285810744576" />
-      <entry key="W1" value="17.408611437880175" />
+      <entry key="S5" value="7.151454130536967E-133" />
+      <entry key="S10" value="8.456627064342477E-67" />
+      <entry key="S30" value="9.456576058369957E-23" />
+      <entry key="S60" value="9.750251480664881E-12" />
+      <entry key="M2" value="3.347687565531354E-6" />
+      <entry key="M5" value="0.010286261003493054" />
+      <entry key="M10" value="0.20940070117586498" />
+      <entry key="M15" value="0.6403084025649101" />
+      <entry key="M30" value="2.263331470758971" />
+      <entry key="H1" value="4.8937751693793405" />
+      <entry key="H2" value="7.958993295547622" />
+      <entry key="H4" value="10.936470031417656" />
+      <entry key="D1" value="20.09904149857726" />
+      <entry key="W1" value="27.203250273790676" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.8888426811665702" />
-      <entry key="MS500" value="0.9767790821997351" />
-      <entry key="S2" value="1.3192530944675493" />
-      <entry key="S5" value="3.90460524170047" />
-      <entry key="S10" value="8.941526778886157" />
-      <entry key="S30" value="19.972470030003514" />
-      <entry key="S60" value="25.442811306420563" />
-      <entry key="M2" value="28.910281031846903" />
-      <entry key="M5" value="31.282072920797116" />
-      <entry key="M10" value="32.19513942697674" />
-      <entry key="M15" value="32.845221120830765" />
-      <entry key="M30" value="35.467320537976484" />
-      <entry key="H1" value="40.64793123046269" />
-      <entry key="H2" value="49.32934803821747" />
-      <entry key="H4" value="63.72151115004787" />
-      <entry key="D1" value="170.93645942708287" />
-      <entry key="W1" value="264.0854706617916" />
+      <entry key="MS100" value="0.8010698775896221" />
+      <entry key="MS500" value="0.9568828305734879" />
+      <entry key="S2" value="1.1177080359652938" />
+      <entry key="S5" value="1.4360083702516844" />
+      <entry key="S10" value="1.6614369220120557" />
+      <entry key="S30" value="1.8715228485645545" />
+      <entry key="S60" value="1.933580031036731" />
+      <entry key="M2" value="1.9662291027296999" />
+      <entry key="M5" value="1.9970691838335375" />
+      <entry key="M10" value="2.260256545372185" />
+      <entry key="M15" value="2.999194955413712" />
+      <entry key="M30" value="7.6712288682252945" />
+      <entry key="H1" value="20.054553693919004" />
+      <entry key="H2" value="39.44680470098479" />
+      <entry key="H4" value="63.73620202468679" />
+      <entry key="D1" value="184.5910888057334" />
+      <entry key="W1" value="286.58802282703664" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -178,33 +224,7 @@
       <recent name="C:\Users\NZH\Desktop\动漫社网站\static" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.baidu_push">
-    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="anime-club" />
-      <option name="ENV_FILES" value=".env" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.14 (动漫社网站)" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="DEBUG_JUST_MY_CODE" value="false" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="RUN_TOOL" value="" />
-      <option name="SCRIPT_NAME" value="app.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.run">
     <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="动漫社网站" />
       <option name="ENV_FILES" value="" />
@@ -253,80 +273,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="app.py" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="anime-club" />
-      <option name="ENV_FILES" value="$PROJECT_DIR$/.env" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.14 (动漫社网站)" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="DEBUG_JUST_MY_CODE" value="false" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="RUN_TOOL" value="" />
-      <option name="SCRIPT_NAME" value="C:\Users\NZH\Desktop\动漫社网站\app.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="baidu_push" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="动漫社网站" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="DEBUG_JUST_MY_CODE" value="false" />
-      <option name="RUN_TOOL" value="" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/baidu_push.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="public" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="动漫社网站" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="DEBUG_JUST_MY_CODE" value="false" />
-      <option name="RUN_TOOL" value="" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/public.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="动漫社网站" />
       <option name="ENV_FILES" value="" />
@@ -336,8 +282,9 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.14 (动漫社网站)" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="DEBUG_JUST_MY_CODE" value="false" />
@@ -351,60 +298,16 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="动漫社网站" type="Python.FlaskServer">
-      <module name="anime-club" />
-      <option name="target" value="$PROJECT_DIR$/app.py" />
-      <option name="targetType" value="PATH" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="FLASK_RUN_PORT" value="7891" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="SDK_NAME" value="Python 3.14 (动漫社网站)" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="DEBUG_JUST_MY_CODE" value="false" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="RUN_TOOL" value="" />
-      <option name="launchJavascriptDebuger" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration name="anime-club" type="Python.FlaskServer">
-      <module name="anime-club" />
-      <option name="target" value="$PROJECT_DIR$/app.py" />
-      <option name="targetType" value="PATH" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="DEBUG_JUST_MY_CODE" value="false" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="RUN_TOOL" value="" />
-      <option name="launchJavascriptDebuger" value="false" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.baidu_push" />
         <item itemvalue="Python.run" />
-        <item itemvalue="Python.public" />
-        <item itemvalue="Python.app.py" />
-        <item itemvalue="Python.app" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-50341a9f1f9c-c2ffad84badb-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.26222.68" />
+        <option value="bundled-python-sdk-6fa658e1df1a-5bd6d13a2a75-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-262.8665.369" />
       </set>
     </attachedChunks>
   </component>

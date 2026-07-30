@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}赛事中心{% endblock %}
+{% block content %}
+<h2>赛事中心</h2>
+
+{% if open_contests %}
+<h3>进行中</h3>
+<div class="contest-list">
+    {% for c in open_contests %}
+    <div class="contest-card">
+        <h4><a href="{{ url_for('public.contest_rules', contest_id=c.id) }}">{{ c.title }}</a></h4>
+        <p>{{ c.description[:100] }}{% if c.description|length > 100 %}...{% endif %}</p>
+        <p><small>开始：{{ c.open_at.strftime('%Y-%m-%d %H:%M') if c.open_at else '未设置' }}</small></p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if upcoming_contests %}
+<h3>即将开始</h3>
+<div class="contest-list">
+    {% for c in upcoming_contests %}
+    <div class="contest-card">
+        <h4>{{ c.title }}</h4>
+        <p>{{ c.description[:100] }}{% if c.description|length > 100 %}...{% endif %}</p>
+        <p><small>开始：{{ c.open_at.strftime('%Y-%m-%d %H:%M') if c.open_at else '未设置' }}</small></p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if closed_contests %}
+<h3>已结束</h3>
+<div class="contest-list">
+    {% for c in closed_contests %}
+    <div class="contest-card">
+        <h4>{{ c.title }}</h4>
+        <p>{{ c.description[:100] }}{% if c.description|length > 100 %}...{% endif %}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if not open_contests and not upcoming_contests and not closed_contests %}
+<p style="color:#94a3b8;">暂无赛事</p>
+{% endif %}
+
+<style>
+.contest-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 16px 0 32px 0;
+}
+.contest-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+}
+.contest-card h4 {
+    margin: 0 0 6px 0;
+}
+.contest-card p {
+    margin: 4px 0;
+    color: #475569;
+}
+</style>
+{% endblock %}

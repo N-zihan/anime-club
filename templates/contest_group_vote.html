@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}小组赛 - {{ contest.title }}{% endblock %}
+{% block content %}
+
+<h2>小组赛：{{ contest.title }}</h2>
+<p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
+
+{% if groups %}
+    {% for group in groups %}
+    <div style="background:#f8fafc; border-radius:12px; padding:16px; margin-bottom:20px; border:1px solid #e2e8f0;">
+        <h4 style="margin:0 0 12px 0;">第 {{ loop.index }} 组</h4>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:12px;">
+            {% for cid in group %}
+                {% set c = candidates.get(cid) %}
+                <div style="background:white; border-radius:8px; padding:12px; text-align:center; border:1px solid #e2e8f0;">
+                    {% if c and c.image_url %}
+                        <img src="{{ c.image_url }}" alt="{{ c.name }}" style="width:60px; height:60px; object-fit:cover; border-radius:50%; margin-bottom:6px;">
+                    {% endif %}
+                    <div><strong>{{ c.name if c else '已移除' }}</strong></div>
+                    <div style="font-size:0.8rem; color:#64748b;">{{ c.source if c else '—' }}</div>
+                    <div style="margin-top:8px;">
+                        <button class="vote-btn" data-cid="{{ c.id if c else '' }}" onclick="selectCandidate(this)" style="padding:4px 16px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">投票</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div style="margin-top:12px; font-size:0.85rem; color:#94a3b8;">
+            当前轮次：第 {{ round_number }} 轮（共3轮）
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="color:#94a3b8;">暂无分组数据</p>
+{% endif %}
+
+<!-- 投票确认弹窗 -->
+<div id="voteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; justify-content:center; align-items:center;">
+    <div style="background:white; border-radius:16px; padding:24px; max-width:400px; width:90%; text-align:center;">
+        <h3 id="modalTitle">确认投票</h3>
+        <p id="modalDesc" style="color:#475569; margin:12px 0;">确定要投给该角色吗？</p>
+        <form method="POST" action="{{ url_for('public.group_vote_submit', contest_id=contest.id) }}">
+            <input type="hidden" name="candidate_id" id="modalCandidateId" value="">
+            <input type="hidden" name="gender" value="{{ gender }}">
+            <div style="display:flex; gap:12px; justify-content:center;">
+                <button type="submit" class="btn-primary" style="padding:8px 32px;">确认</button>
+                <button type="button" onclick="closeModal()" style="padding:8px 32px; background:#e2e8f0; border:none; border-radius:30px; cursor:pointer;">取消</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function selectCandidate(btn) {
+        const cid = btn.dataset.cid;
+        if (!cid) {
+            alert('该角色已被移除');
+            return;
+        }
+        document.getElementById('modalCandidateId').value = cid;
+        const name = btn.closest('.vote-btn').parentElement.previousElementSibling.previousElementSibling.textContent;
+        document.getElementById('modalDesc').textContent = '确定要投给 ' + name.trim() + ' 吗？';
+        document.getElementById('voteModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('voteModal').style.display = 'none';
+    }
+
+    document.getElementById('voteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+</script>
+
+<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
+
+{% endblock %}

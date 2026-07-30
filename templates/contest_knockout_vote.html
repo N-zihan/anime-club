@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}淘汰赛 - {{ contest.title }}{% endblock %}
+{% block content %}
+
+<h2>淘汰赛：{{ contest.title }}</h2>
+<p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
+
+{% if matches %}
+    {% for match in matches %}
+    <div style="background:#f8fafc; border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid #e2e8f0;">
+        <div style="font-weight:600; margin-bottom:10px;">
+            {% if match.round == 'final' %}
+                决赛
+            {% else %}
+                {{ match.round_name }}
+            {% endif %}
+            {% if match.status == 'finished' %}
+                <span style="color:#4caf50;">已结束</span>
+            {% elif match.status == 'active' %}
+                <span style="color:#2196f3;">进行中</span>
+            {% else %}
+                <span style="color:#94a3b8;">待开始</span>
+            {% endif %}
+        </div>
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:16px; align-items:center;">
+            <div style="text-align:center;">
+                {% set c1 = candidates.get(match.candidate1) %}
+                {% if c1 and c1.image_url %}
+                    <img src="{{ c1.image_url }}" alt="{{ c1.name }}" style="width:60px; height:60px; object-fit:cover; border-radius:50%;">
+                {% endif %}
+                <div><strong>{{ c1.name if c1 else '已移除' }}</strong></div>
+                <div style="font-size:0.8rem; color:#64748b;">票数：{{ match.votes1 or 0 }}</div>
+            </div>
+            <div style="font-size:1.2rem; font-weight:600; color:#94a3b8;">VS</div>
+            <div style="text-align:center;">
+                {% set c2 = candidates.get(match.candidate2) %}
+                {% if c2 and c2.image_url %}
+                    <img src="{{ c2.image_url }}" alt="{{ c2.name }}" style="width:60px; height:60px; object-fit:cover; border-radius:50%;">
+                {% endif %}
+                <div><strong>{{ c2.name if c2 else '已移除' }}</strong></div>
+                <div style="font-size:0.8rem; color:#64748b;">票数：{{ match.votes2 or 0 }}</div>
+            </div>
+        </div>
+        {% if match.status == 'active' and not match.voted %}
+        <div style="text-align:center; margin-top:12px;">
+            <form method="POST" action="{{ url_for('public.knockout_vote_submit', contest_id=contest.id) }}" style="display:inline;">
+                <input type="hidden" name="candidate_id" value="{{ match.candidate1 }}">
+                <input type="hidden" name="gender" value="{{ gender }}">
+                <button type="submit" class="btn-primary" style="padding:6px 24px; background:#e91e63;">投给 {{ c1.name if c1 else '' }}</button>
+            </form>
+            <span style="margin:0 16px; color:#94a3b8;">或</span>
+            <form method="POST" action="{{ url_for('public.knockout_vote_submit', contest_id=contest.id) }}" style="display:inline;">
+                <input type="hidden" name="candidate_id" value="{{ match.candidate2 }}">
+                <input type="hidden" name="gender" value="{{ gender }}">
+                <button type="submit" class="btn-primary" style="padding:6px 24px; background:#2196f3;">投给 {{ c2.name if c2 else '' }}</button>
+            </form>
+        </div>
+        {% elif match.status == 'finished' %}
+        <div style="text-align:center; margin-top:12px; color:#4caf50;">
+            胜者：{{ candidates.get(match.winner).name if match.winner and candidates.get(match.winner) else '未知' }}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+    <p style="color:#94a3b8;">淘汰赛尚未开始</p>
+{% endif %}
+
+<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
+
+{% endblock %}

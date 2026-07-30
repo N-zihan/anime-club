@@ -26,6 +26,7 @@
 import base64
 from datetime import timedelta
 
+from .utils import compress_image
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, Response
 from sqlalchemy import func
 
@@ -53,10 +54,11 @@ def profile():
                     if request.content_length and request.content_length > 2 * 1024 * 1024:
                         flash('头像文件不能超过2MB', 'danger')
                     else:
-                        avatar_data = file.read()
-                        avatar_mime = file.content_type or 'image/png'
-                        user.avatar = avatar_data
-                        user.avatar_mime = avatar_mime
+                        raw_data = file.read()
+                        # 头像压缩到 200x200，品质80
+                        compressed = compress_image(raw_data, max_size=(200, 200), quality=80)
+                        user.avatar = compressed
+                        user.avatar_mime = 'image/jpeg'  # 统一转为JPEG
                         db.session.commit()
                         flash('头像更新成功', 'success')
                 else:

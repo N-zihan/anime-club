@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}赛事管理{% endblock %}
+{% block content %}
+<div class="admin-header">
+    <h2>赛事管理</h2>
+    <a class="btn-add" href="{{ url_for('admin.admin_contest_create') }}">创建赛事</a>
+</div>
+
+{% if contests %}
+<table class="admin-table">
+    <thead>
+        <tr><th>ID</th><th>标题</th><th>状态</th><th>创建时间</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+        {% for c in contests %}
+        <tr>
+            <td>{{ c.id }}</td>
+            <td>{{ c.title }}</td>
+            <td>{{ c.status }}</td>
+            <td>{{ c.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>
+                <a class="btn-edit" href="{{ url_for('admin.admin_contest_edit', contest_id=c.id) }}">编辑</a>
+                <a class="btn-delete" href="{{ url_for('admin.admin_contest_delete', contest_id=c.id) }}" onclick="return confirm('确定删除？')">删除</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="text-align:center; color:#94a3b8; padding:40px 0;">暂无赛事</p>
+{% endif %}
+{% endblock %}

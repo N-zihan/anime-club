@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}海选投票 - {{ contest.title }}{% endblock %}
+{% block content %}
+
+<h2>🗳海选投票：{{ contest.title }}</h2>
+<p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
+<p style="color:#64748b;">
+    你共有 <strong>15票</strong>，最多可投给 <strong>5个</strong> 角色，每个角色最多 <strong>3票</strong>
+</p>
+<p style="color:#e74c3c; font-size:0.9rem;">提交后不可修改，请谨慎分配</p>
+
+<form method="POST" action="{{ url_for('public.qualifying_vote_submit', contest_id=contest.id) }}" id="voteForm">
+    <input type="hidden" name="gender" value="{{ gender }}">
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:16px; margin:20px 0;">
+        {% for c in candidates %}
+        <div class="candidate-card" data-cid="{{ c.id }}" style="background:#f8fafc; border-radius:12px; padding:16px; text-align:center; border:1px solid #e2e8f0;">
+            {% if c.image_url %}
+                <img src="{{ c.image_url }}" alt="{{ c.name }}" style="width:80px; height:80px; object-fit:cover; border-radius:50%; margin-bottom:8px;">
+            {% endif %}
+            <div><strong>{{ c.name }}</strong></div>
+            <div style="font-size:0.85rem; color:#64748b;">{{ c.source }}</div>
+            <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px;">
+                <button type="button" class="vote-btn" data-action="decrease" style="background:#e2e8f0; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;">−</button>
+                <span class="vote-count" style="font-size:1.2rem; font-weight:600; width:30px; text-align:center;">0</span>
+                <button type="button" class="vote-btn" data-action="increase" style="background:#1e2a3a; color:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;">+</button>
+            </div>
+            <div style="font-size:0.7rem; color:#94a3b8; margin-top:4px;">最多3票</div>
+            <input type="hidden" name="vote_{{ c.id }}" class="vote-input" value="0">
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="display:flex; gap:24px; flex-wrap:wrap; background:#f8fafc; padding:16px 20px; border-radius:12px; margin-top:10px;">
+        <span>已投角色：<strong id="usedCandidates">0</strong> / 5</span>
+        <span>已用票数：<strong id="usedVotes">0</strong> / 15</span>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
+        <button type="submit" class="btn-primary" style="padding:12px 40px;">确认投票</button>
+        <a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}" style="padding:12px 24px; background:#e2e8f0; border-radius:40px; text-decoration:none; color:#1e2a3a;">取消</a>
+    </div>
+</form>
+
+<script>
+    (function() {
+        const MAX_CANDIDATES = 5;
+        const MAX_VOTES = 15;
+        const MAX_PER_CANDIDATE = 3;
+
+        const voteCounts = {};
+        let usedCandidates = 0;
+        let usedVotes = 0;
+
+        // 收集所有候选卡片
+        const cards = document.querySelectorAll('.candidate-card');
+        cards.forEach(card => {
+            const cid = parseInt(card.dataset.cid);
+            voteCounts[cid] = 0;
+        });
+
+        function updateStats() {
+            usedCandidates = 0;
+            usedVotes = 0;
+            for (const [id, count] of Object.entries(voteCounts)) {
+                if (count > 0) usedCandidates++;
+                usedVotes += count;
+            }
+            document.getElementById('usedCandidates').textContent = usedCandidates;
+            document.getElementById('usedVotes').textContent = usedVotes;
+        }
+
+        function updateDisplay(cid) {
+            const count = voteCounts[cid];
+            const card = document.querySelector(`.candidate-card[data-cid="${cid}"]`);
+            if (card) {
+                const countSpan = card.querySelector('.vote-count');
+                const hiddenInput = card.querySelector('.vote-input');
+                if (countSpan) countSpan.textContent = count;
+                if (hiddenInput) hiddenInput.value = count;
+            }
+        }
+
+        function changeVote(cid, delta) {
+            const current = voteCounts[cid] || 0;
+            const newVal = current + delta;
+
+            if (newVal < 0) return;
+            if (newVal > MAX_PER_CANDIDATE) return;
+
+            if (delta > 0) {
+                if (usedVotes >= MAX_VOTES) {
+                    alert('总票数已达上限（15票）');
+                    return;
+                }
+                if (usedCandidates >= MAX_CANDIDATES && current === 0) {
+                    alert('已达到最多投给5个角色');
+                    return;
+                }
+            }
+
+            voteCounts[cid] = newVal;
+            updateDisplay(cid);
+            updateStats();
+        }
+
+        // 为所有加减按钮绑定事件
+        document.querySelectorAll('.vote-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const card = this.closest('.candidate-card');
+                if (!card) return;
+                const cid = parseInt(card.dataset.cid);
+                const action = this.dataset.action;
+                const delta = action === 'increase' ? 1 : -1;
+                changeVote(cid, delta);
+            });
+        });
+
+        // 表单提交验证
+        document.getElementById('voteForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // 先阻止提交，验证通过后再提交
+            if (usedVotes === 0) {
+                alert('请至少投出1票');
+                return;
+            }
+            if (usedVotes > MAX_VOTES) {
+                alert('总票数不能超过15票');
+                return;
+            }
+            if (usedCandidates > MAX_CANDIDATES) {
+                alert('最多只能投给5个角色');
+                return;
+            }
+            if (!confirm('确认提交投票？提交后不可修改')) {
+                return;
+            }
+            this.submit();
+        });
+
+        // 初始化统计
+        updateStats();
+    })();
+</script>
+
+<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
+
+{% endblock %}

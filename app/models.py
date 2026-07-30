@@ -77,7 +77,6 @@ class Reply(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     user = db.relationship('User', backref='replies')
 
-    # 新增：用于回复的回复
     parent_reply_id = db.Column(db.Integer, db.ForeignKey('reply.id'), nullable=True)
     parent_reply = db.relationship('Reply', remote_side=[id], backref=db.backref('children', lazy='dynamic'))
 
@@ -101,3 +100,111 @@ class Photo(db.Model):
     activity = db.relationship('Activity', backref='photos')
     upload_time = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     uploader = db.Column(db.String(50))
+
+
+# ========== 萌战系统 ==========
+
+class Contest(db.Model):
+    __tablename__ = 'contests'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    type = db.Column(db.String(20), nullable=False, default='saimoe')
+    gender_mode = db.Column(db.String(10), nullable=False, default='separate')
+    status = db.Column(db.String(20), nullable=False, default='draft')
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    open_at = db.Column(db.DateTime, nullable=True)
+    close_at = db.Column(db.DateTime, nullable=True)
+    config = db.Column(db.JSON, nullable=True)
+
+    creator = db.relationship('User', backref='created_contests')
+    nominations = db.relationship('Nomination', back_populates='contest', lazy='dynamic')
+    candidates = db.relationship('Candidate', back_populates='contest', lazy='dynamic')
+    rounds = db.relationship('ContestRound', back_populates='contest', lazy='dynamic')
+
+
+class Nomination(db.Model):
+    __tablename__ = 'nominations'
+    id = db.Column(db.Integer, primary_key=True)
+    contest_id = db.Column(db.Integer, db.ForeignKey('contests.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    source = db.Column(db.String(200), nullable=False)
+    gender = db.Column(db.String(10), nullable=False)
+    image_url = db.Column(db.String(500), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(20), default='pending')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = db.relationship('User', backref='nominations')
+    contest = db.relationship('Contest', back_populates='nominations')
+
+    __table_args__ = (
+        db.UniqueConstraint('contest_id', 'name', name='uq_nomination_contest_role'),
+    )
+
+
+class Candidate(db.Model):
+    __tablename__ = 'candidates'
+    id = db.Column(db.Integer, primary_key=True)
+    contest_id = db.Column(db.Integer, db.ForeignKey('contests.id'), nullable=False)
+    nomination_id = db.Column(db.Integer, db.ForeignKey('nominations.id'), nullable=True)
+    name = db.Column(db.String(100), nullable=False)
+    source = db.Column(db.String(200), nullable=False)
+    gender = db.Column(db.String(10), nullable=False)
+    image_url = db.Column(db.String(500), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    stage = db.Column(db.String(20), default='pending')
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    contest = db.relationship('Contest', back_populates='candidates')
+    nomination = db.relationship('Nomination', backref='candidate')
+
+
+class ContestRound(db.Model):
+    __tablename__ = 'contest_rounds'
+    id = db.Column(db.Integer, primary_key=True)
+    contest_id = db.Column(db.Integer, db.ForeignKey('contests.id'), nullable=False)
+    round_number = db.Column(db.Integer, default=1, nullable=False)
+    round_type = db.Column(db.String(20), nullable=False)
+    name = db.Column(db.String(100), nullable=True)
+    start_at = db.Column(db.DateTime, nullable=True)
+    end_at = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), default='pending')
+
+    contest = db.relationship('Contest', back_populates='rounds')
+    matches = db.relationship('ContestMatch', back_populates='round', lazy='dynamic')
+
+
+class ContestMatch(db.Model):
+    __tablename__ = 'contest_matches'
+    id = db.Column(db.Integer, primary_key=True)
+    round_id = db.Column(db.Integer, db.ForeignKey('contest_rounds.id'), nullable=False)
+    candidate1_id = db.Column(db.Integer, db.ForeignKey('candidates.id'))
+    candidate2_id = db.Column(db.Integer, db.ForeignKey('candidates.id'))
+    winner_id = db.Column(db.Integer, db.ForeignKey('candidates.id'), nullable=True)
+    match_order = db.Column(db.Integer, default=0)
+    status = db.Column(db.String(20), default='pending')
+
+    round = db.relationship('ContestRound', back_populates='matches')
+    candidate1 = db.relationship('Candidate', foreign_keys=[candidate1_id])
+    candidate2 = db.relationship('Candidate', foreign_keys=[candidate2_id])
+    winner = db.relationship('Candidate', foreign_keys=[winner_id])
+
+
+class ContestVote(db.Model):
+    __tablename__ = 'contest_votes'
+    id = db.Column(db.Integer, primary_key=True)
+    contest_id = db.Column(db.Integer, db.ForeignKey('contests.id'), nullable=False)
+    round_id = db.Column(db.Integer, db.ForeignKey('contest_rounds.id'), nullable=True)
+    candidate_id = db.Column(db.Integer, db.ForeignKey('candidates.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    weight = db.Column(db.Integer, default=1)
+    round_number = db.Column(db.Integer, default=0)
+    gender = db.Column(db.String(10), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        db.UniqueConstraint('contest_id', 'round_number', 'user_id', 'gender', name='uq_contest_vote_unique'),
+    )

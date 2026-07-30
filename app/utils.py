@@ -17,7 +17,8 @@
 """
 
 import os
-
+from PIL import Image
+import io
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -32,3 +33,32 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
+
+def compress_image(file_data, max_size=(800, 800), quality=85, output_format='JPEG'):
+    """
+    压缩图片数据
+    :param file_data: 原始图片二进制数据
+    :param max_size: 最大宽高 (width, height)
+    :param quality: JPEG品质 1-100
+    :param output_format: 'JPEG' 或 'PNG'
+    :return: 压缩后的二进制数据
+    """
+    img = Image.open(io.BytesIO(file_data))
+
+    # 处理透明背景（PNG转RGB）
+    if img.mode in ('RGBA', 'LA'):
+        background = Image.new('RGB', img.size, (255, 255, 255))
+        background.paste(img, mask=img.split()[-1])
+        img = background
+    elif img.mode != 'RGB':
+        img = img.convert('RGB')
+
+    # 缩放到指定尺寸（保持宽高比）
+    img.thumbnail(max_size, Image.Resampling.LANCZOS)
+
+    output = io.BytesIO()
+    img.save(output, format=output_format, quality=quality, optimize=True)
+    return output.getvalue()
