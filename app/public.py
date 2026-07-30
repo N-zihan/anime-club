@@ -229,7 +229,7 @@ def contest_rules(contest_id):
 @public_bp.route('/contest/<int:contest_id>')
 def contest_detail(contest_id):
     contest = Contest.query.get_or_404(contest_id)
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
 
     def set_time_to_18(dt):
         return dt.replace(hour=18, minute=0, second=0, microsecond=0)
@@ -985,7 +985,7 @@ def group_vote_submit(contest_id):
         flash('当前不可投票', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     open_at = contest.open_at
     if not open_at:
         flash('赛事开始时间未设置', 'danger')
@@ -1111,7 +1111,7 @@ def knockout_vote_submit(contest_id):
         flash('当前不可投票', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     open_at = contest.open_at
     if not open_at:
         flash('赛事开始时间未设置', 'danger')
@@ -1159,6 +1159,14 @@ def knockout_vote_submit(contest_id):
         flash('请选择你要支持的角色', 'danger')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
+    sub_round_map = {
+        '16强': 1,
+        '8强': 2,
+        '4强': 3,
+        '决赛': 4
+    }
+    sub_round = sub_round_map.get(round_name, 0)
+
     vote = ContestVote(
         contest_id=contest.id,
         round_id=None,
@@ -1166,6 +1174,7 @@ def knockout_vote_submit(contest_id):
         user_id=session.get('user_id'),
         weight=1,
         round_number=4,
+        sub_round=sub_round,
         gender=gender
     )
     db.session.add(vote)
