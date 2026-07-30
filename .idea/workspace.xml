@@ -6,16 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="萌战系统">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/auth.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/public.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/public.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_contest_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_contest_edit.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/contest_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/contest_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/contest_group_vote.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/contest_group_vote.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/contest_knockout_vote.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/contest_knockout_vote.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/contest_qualifying_vote.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/contest_qualifying_vote.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/contest_rules.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/contest_rules.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,61 +89,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0000311316895472" />
-      <entry key="S5" value="1.028510461518725" />
-      <entry key="S10" value="1.3865823011091594" />
-      <entry key="S30" value="3.7474556552734253" />
-      <entry key="S60" value="5.65145951079639" />
-      <entry key="M2" value="7.089078177176522" />
-      <entry key="M5" value="8.395309822471784" />
-      <entry key="M10" value="9.918698688395507" />
-      <entry key="M15" value="11.15088708755616" />
-      <entry key="M30" value="13.288105255923066" />
-      <entry key="H1" value="15.108202247901819" />
-      <entry key="H2" value="18.667005147376084" />
-      <entry key="H4" value="31.65226112879175" />
-      <entry key="D1" value="151.55081908897554" />
-      <entry key="W1" value="272.0432187936903" />
-    </decayedCancelled>
-    <decayedSelected>
       <entry key="MS100" value="0.0" />
       <entry key="MS500" value="0.0" />
       <entry key="S2" value="0.0" />
-      <entry key="S5" value="0.0" />
-      <entry key="S10" value="0.0" />
-      <entry key="S30" value="2.1082422921568784E-305" />
-      <entry key="S60" value="4.6037222908447203E-153" />
-      <entry key="M2" value="7.27430605748887E-77" />
-      <entry key="M5" value="5.585681908800667E-31" />
-      <entry key="M10" value="1.5430765154083237E-15" />
-      <entry key="M15" value="2.424722752370386E-10" />
-      <entry key="M30" value="4.404378211580631E-5" />
-      <entry key="H1" value="0.02158799131747759" />
-      <entry key="H2" value="0.5286183681630305" />
-      <entry key="H4" value="2.8185076806246134" />
-      <entry key="D1" value="16.03364841279666" />
-      <entry key="W1" value="26.33906595854653" />
+      <entry key="S5" value="4.379371992654477E-248" />
+      <entry key="S10" value="2.861193395873105E-124" />
+      <entry key="S30" value="2.2144728305131125E-41" />
+      <entry key="S60" value="1.3738127651521045E-20" />
+      <entry key="M2" value="3.495209637225816E-10" />
+      <entry key="M5" value="6.326887517963122E-4" />
+      <entry key="M10" value="0.08610559856575703" />
+      <entry key="M15" value="0.47100683926400255" />
+      <entry key="M30" value="2.731001615829298" />
+      <entry key="H1" value="6.849237703650398" />
+      <entry key="H2" value="12.568671388319315" />
+      <entry key="H4" value="25.972401157612776" />
+      <entry key="D1" value="146.6367573563247" />
+      <entry key="W1" value="270.7651974312152" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0000003024080752" />
+      <entry key="S10" value="1.0005499164256249" />
+      <entry key="S30" value="1.081927976894495" />
+      <entry key="S60" value="1.2862306358419637" />
+      <entry key="M2" value="1.5350052671160945" />
+      <entry key="M5" value="1.7786516766047493" />
+      <entry key="M10" value="1.8824124186596363" />
+      <entry key="M15" value="1.9199856947329668" />
+      <entry key="M30" value="1.9591678994705608" />
+      <entry key="H1" value="1.9891533760669082" />
+      <entry key="H2" value="2.3455532581071505" />
+      <entry key="H4" value="4.307540029555033" />
+      <entry key="D1" value="17.512886224289538" />
+      <entry key="W1" value="28.215204579558897" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.7845840978967508" />
-      <entry key="MS500" value="0.9526379980439373" />
-      <entry key="S2" value="0.9879740174357345" />
-      <entry key="S5" value="1.023554293040352" />
-      <entry key="S10" value="1.3833041245554332" />
-      <entry key="S30" value="3.744237978780983" />
-      <entry key="S60" value="5.6488848328202215" />
-      <entry key="M2" value="7.087407041289385" />
-      <entry key="M5" value="8.394503772210161" />
-      <entry key="M10" value="9.918226173527831" />
-      <entry key="M15" value="11.150536195636512" />
-      <entry key="M30" value="13.287943080906201" />
-      <entry key="H1" value="15.129660802415364" />
-      <entry key="H2" value="19.195373576322257" />
-      <entry key="H4" value="34.47017502494542" />
-      <entry key="D1" value="167.58377471191534" />
-      <entry key="W1" value="298.3821028901994" />
+      <entry key="MS100" value="1.1247781503990937E-5" />
+      <entry key="MS500" value="0.10237958723247848" />
+      <entry key="S2" value="0.5656572314229502" />
+      <entry key="S5" value="0.7961987300600977" />
+      <entry key="S10" value="0.8928117765336996" />
+      <entry key="S30" value="1.0427402550162972" />
+      <entry key="S60" value="1.2640515423428413" />
+      <entry key="M2" value="1.5223989580343062" />
+      <entry key="M5" value="1.7736529956410096" />
+      <entry key="M10" value="1.9655732430892967" />
+      <entry key="M15" value="2.3889871065430732" />
+      <entry key="M30" value="4.689116114134436" />
+      <entry key="H1" value="8.837822838284078" />
+      <entry key="H2" value="14.913800550111219" />
+      <entry key="H4" value="30.27932579054552" />
+      <entry key="D1" value="164.14895185771525" />
+      <entry key="W1" value="298.9802179455149" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -320,14 +312,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00124" summary="上传图片功能面向全体社员，创建新手引导">
-      <option name="closed" value="true" />
-      <created>1784018340456</created>
-      <option name="number" value="00124" />
-      <option name="presentableId" value="LOCAL-00124" />
-      <option name="project" value="LOCAL" />
-      <updated>1784018340456</updated>
     </task>
     <task id="LOCAL-00125" summary="上传图片功能面向全体社员，创建新手引导">
       <option name="closed" value="true" />
@@ -713,7 +697,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785421977803</updated>
     </task>
-    <option name="localTasksCounter" value="173" />
+    <task id="LOCAL-00173" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785428108221</created>
+      <option name="number" value="00173" />
+      <option name="presentableId" value="LOCAL-00173" />
+      <option name="project" value="LOCAL" />
+      <updated>1785428108221</updated>
+    </task>
+    <option name="localTasksCounter" value="174" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

@@ -200,33 +200,37 @@
 <!-- ============================================================ -->
 <div style="margin:30px 0; padding:20px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">
     <h3 style="margin-top:0;">赛事入口</h3>
-    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+    <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
 
         {% if phase in ['qualifying', 'qualifying_result'] %}
         <a class="btn-primary" href="{{ url_for('public.qualifying_vote_female', contest_id=contest.id) }}"
            style="text-decoration:none; padding:8px 24px; background:#e91e63; color:white; border-radius:40px;">女组海选</a>
         <a class="btn-primary" href="{{ url_for('public.qualifying_vote_male', contest_id=contest.id) }}"
            style="text-decoration:none; padding:8px 24px; background:#2196f3; color:white; border-radius:40px;">男组海选</a>
-        {% endif %}
 
-        {% if phase in ['group_round_1', 'group_round_1_result', 'group_round_2', 'group_round_2_result',
-        'group_round_3', 'group_round_3_result'] %}
+        {% elif phase in ['group_round_1', 'group_round_1_result', 'group_round_2', 'group_round_2_result', 'group_round_3', 'group_round_3_result'] %}
         <a class="btn-primary" href="{{ url_for('public.group_vote_female', contest_id=contest.id) }}"
            style="text-decoration:none; padding:8px 24px; background:#e91e63; color:white; border-radius:40px;">女组小组赛</a>
         <a class="btn-primary" href="{{ url_for('public.group_vote_male', contest_id=contest.id) }}"
            style="text-decoration:none; padding:8px 24px; background:#2196f3; color:white; border-radius:40px;">男组小组赛</a>
-        {% endif %}
 
-        {% if phase in ['knockout_16', 'knockout_16_result', 'knockout_8', 'knockout_8_result', 'knockout_4',
-        'knockout_4_result', 'final_vote', 'final_result'] %}
+        {% elif phase in ['knockout_16', 'knockout_16_result', 'knockout_8', 'knockout_8_result', 'knockout_4', 'knockout_4_result', 'final_vote', 'final_result'] %}
         <a class="btn-primary" href="{{ url_for('public.knockout_vote_female', contest_id=contest.id) }}"
            style="text-decoration:none; padding:8px 24px; background:#e91e63; color:white; border-radius:40px;">女组淘汰赛</a>
         <a class="btn-primary" href="{{ url_for('public.knockout_vote_male', contest_id=contest.id) }}"
            style="text-decoration:none; padding:8px 24px; background:#2196f3; color:white; border-radius:40px;">男组淘汰赛</a>
-        {% endif %}
 
-        {% if phase == 'closed' %}
+        {% elif phase == 'not_started' %}
+        <span style="color:#64748b; padding:8px 0;">
+            赛事尚未开始（{{ contest.open_at.strftime('%Y年%m月%d日 %H:%M') if contest.open_at else '开放时间未设置' }} 开放）
+        </span>
+
+        {% elif phase == 'closed' %}
         <span style="color:#64748b; padding:8px 0;">赛事已结束，查看下方最终排名</span>
+
+        {% else %}
+        <span style="color:#94a3b8; padding:8px 0;">当前阶段暂无可操作入口</span>
+
         {% endif %}
 
     </div>

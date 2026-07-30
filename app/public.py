@@ -26,7 +26,7 @@ from sqlalchemy.orm import joinedload
 
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote, \
     Candidate
-from .utils import supabase, compress_image
+from .utils import supabase, compress_image, now_beijing
 
 public_bp = Blueprint('public', __name__)
 
@@ -183,7 +183,7 @@ def members():
 
 @public_bp.route('/contest_center')
 def contest_center():
-    now = datetime.now(timezone.utc) + timedelta(hours=8)
+    now = now_beijing()
     open_contests = Contest.query.filter(
         Contest.status == 'open',
         Contest.open_at <= now,
@@ -212,7 +212,7 @@ def contest_rules(contest_id):
 @public_bp.route('/contest/<int:contest_id>')
 def contest_detail(contest_id):
     contest = Contest.query.get_or_404(contest_id)
-    now = datetime.now(timezone.utc) + timedelta(hours=8)
+    now = now_beijing()
 
     def set_time_to_18(dt):
         return dt.replace(hour=18, minute=0, second=0, microsecond=0)
@@ -1120,7 +1120,7 @@ def group_vote_submit(contest_id):
         flash('当前不可投票', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    now = datetime.now(timezone.utc) + timedelta(hours=8)
+    now = now_beijing()
     open_at = contest.open_at
     if not open_at:
         flash('赛事开始时间未设置', 'danger')
@@ -1300,7 +1300,7 @@ def knockout_vote_submit(contest_id):
         flash('当前不可投票', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    now = datetime.now(timezone.utc) + timedelta(hours=8)
+    now = now_beijing()
     open_at = contest.open_at
     if not open_at:
         flash('赛事开始时间未设置', 'danger')
