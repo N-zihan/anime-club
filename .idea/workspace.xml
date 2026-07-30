@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="萌战系统完整版 - 生产测试" />
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="萌战系统" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -308,22 +308,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00115" summary="注入版本号">
-      <option name="closed" value="true" />
-      <created>1783656158535</created>
-      <option name="number" value="00115" />
-      <option name="presentableId" value="LOCAL-00115" />
-      <option name="project" value="LOCAL" />
-      <updated>1783656158535</updated>
-    </task>
-    <task id="LOCAL-00116" summary="注入版本号">
-      <option name="closed" value="true" />
-      <created>1783656473154</created>
-      <option name="number" value="00116" />
-      <option name="presentableId" value="LOCAL-00116" />
-      <option name="project" value="LOCAL" />
-      <updated>1783656473155</updated>
     </task>
     <task id="LOCAL-00117" summary="style: 后台表格现代化">
       <option name="closed" value="true" />
@@ -701,7 +685,23 @@
       <option name="project" value="LOCAL" />
       <updated>1785403983952</updated>
     </task>
-    <option name="localTasksCounter" value="164" />
+    <task id="LOCAL-00164" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785404187169</created>
+      <option name="number" value="00164" />
+      <option name="presentableId" value="LOCAL-00164" />
+      <option name="project" value="LOCAL" />
+      <updated>1785404187169</updated>
+    </task>
+    <task id="LOCAL-00165" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785404291532</created>
+      <option name="number" value="00165" />
+      <option name="presentableId" value="LOCAL-00165" />
+      <option name="project" value="LOCAL" />
+      <updated>1785404291532</updated>
+    </task>
+    <option name="localTasksCounter" value="166" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -719,7 +719,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Merge remote-tracking branch 'origin/main'&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml" />
     <MESSAGE value="Merge remote-tracking branch 'origin/main'" />
     <MESSAGE value="最终版本：修复留言板、个人主页、头像容错等" />
     <MESSAGE value="动漫社网站" />
@@ -744,7 +743,8 @@
     <MESSAGE value="优化登录功能" />
     <MESSAGE value="管理界面新增删除留言功能" />
     <MESSAGE value="萌战系统完整版 - 生产测试" />
-    <option name="LAST_COMMIT_MESSAGE" value="萌战系统完整版 - 生产测试" />
+    <MESSAGE value="萌战系统" />
+    <option name="LAST_COMMIT_MESSAGE" value="萌战系统" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

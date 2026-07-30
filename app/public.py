@@ -229,7 +229,7 @@ def contest_rules(contest_id):
 @public_bp.route('/contest/<int:contest_id>')
 def contest_detail(contest_id):
     contest = Contest.query.get_or_404(contest_id)
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
 
     def set_time_to_18(dt):
         return dt.replace(hour=18, minute=0, second=0, microsecond=0)
