@@ -63,8 +63,3 @@ def compress_image(file_data, max_size=(800, 800), quality=85, output_format='JP
     output = io.BytesIO()
     img.save(output, format=output_format, quality=quality, optimize=True)
     return output.getvalue()
-
-
-def now_beijing():
-    """返回不带时区的北京时间（naive datetime），用于与数据库时间比较"""
-    return datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
