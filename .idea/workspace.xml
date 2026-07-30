@@ -6,8 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="萌战系统">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/public.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/public.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/contest_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/contest_detail.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -312,22 +311,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00119" summary="简化注释，调整格式">
-      <option name="closed" value="true" />
-      <created>1783776186613</created>
-      <option name="number" value="00119" />
-      <option name="presentableId" value="LOCAL-00119" />
-      <option name="project" value="LOCAL" />
-      <updated>1783776186614</updated>
-    </task>
-    <task id="LOCAL-00120" summary="删除无用文件">
-      <option name="closed" value="true" />
-      <created>1783776197703</created>
-      <option name="number" value="00120" />
-      <option name="presentableId" value="LOCAL-00120" />
-      <option name="project" value="LOCAL" />
-      <updated>1783776197703</updated>
     </task>
     <task id="LOCAL-00121" summary="删除无用文件">
       <option name="closed" value="true" />
@@ -705,7 +688,23 @@
       <option name="project" value="LOCAL" />
       <updated>1785412738066</updated>
     </task>
-    <option name="localTasksCounter" value="168" />
+    <task id="LOCAL-00168" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785419740217</created>
+      <option name="number" value="00168" />
+      <option name="presentableId" value="LOCAL-00168" />
+      <option name="project" value="LOCAL" />
+      <updated>1785419740217</updated>
+    </task>
+    <task id="LOCAL-00169" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785420001118</created>
+      <option name="number" value="00169" />
+      <option name="presentableId" value="LOCAL-00169" />
+      <option name="project" value="LOCAL" />
+      <updated>1785420001119</updated>
+    </task>
+    <option name="localTasksCounter" value="170" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

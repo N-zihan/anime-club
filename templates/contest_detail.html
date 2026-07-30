@@ -109,7 +109,7 @@
     <span><strong>状态：</strong>{{ contest.status }}</span>
     <span><strong>开始：</strong>{{ contest.open_at.strftime('%Y-%m-%d %H:%M:%S') if contest.open_at else '未设置' }}</span>
     <span><strong>结束：</strong>{{ contest.close_at.strftime('%Y-%m-%d %H:%M:%S') if contest.close_at else '未设置' }}</span>
-    <span><strong>当前时间：</strong>{{ current_time.strftime('%Y-%m-%d %H:%M:%S') if current_time else '未知' }}</span>
+    <span><strong>当前时间：</strong><span id="current-time">加载中...</span></span>
 </div>
 
 <!-- ============================================================ -->
@@ -321,5 +321,25 @@
 {% endif %}
 
 <p style="margin-top:20px;"><a href="{{ url_for('public.contest_center') }}">← 返回赛事中心</a></p>
+
+<script>
+    function updateCurrentTime() {
+        var now = new Date();
+        // 转为北京时间 (UTC+8)
+        var beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+        var year = beijingTime.getUTCFullYear();
+        var month = String(beijingTime.getUTCMonth() + 1).padStart(2, '0');
+        var day = String(beijingTime.getUTCDate()).padStart(2, '0');
+        var hours = String(beijingTime.getUTCHours()).padStart(2, '0');
+        var minutes = String(beijingTime.getUTCMinutes()).padStart(2, '0');
+        var seconds = String(beijingTime.getUTCSeconds()).padStart(2, '0');
+        document.getElementById('current-time').textContent =
+            year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+    }
+    // 立即执行一次
+    updateCurrentTime();
+    // 每秒更新一次
+    setInterval(updateCurrentTime, 1000);
+</script>
 
 {% endblock %}

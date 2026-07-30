@@ -200,7 +200,7 @@ def members():
 
 @public_bp.route('/contest_center')
 def contest_center():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc) + timedelta(hours=8)
     open_contests = Contest.query.filter(
         Contest.status == 'open',
         Contest.open_at <= now,
@@ -986,7 +986,7 @@ def group_vote_submit(contest_id):
         flash('当前不可投票', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc) + timedelta(hours=8)
     open_at = contest.open_at
     if not open_at:
         flash('赛事开始时间未设置', 'danger')
@@ -1112,7 +1112,7 @@ def knockout_vote_submit(contest_id):
         flash('当前不可投票', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc) + timedelta(hours=8)
     open_at = contest.open_at
     if not open_at:
         flash('赛事开始时间未设置', 'danger')
