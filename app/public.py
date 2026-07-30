@@ -372,7 +372,8 @@ def contest_detail(contest_id):
         def count_votes(candidates):
             result = []
             for c in candidates:
-                total = ContestVote.query.filter_by(candidate_id=c.id, round_id=None, round_number=0).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+                total = ContestVote.query.filter_by(candidate_id=c.id, round_id=None, round_number=0).with_entities(
+                    sa_func.sum(ContestVote.weight)).scalar() or 0
                 result.append({'candidate': c, 'total_votes': total})
             result.sort(key=lambda x: x['total_votes'], reverse=True)
             return result
@@ -392,7 +393,7 @@ def contest_detail(contest_id):
             random.shuffle(candidates)
             groups = []
             for i in range(group_count):
-                groups.append(candidates[i*4:(i+1)*4])
+                groups.append(candidates[i * 4:(i + 1) * 4])
             return groups
 
         female_groups = generate_groups(female_top32)
@@ -404,8 +405,12 @@ def contest_detail(contest_id):
         contest.config['male_groups'] = [[c.id for c in group] for group in male_groups]
         contest.config['female_top32'] = [c.id for c in female_top32]
         contest.config['male_top32'] = [c.id for c in male_top32]
-        contest.config['female_result'] = [{'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item in female_result[:32]]
-        contest.config['male_result'] = [{'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item in male_result[:32]]
+        contest.config['female_result'] = [
+            {'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item
+            in female_result[:32]]
+        contest.config['male_result'] = [
+            {'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item
+            in male_result[:32]]
 
         contest.status = 'group_stage'
         db.session.commit()
@@ -414,7 +419,8 @@ def contest_detail(contest_id):
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
     # ========== 小组赛第3轮公示结束后自动进入淘汰赛（使用积分排名） ==========
-    if phase == 'group_round_3_result' and now >= group_round_3_result_end and contest.status in ['open', 'group_stage']:
+    if phase == 'group_round_3_result' and now >= group_round_3_result_end and contest.status in ['open',
+                                                                                                  'group_stage']:
         import random
         from sqlalchemy import func as sa_func
 
@@ -524,7 +530,7 @@ def contest_detail(contest_id):
                     'round': 'round_1',
                     'round_name': '16强',
                     'candidate1': shuffled[i],
-                    'candidate2': shuffled[i+1],
+                    'candidate2': shuffled[i + 1],
                     'status': 'active',
                     'votes1': 0,
                     'votes2': 0,
@@ -584,8 +590,10 @@ def contest_detail(contest_id):
                 results = contest.config.get('female_result', [])
             else:
                 results = contest.config.get('male_result', [])
-            c1_qualifying = next((item['votes'] for item in results if item['name'] == Candidate.query.get(match['candidate1']).name), 0)
-            c2_qualifying = next((item['votes'] for item in results if item['name'] == Candidate.query.get(match['candidate2']).name), 0)
+            c1_qualifying = next(
+                (item['votes'] for item in results if item['name'] == Candidate.query.get(match['candidate1']).name), 0)
+            c2_qualifying = next(
+                (item['votes'] for item in results if item['name'] == Candidate.query.get(match['candidate2']).name), 0)
             return match['candidate1'] if c1_qualifying >= c2_qualifying else match['candidate2']
 
     # 辅助函数：根据上一轮胜者生成下一轮对阵
@@ -607,7 +615,7 @@ def contest_detail(contest_id):
                     'round': round_name,
                     'round_name': round_name,
                     'candidate1': winners[i],
-                    'candidate2': winners[i+1],
+                    'candidate2': winners[i + 1],
                     'status': 'active',
                     'votes1': 0,
                     'votes2': 0,
@@ -658,7 +666,8 @@ def contest_detail(contest_id):
             # 获取该性别所有参与淘汰赛的角色
             # 从最后一轮对阵中获取胜者（冠军）和败者（亚军）
             # 但为了简化，我们直接统计所有 knockout 角色的总票数（round_number=4）
-            candidates = contest.candidates.filter_by(gender=gender).filter(Candidate.stage.in_(['knockout', 'champion'])).all()
+            candidates = contest.candidates.filter_by(gender=gender).filter(
+                Candidate.stage.in_(['knockout', 'champion'])).all()
             ranking = []
             for c in candidates:
                 total = ContestVote.query.filter_by(
@@ -1143,11 +1152,20 @@ def knockout_vote_submit(contest_id):
         flash('无效的组别', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    # 检查该用户当前轮次是否已投过该组别
+    sub_round_map = {
+        '16强': 1,
+        '8强': 2,
+        '4强': 3,
+        '决赛': 4
+    }
+    sub_round = sub_round_map.get(round_name, 0)
+
+    # 检查该用户当前轮次是否已投过该组别（增加 sub_round 过滤）
     existing = ContestVote.query.filter_by(
         contest_id=contest.id,
         user_id=session.get('user_id'),
         round_number=4,
+        sub_round=sub_round,  # 关键：按当前子轮过滤
         gender=gender
     ).first()
 
@@ -1159,14 +1177,6 @@ def knockout_vote_submit(contest_id):
     if not candidate_id:
         flash('请选择你要支持的角色', 'danger')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
-
-    sub_round_map = {
-        '16强': 1,
-        '8强': 2,
-        '4强': 3,
-        '决赛': 4
-    }
-    sub_round = sub_round_map.get(round_name, 0)
 
     vote = ContestVote(
         contest_id=contest.id,

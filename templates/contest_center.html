@@ -46,33 +46,37 @@
 {% endif %}
 
 <style>
-.contest-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin: 16px 0 32px 0;
-}
-.contest-card {
-    display: block;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px 20px;
-    text-decoration: none;
-    color: #1e2a3a;
-    transition: box-shadow 0.2s, transform 0.15s;
-}
-.contest-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    transform: translateY(-2px);
-    border-color: #4a90d9;
-}
-.contest-card h4 {
-    margin: 0 0 6px 0;
-}
-.contest-card p {
-    margin: 4px 0;
-    color: #475569;
-}
+    .contest-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin: 16px 0 32px 0;
+    }
+
+    .contest-card {
+        display: block;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px 20px;
+        text-decoration: none;
+        color: #1e2a3a;
+        transition: box-shadow 0.2s, transform 0.15s;
+    }
+
+    .contest-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+        border-color: #4a90d9;
+    }
+
+    .contest-card h4 {
+        margin: 0 0 6px 0;
+    }
+
+    .contest-card p {
+        margin: 4px 0;
+        color: #475569;
+    }
 </style>
 {% endblock %}

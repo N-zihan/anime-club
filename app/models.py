@@ -207,5 +207,6 @@ class ContestVote(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
-        db.UniqueConstraint('contest_id', 'round_number', 'user_id', 'gender', 'sub_round', name='uq_contest_vote_unique'),
+        db.UniqueConstraint('contest_id', 'round_number', 'user_id', 'gender', 'sub_round',
+                            name='uq_contest_vote_unique'),
     )

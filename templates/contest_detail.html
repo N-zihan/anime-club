@@ -162,7 +162,32 @@
         <div><strong>{{ c.name }}</strong></div>
         <div style="font-size:0.85rem; color:#64748b;">{{ c.source }}</div>
         <div style="font-size:0.8rem; color:#94a3b8;">{{ '女' if c.gender == 'female' else '男' }}</div>
-        <div style="font-size:0.7rem; color:#94a3b8; margin-top:4px;">状态：{{ c.stage }}</div>
+        <div style="font-size:0.7rem; color:#94a3b8; margin-top:4px;">
+            状态：
+            {% if c.stage == 'champion' %}
+            🏆 冠军
+            {% elif c.stage == 'knockout' %}
+            {% if contest.status == 'closed' %}
+            淘汰赛（未夺冠）
+            {% else %}
+            淘汰赛进行中
+            {% endif %}
+            {% elif c.stage == 'group_stage' %}
+            {% if contest.status in ['knockout', 'closed'] %}
+            小组赛淘汰
+            {% else %}
+            小组赛进行中
+            {% endif %}
+            {% elif c.stage == 'pending' %}
+            {% if contest.status in ['group_stage', 'knockout', 'closed'] %}
+            海选淘汰
+            {% else %}
+            待审核
+            {% endif %}
+            {% else %}
+            {{ c.stage }}
+            {% endif %}
+        </div>
     </div>
     {% endfor %}
 </div>
@@ -336,6 +361,7 @@
         document.getElementById('current-time').textContent =
             year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
     }
+
     // 立即执行一次
     updateCurrentTime();
     // 每秒更新一次
