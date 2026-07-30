@@ -721,7 +721,8 @@ def contest_detail(contest_id):
                            knockout_4_result_end=knockout_4_result_end,
                            final_vote_end=final_vote_end,
                            final_result_end=final_result_end,
-                           now=now)
+                           now=now,
+                           current_time=now)
 
 
 @public_bp.route('/contest/<int:contest_id>/nominate', methods=['POST'])

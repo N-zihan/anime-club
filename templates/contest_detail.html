@@ -109,6 +109,7 @@
     <span><strong>状态：</strong>{{ contest.status }}</span>
     <span><strong>开始：</strong>{{ contest.open_at.strftime('%Y-%m-%d %H:%M:%S') if contest.open_at else '未设置' }}</span>
     <span><strong>结束：</strong>{{ contest.close_at.strftime('%Y-%m-%d %H:%M:%S') if contest.close_at else '未设置' }}</span>
+    <span><strong>当前时间：</strong>{{ current_time.strftime('%Y-%m-%d %H:%M:%S') if current_time else '未知' }}</span>
 </div>
 
 <!-- ============================================================ -->
