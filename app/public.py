@@ -229,7 +229,7 @@ def contest_rules(contest_id):
 @public_bp.route('/contest/<int:contest_id>')
 def contest_detail(contest_id):
     contest = Contest.query.get_or_404(contest_id)
-    now = datetime.now(timezone.utc)
+    now = datetime.now()
 
     def set_time_to_18(dt):
         return dt.replace(hour=18, minute=0, second=0, microsecond=0)
@@ -270,76 +270,91 @@ def contest_detail(contest_id):
         knockout_4_end = knockout_4_result_end = None
         final_vote_end = final_result_end = None
 
-    # ========== 判断当前阶段 ==========
+    # ========== 判断当前阶段（优先依据 contest.status） ==========
     if contest.status == 'closed':
         phase = 'closed'
     elif contest.status == 'draft':
         phase = 'not_started'
-    elif not open_at:
-        phase = 'unknown'
+    elif contest.status == 'group_stage':
+        # 小组赛阶段，根据时间细分
+        if now <= group_round_1_end:
+            phase = 'group_round_1'
+        elif now <= group_round_1_result_end:
+            phase = 'group_round_1_result'
+        elif now <= group_round_2_end:
+            phase = 'group_round_2'
+        elif now <= group_round_2_result_end:
+            phase = 'group_round_2_result'
+        elif now <= group_round_3_end:
+            phase = 'group_round_3'
+        elif now <= group_round_3_result_end:
+            phase = 'group_round_3_result'
+        else:
+            # 理论上不会到这里，但以防万一
+            phase = 'group_round_3_result'
+    elif contest.status == 'knockout':
+        # 淘汰赛阶段，根据时间细分
+        if now <= knockout_16_end:
+            phase = 'knockout_16'
+        elif now <= knockout_16_result_end:
+            phase = 'knockout_16_result'
+        elif now <= knockout_8_end:
+            phase = 'knockout_8'
+        elif now <= knockout_8_result_end:
+            phase = 'knockout_8_result'
+        elif now <= knockout_4_end:
+            phase = 'knockout_4'
+        elif now <= knockout_4_result_end:
+            phase = 'knockout_4_result'
+        elif now <= final_vote_end:
+            phase = 'final_vote'
+        elif now <= final_result_end:
+            phase = 'final_result'
+        else:
+            phase = 'closed'
+            if contest.status != 'closed':
+                contest.status = 'closed'
+                db.session.commit()
     else:
+        # 默认按时间判断（open 状态）
         if now < open_at:
             phase = 'not_started'
-        elif now < nomination_end:
+        elif now <= nomination_end:
             phase = 'nomination'
-        elif now < review_end:
+        elif now <= review_end:
             phase = 'review'
-        elif now < qualifying_vote_end:
+        elif now <= qualifying_vote_end:
             phase = 'qualifying'
-        elif now < qualifying_end:
+        elif now <= qualifying_end:
             phase = 'qualifying_result'
-        elif now < group_round_1_end:
+        elif now <= group_round_1_end:
             phase = 'group_round_1'
-        elif now < group_round_1_result_end:
+        elif now <= group_round_1_result_end:
             phase = 'group_round_1_result'
-        elif now < group_round_2_end:
+        elif now <= group_round_2_end:
             phase = 'group_round_2'
-        elif now < group_round_2_result_end:
+        elif now <= group_round_2_result_end:
             phase = 'group_round_2_result'
-        elif now < group_round_3_end:
+        elif now <= group_round_3_end:
             phase = 'group_round_3'
-        elif now < group_round_3_result_end:
+        elif now <= group_round_3_result_end:
             phase = 'group_round_3_result'
-        elif now < knockout_16_end:
+        elif now <= knockout_16_end:
             phase = 'knockout_16'
-            if contest.status != 'knockout':
-                contest.status = 'knockout'
-                db.session.commit()
-        elif now < knockout_16_result_end:
+        elif now <= knockout_16_result_end:
             phase = 'knockout_16_result'
-            if contest.status != 'knockout':
-                contest.status = 'knockout'
-                db.session.commit()
-        elif now < knockout_8_end:
+        elif now <= knockout_8_end:
             phase = 'knockout_8'
-            if contest.status != 'knockout':
-                contest.status = 'knockout'
-                db.session.commit()
-        elif now < knockout_8_result_end:
+        elif now <= knockout_8_result_end:
             phase = 'knockout_8_result'
-            if contest.status != 'knockout':
-                contest.status = 'knockout'
-                db.session.commit()
-        elif now < knockout_4_end:
+        elif now <= knockout_4_end:
             phase = 'knockout_4'
-            if contest.status != 'knockout':
-                contest.status = 'knockout'
-                db.session.commit()
-        elif now < knockout_4_result_end:
+        elif now <= knockout_4_result_end:
             phase = 'knockout_4_result'
-            if contest.status != 'knockout':
-                contest.status = 'knockout'
-                db.session.commit()
-        elif now < final_vote_end:
+        elif now <= final_vote_end:
             phase = 'final_vote'
-            if contest.status != 'knockout':
-                contest.status = 'knockout'
-                db.session.commit()
-        elif now < final_result_end:
+        elif now <= final_result_end:
             phase = 'final_result'
-            if contest.status != 'final':
-                contest.status = 'final'
-                db.session.commit()
         else:
             phase = 'closed'
             if contest.status != 'closed':
@@ -357,8 +372,7 @@ def contest_detail(contest_id):
         def count_votes(candidates):
             result = []
             for c in candidates:
-                total = ContestVote.query.filter_by(candidate_id=c.id, round_id=None, round_number=0).with_entities(
-                    sa_func.sum(ContestVote.weight)).scalar() or 0
+                total = ContestVote.query.filter_by(candidate_id=c.id, round_id=None, round_number=0).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
                 result.append({'candidate': c, 'total_votes': total})
             result.sort(key=lambda x: x['total_votes'], reverse=True)
             return result
@@ -378,7 +392,7 @@ def contest_detail(contest_id):
             random.shuffle(candidates)
             groups = []
             for i in range(group_count):
-                groups.append(candidates[i * 4:(i + 1) * 4])
+                groups.append(candidates[i*4:(i+1)*4])
             return groups
 
         female_groups = generate_groups(female_top32)
@@ -390,12 +404,8 @@ def contest_detail(contest_id):
         contest.config['male_groups'] = [[c.id for c in group] for group in male_groups]
         contest.config['female_top32'] = [c.id for c in female_top32]
         contest.config['male_top32'] = [c.id for c in male_top32]
-        contest.config['female_result'] = [
-            {'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item
-            in female_result[:32]]
-        contest.config['male_result'] = [
-            {'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item
-            in male_result[:32]]
+        contest.config['female_result'] = [{'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item in female_result[:32]]
+        contest.config['male_result'] = [{'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item in male_result[:32]]
 
         contest.status = 'group_stage'
         db.session.commit()
@@ -403,31 +413,21 @@ def contest_detail(contest_id):
         flash('海选结果已公布，小组赛开始！', 'success')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    # ========== 小组赛第3轮公示结束后自动进入淘汰赛 ==========
-    if phase == 'group_round_3_result' and now >= group_round_3_result_end and contest.status in ['open',
-                                                                                                  'group_stage']:
+    # ========== 小组赛第3轮公示结束后自动进入淘汰赛（使用积分排名） ==========
+    if phase == 'group_round_3_result' and now >= group_round_3_result_end and contest.status in ['open', 'group_stage']:
         import random
         from sqlalchemy import func as sa_func
 
         # ---------- 1. 统计小组赛积分 ----------
-        # 小组赛共3轮，每轮每人投1票，角色获得票数即为该轮得分
-        # 积分规则：胜+3，平+1，负+0（票数高者胜，票数相同为平）
-        # 每个小组4人，组内单循环，每组共3轮
-
         def get_group_stage_results(gender):
-            """获取指定性别的小组赛结果，返回每个角色的积分和票数"""
-            # 获取该性别所有参与小组赛的角色
             candidates = contest.candidates.filter_by(gender=gender, stage='group_stage').all()
             if not candidates:
                 return [], {}
 
-            # 获取该性别的小组分组
             groups = contest.config.get(f'{gender}_groups', [])
             if not groups:
                 return [], {}
 
-            # 统计每个角色在3轮中的得票数
-            # 按 (组号, 轮次) 统计票数，然后判断胜负
             result = {}
             for c in candidates:
                 result[c.id] = {
@@ -441,36 +441,28 @@ def contest_detail(contest_id):
                     'group_index': None
                 }
 
-            # 确定每个角色属于哪一组
             for gi, group in enumerate(groups):
                 for cid in group:
                     if cid in result:
                         result[cid]['group_index'] = gi
 
-            # 对每组、每轮统计票数
             for gi, group in enumerate(groups):
-                # 组内4个角色
                 group_candidates = [cid for cid in group if cid in result]
                 if len(group_candidates) < 4:
                     continue
 
-                # 3轮循环
                 for round_num in [1, 2, 3]:
-                    # 每轮两两对战：0vs1, 2vs3
-                    # 实际应为：第1轮 0vs1, 2vs3；第2轮 0vs2, 1vs3；第3轮 0vs3, 1vs2
-                    # 这里按对阵表生成
                     if round_num == 1:
                         pairs = [(group_candidates[0], group_candidates[1]),
                                  (group_candidates[2], group_candidates[3])]
                     elif round_num == 2:
                         pairs = [(group_candidates[0], group_candidates[2]),
                                  (group_candidates[1], group_candidates[3])]
-                    else:  # round_num == 3
+                    else:
                         pairs = [(group_candidates[0], group_candidates[3]),
                                  (group_candidates[1], group_candidates[2])]
 
                     for cid1, cid2 in pairs:
-                        # 统计该轮这两个角色的票数
                         votes1 = ContestVote.query.filter_by(
                             contest_id=contest.id,
                             candidate_id=cid1,
@@ -485,11 +477,9 @@ def contest_detail(contest_id):
                             gender=gender
                         ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
 
-                        # 累加总票数
                         result[cid1]['total_votes'] += votes1
                         result[cid2]['total_votes'] += votes2
 
-                        # 判断胜负
                         if votes1 > votes2:
                             result[cid1]['wins'] += 1
                             result[cid2]['losses'] += 1
@@ -500,30 +490,21 @@ def contest_detail(contest_id):
                             result[cid1]['draws'] += 1
                             result[cid2]['draws'] += 1
 
-            # 计算积分（胜+3，平+1，负+0）
             for cid, data in result.items():
                 data['points'] = data['wins'] * 3 + data['draws'] * 1
 
-            # 按组排序，返回结果
             return result, groups
 
-        # ---------- 2. 获取男女组积分 ----------
         female_result, female_groups = get_group_stage_results('female')
         male_result, male_groups = get_group_stage_results('male')
 
-        # ---------- 3. 每组取前2名晋级 ----------
         def get_top2_from_groups(result, groups):
-            """从每个组中取积分前2名"""
             top16 = []
             for gi, group in enumerate(groups):
-                # 获取该组所有角色
                 group_candidates = [cid for cid in group if cid in result]
-                # 按积分排序（积分相同按总票数）
                 group_candidates.sort(key=lambda cid: (result[cid]['points'], result[cid]['total_votes']), reverse=True)
-                # 取前2名
                 top2 = group_candidates[:2]
                 top16.extend(top2)
-                # 更新角色状态
                 for cid in top2:
                     if cid in result:
                         result[cid]['candidate'].stage = 'knockout'
@@ -532,13 +513,9 @@ def contest_detail(contest_id):
         female_top16 = get_top2_from_groups(female_result, female_groups)
         male_top16 = get_top2_from_groups(male_result, male_groups)
 
-        # ---------- 4. 生成淘汰赛16强对阵（随机抽签） ----------
-        def generate_knockout_matches(candidate_ids, gender_name):
-            """生成16强对阵表（随机抽签）"""
+        def generate_knockout_matches(candidate_ids):
             if len(candidate_ids) < 16:
-                # 如果不足16人，补全（实际不会发生）
                 return []
-            # 随机打乱顺序
             shuffled = candidate_ids[:]
             random.shuffle(shuffled)
             matches = []
@@ -547,7 +524,7 @@ def contest_detail(contest_id):
                     'round': 'round_1',
                     'round_name': '16强',
                     'candidate1': shuffled[i],
-                    'candidate2': shuffled[i + 1],
+                    'candidate2': shuffled[i+1],
                     'status': 'active',
                     'votes1': 0,
                     'votes2': 0,
@@ -555,10 +532,9 @@ def contest_detail(contest_id):
                 })
             return matches
 
-        female_matches = generate_knockout_matches(female_top16, 'female')
-        male_matches = generate_knockout_matches(male_top16, 'male')
+        female_matches = generate_knockout_matches(female_top16)
+        male_matches = generate_knockout_matches(male_top16)
 
-        # ---------- 5. 存储到 contest.config ----------
         if contest.config is None:
             contest.config = {}
         contest.config['knockout_matches_female'] = female_matches
@@ -566,7 +542,6 @@ def contest_detail(contest_id):
         contest.config['female_top16'] = female_top16
         contest.config['male_top16'] = male_top16
 
-        # 更新角色状态
         for cid in female_top16:
             candidate = Candidate.query.get(cid)
             if candidate:
@@ -580,6 +555,141 @@ def contest_detail(contest_id):
         db.session.commit()
 
         flash('小组赛结束，淘汰赛16强对阵已生成！', 'success')
+        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+
+    # ========== 淘汰赛各轮自动推进 ==========
+    # 辅助函数：统计单个候选人在淘汰赛本轮的总票数
+    def get_knockout_votes(candidate_id, gender, sub_round):
+        total = ContestVote.query.filter_by(
+            contest_id=contest.id,
+            candidate_id=candidate_id,
+            round_number=4,
+            sub_round=sub_round,
+            gender=gender
+        ).with_entities(db.func.sum(ContestVote.weight)).scalar() or 0
+        return total
+
+    # 辅助函数：确定一场比赛的胜者（票数高者，平票则比较海选总票数）
+    def get_match_winner(match, gender, sub_round):
+        c1_votes = get_knockout_votes(match['candidate1'], gender, sub_round)
+        c2_votes = get_knockout_votes(match['candidate2'], gender, sub_round)
+        if c1_votes > c2_votes:
+            return match['candidate1']
+        elif c2_votes > c1_votes:
+            return match['candidate2']
+        else:
+            # 平票，比较海选票数（从 config 中读取）
+            # 海选票数存储在 config 的 female_result / male_result 中
+            if gender == 'female':
+                results = contest.config.get('female_result', [])
+            else:
+                results = contest.config.get('male_result', [])
+            c1_qualifying = next((item['votes'] for item in results if item['name'] == Candidate.query.get(match['candidate1']).name), 0)
+            c2_qualifying = next((item['votes'] for item in results if item['name'] == Candidate.query.get(match['candidate2']).name), 0)
+            return match['candidate1'] if c1_qualifying >= c2_qualifying else match['candidate2']
+
+    # 辅助函数：根据上一轮胜者生成下一轮对阵
+    def generate_next_round(matches, gender, sub_round, round_name):
+        winners = []
+        for match in matches:
+            winner_id = get_match_winner(match, gender, sub_round)
+            # 更新该场比赛的胜者（用于展示）
+            match['winner'] = winner_id
+            match['status'] = 'finished'
+            winners.append(winner_id)
+        # 随机打乱胜者，生成下一轮对阵
+        import random
+        random.shuffle(winners)
+        next_matches = []
+        for i in range(0, len(winners), 2):
+            if i + 1 < len(winners):
+                next_matches.append({
+                    'round': round_name,
+                    'round_name': round_name,
+                    'candidate1': winners[i],
+                    'candidate2': winners[i+1],
+                    'status': 'active',
+                    'votes1': 0,
+                    'votes2': 0,
+                    'winner': None
+                })
+        return next_matches
+
+    # 1. 淘汰赛16强结果公示 → 生成8强对阵
+    if phase == 'knockout_16_result' and now >= knockout_16_result_end and contest.status == 'knockout':
+        female_matches = contest.config.get('knockout_matches_female', [])
+        male_matches = contest.config.get('knockout_matches_male', [])
+        if female_matches:
+            contest.config['knockout_matches_female'] = generate_next_round(female_matches, 'female', 1, '8强')
+        if male_matches:
+            contest.config['knockout_matches_male'] = generate_next_round(male_matches, 'male', 1, '8强')
+        db.session.commit()
+        flash('淘汰赛8强对阵已生成！', 'success')
+        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+
+    # 2. 淘汰赛8强结果公示 → 生成4强对阵
+    if phase == 'knockout_8_result' and now >= knockout_8_result_end and contest.status == 'knockout':
+        female_matches = contest.config.get('knockout_matches_female', [])
+        male_matches = contest.config.get('knockout_matches_male', [])
+        if female_matches:
+            contest.config['knockout_matches_female'] = generate_next_round(female_matches, 'female', 2, '4强')
+        if male_matches:
+            contest.config['knockout_matches_male'] = generate_next_round(male_matches, 'male', 2, '4强')
+        db.session.commit()
+        flash('淘汰赛4强对阵已生成！', 'success')
+        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+
+    # 3. 淘汰赛4强结果公示 → 生成决赛对阵
+    if phase == 'knockout_4_result' and now >= knockout_4_result_end and contest.status == 'knockout':
+        female_matches = contest.config.get('knockout_matches_female', [])
+        male_matches = contest.config.get('knockout_matches_male', [])
+        if female_matches:
+            contest.config['knockout_matches_female'] = generate_next_round(female_matches, 'female', 3, '决赛')
+        if male_matches:
+            contest.config['knockout_matches_male'] = generate_next_round(male_matches, 'male', 3, '决赛')
+        db.session.commit()
+        flash('决赛对阵已生成！', 'success')
+        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+
+    # 4. 决赛结果公示结束 → 生成最终排名并关闭赛事
+    if phase == 'final_result' and now >= final_result_end and contest.status != 'closed':
+        # 生成最终排名
+        def get_final_ranking(gender):
+            # 获取该性别所有参与淘汰赛的角色
+            # 从最后一轮对阵中获取胜者（冠军）和败者（亚军）
+            # 但为了简化，我们直接统计所有 knockout 角色的总票数（round_number=4）
+            candidates = contest.candidates.filter_by(gender=gender).filter(Candidate.stage.in_(['knockout', 'champion'])).all()
+            ranking = []
+            for c in candidates:
+                total = ContestVote.query.filter_by(
+                    contest_id=contest.id,
+                    candidate_id=c.id,
+                    round_number=4
+                ).with_entities(db.func.sum(ContestVote.weight)).scalar() or 0
+                ranking.append({'name': c.name, 'source': c.source, 'votes': total})
+            ranking.sort(key=lambda x: x['votes'], reverse=True)
+            return ranking
+
+        if contest.config is None:
+            contest.config = {}
+        contest.config['female_ranking'] = get_final_ranking('female')
+        contest.config['male_ranking'] = get_final_ranking('male')
+
+        # 标记冠军（第一名）
+        if contest.config['female_ranking']:
+            champion_name = contest.config['female_ranking'][0]['name']
+            champion = Candidate.query.filter_by(contest_id=contest.id, name=champion_name).first()
+            if champion:
+                champion.stage = 'champion'
+        if contest.config['male_ranking']:
+            champion_name = contest.config['male_ranking'][0]['name']
+            champion = Candidate.query.filter_by(contest_id=contest.id, name=champion_name).first()
+            if champion:
+                champion.stage = 'champion'
+
+        contest.status = 'closed'
+        db.session.commit()
+        flash('赛事已结束，最终排名已生成！', 'success')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
     # ========== 获取数据 ==========

@@ -203,6 +203,7 @@ class ContestVote(db.Model):
     weight = db.Column(db.Integer, default=1)
     round_number = db.Column(db.Integer, default=0)
     gender = db.Column(db.String(10), nullable=True)
+    sub_round = db.Column(db.Integer, default=0)  # 淘汰赛子轮次：1=16强, 2=8强, 3=4强, 4=决赛
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
