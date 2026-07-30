@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="萌战系统完整版 - 生产测试">
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/admin.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,8 +17,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Flask Main" />
-        <option value="Python Script" />
         <option value="HTML File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -89,60 +89,60 @@
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
       <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0002947950662808" />
-      <entry key="S2" value="1.131032809439616" />
-      <entry key="S5" value="1.4435596387366807" />
-      <entry key="S10" value="1.666002731778692" />
-      <entry key="S30" value="1.8732903681383537" />
-      <entry key="S60" value="1.93450006320939" />
-      <entry key="M2" value="1.9666954360750577" />
-      <entry key="M5" value="1.9870947051955095" />
-      <entry key="M10" value="2.0519375874839962" />
-      <entry key="M15" value="2.3607574512766885" />
-      <entry key="M30" value="5.410792271563212" />
-      <entry key="H1" value="15.163920464210582" />
-      <entry key="H2" value="31.490623915988856" />
-      <entry key="H4" value="52.80190394929745" />
-      <entry key="D1" value="164.49290787298077" />
-      <entry key="W1" value="259.384959432081" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0" />
+      <entry key="S10" value="1.0" />
+      <entry key="S30" value="1.0" />
+      <entry key="S60" value="1.0" />
+      <entry key="M2" value="1.0000000000036693" />
+      <entry key="M5" value="1.0000404158476999" />
+      <entry key="M10" value="1.0092540258872635" />
+      <entry key="M15" value="1.0644410207695953" />
+      <entry key="M30" value="1.893956490864864" />
+      <entry key="H1" value="7.163668291597151" />
+      <entry key="H2" value="21.076830181128635" />
+      <entry key="H4" value="43.16057476578129" />
+      <entry key="D1" value="159.43702101603725" />
+      <entry key="W1" value="258.9987334635034" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
       <entry key="MS500" value="0.0" />
       <entry key="S2" value="0.0" />
-      <entry key="S5" value="7.151454130536967E-133" />
-      <entry key="S10" value="8.456627064342477E-67" />
-      <entry key="S30" value="9.456576058369957E-23" />
-      <entry key="S60" value="9.750251480664881E-12" />
-      <entry key="M2" value="3.347687565531354E-6" />
-      <entry key="M5" value="0.010286261003493054" />
-      <entry key="M10" value="0.20940070117586498" />
-      <entry key="M15" value="0.6403084025649101" />
-      <entry key="M30" value="2.263331470758971" />
-      <entry key="H1" value="4.8937751693793405" />
-      <entry key="H2" value="7.958993295547622" />
-      <entry key="H4" value="10.936470031417656" />
-      <entry key="D1" value="20.09904149857726" />
-      <entry key="W1" value="27.203250273790676" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="1.503803059491708E-207" />
+      <entry key="S30" value="1.1456848802300089E-69" />
+      <entry key="S60" value="3.39376251261633E-35" />
+      <entry key="M2" value="6.245651315653735E-18" />
+      <entry key="M5" value="2.092139629935452E-7" />
+      <entry key="M10" value="9.443754631292775E-4" />
+      <entry key="M15" value="0.0174783424050266" />
+      <entry key="M30" value="0.3739415149787578" />
+      <entry key="H1" value="1.9891694175592738" />
+      <entry key="H2" value="5.074251854575655" />
+      <entry key="H4" value="8.732409779694043" />
+      <entry key="D1" value="19.359085455351465" />
+      <entry key="W1" value="27.057868475085733" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.8010698775896221" />
-      <entry key="MS500" value="0.9568828305734879" />
-      <entry key="S2" value="1.1177080359652938" />
-      <entry key="S5" value="1.4360083702516844" />
-      <entry key="S10" value="1.6614369220120557" />
-      <entry key="S30" value="1.8715228485645545" />
-      <entry key="S60" value="1.933580031036731" />
-      <entry key="M2" value="1.9662291027296999" />
-      <entry key="M5" value="1.9970691838335375" />
-      <entry key="M10" value="2.260256545372185" />
-      <entry key="M15" value="2.999194955413712" />
-      <entry key="M30" value="7.6712288682252945" />
-      <entry key="H1" value="20.054553693919004" />
-      <entry key="H2" value="39.44680470098479" />
-      <entry key="H4" value="63.73620202468679" />
-      <entry key="D1" value="184.5910888057334" />
-      <entry key="W1" value="286.58802282703664" />
+      <entry key="MS100" value="0.9526379980439373" />
+      <entry key="MS500" value="0.9903428719330246" />
+      <entry key="S2" value="0.9975769252644544" />
+      <entry key="S5" value="0.9990300646389034" />
+      <entry key="S10" value="0.9995149146655609" />
+      <entry key="S30" value="0.9998382787361629" />
+      <entry key="S60" value="0.9999191360985962" />
+      <entry key="M2" value="0.999959567235562" />
+      <entry key="M5" value="1.000024445416846" />
+      <entry key="M10" value="1.010185436115852" />
+      <entry key="M15" value="1.0818629025860171" />
+      <entry key="M30" value="2.2674170269922787" />
+      <entry key="H1" value="9.1515592593203" />
+      <entry key="H2" value="26.14928824723613" />
+      <entry key="H4" value="51.89124997344127" />
+      <entry key="D1" value="178.79527753155807" />
+      <entry key="W1" value="286.05641605046446" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -157,51 +157,53 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Flask 服务器.anime-club.executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.动漫社网站.executor&quot;: &quot;Run&quot;,
-    &quot;HTTP 请求.generated-requests | #1.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.app (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.executor&quot;: &quot;Run&quot;,
-    &quot;Python.app.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python.baidu_push.executor&quot;: &quot;Run&quot;,
-    &quot;Python.index (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.public.executor&quot;: &quot;Run&quot;,
-    &quot;Python.run.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/NZH/Desktop/动漫社网站&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MTThemeTableConfigurable&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Flask 服务器.anime-club.executor": "Run",
+    "Flask 服务器.动漫社网站.executor": "Run",
+    "HTTP 请求.generated-requests | #1.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.app (1).executor": "Run",
+    "Python.app.executor": "Run",
+    "Python.app.py.executor": "Run",
+    "Python.baidu_push.executor": "Run",
+    "Python.index (1).executor": "Run",
+    "Python.public.executor": "Run",
+    "Python.run.executor": "Run",
+    "Python.test.executor": "Run",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/Users/NZH/Desktop/动漫社网站/test",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.jshint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.jshint": "",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "MTThemeTableConfigurable",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\NZH\Desktop\动漫社网站\test" />
       <recent name="C:\Users\NZH\Desktop\动漫社网站" />
       <recent name="C:\Users\NZH\Desktop\动漫社网站\static" />
       <recent name="C:\Users\NZH\Desktop\动漫社网站\static\avatars" />
       <recent name="C:\Users\NZH\Desktop\动漫社网站\static\images" />
-      <recent name="C:\Users\NZH\Desktop\动漫社网站\static\history_photos" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\NZH\Desktop\动漫社网站" />
@@ -309,14 +311,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00112" summary="chore: 完善错误处理，补全400/405页面&#10;&#10;- 新增 400.html 和 405.html 自定义错误页面&#10;- 删除活动时自动删除关联照片，避免外键报错&#10;- 统一后台表格样式为现代化卡片风格&#10;- 修复部分模板中 url_for 蓝图前缀遗漏&#10;&#10;影响：无破坏性变更，用户体验提升。">
-      <option name="closed" value="true" />
-      <created>1783651144082</created>
-      <option name="number" value="00112" />
-      <option name="presentableId" value="LOCAL-00112" />
-      <option name="project" value="LOCAL" />
-      <updated>1783651144082</updated>
     </task>
     <task id="LOCAL-00113" summary="注入版本号">
       <option name="closed" value="true" />
@@ -702,7 +696,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785400275064</updated>
     </task>
-    <option name="localTasksCounter" value="161" />
+    <task id="LOCAL-00161" summary="萌战系统完整版 - 生产测试">
+      <option name="closed" value="true" />
+      <created>1785400669477</created>
+      <option name="number" value="00161" />
+      <option name="presentableId" value="LOCAL-00161" />
+      <option name="project" value="LOCAL" />
+      <updated>1785400669477</updated>
+    </task>
+    <option name="localTasksCounter" value="162" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
