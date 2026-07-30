@@ -426,7 +426,7 @@ def admin_contest_create():
             status='draft',
             created_by=session.get('user_id'),
             open_at=open_at,
-            close_at=open_at + timedelta(days=48),  # 自动计算结束时间
+            close_at=open_at + timedelta(days=50),  # 自动计算结束时间
         )
         db.session.add(contest)
         db.session.commit()
@@ -450,7 +450,7 @@ def admin_contest_edit(contest_id):
         open_at_str = request.form.get('open_at')
         if open_at_str:
             contest.open_at = datetime.strptime(open_at_str, '%Y-%m-%dT%H:%M')
-            contest.close_at = contest.open_at + timedelta(days=48)  # 更新开始时间时自动刷新结束时间
+            contest.close_at = contest.open_at + timedelta(days=50)  # 更新开始时间时自动刷新结束时间
 
         db.session.commit()
         flash('赛事信息已更新', 'success')
