@@ -309,14 +309,6 @@
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
     </task>
-    <task id="LOCAL-00114" summary="注入版本号">
-      <option name="closed" value="true" />
-      <created>1783653333475</created>
-      <option name="number" value="00114" />
-      <option name="presentableId" value="LOCAL-00114" />
-      <option name="project" value="LOCAL" />
-      <updated>1783653333475</updated>
-    </task>
     <task id="LOCAL-00115" summary="注入版本号">
       <option name="closed" value="true" />
       <created>1783656158535</created>
@@ -701,7 +693,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785403317614</updated>
     </task>
-    <option name="localTasksCounter" value="163" />
+    <task id="LOCAL-00163" summary="萌战系统完整版 - 生产测试">
+      <option name="closed" value="true" />
+      <created>1785403983952</created>
+      <option name="number" value="00163" />
+      <option name="presentableId" value="LOCAL-00163" />
+      <option name="project" value="LOCAL" />
+      <updated>1785403983952</updated>
+    </task>
+    <option name="localTasksCounter" value="164" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
