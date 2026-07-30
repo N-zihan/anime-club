@@ -196,104 +196,75 @@
 {% endif %}
 
 <!-- ============================================================ -->
-<!-- 海选投票入口 -->
+<!-- 阶段入口导航 -->
 <!-- ============================================================ -->
-{% if phase == 'qualifying' %}
-<div style="display:flex; gap:16px; margin:30px 0 20px 0; flex-wrap:wrap;">
-    <a class="btn-primary"
-       href="{{ url_for('public.qualifying_vote_female', contest_id=contest.id) }}"
-       style="padding:10px 32px; background:#e91e63; text-decoration:none; color:white; border-radius:40px; display:inline-block;">
-        女组投票
-    </a>
-    <a class="btn-primary"
-       href="{{ url_for('public.qualifying_vote_male', contest_id=contest.id) }}"
-       style="padding:10px 32px; background:#2196f3; text-decoration:none; color:white; border-radius:40px; display:inline-block;">
-        男组投票
-    </a>
-</div>
-{% endif %}
+<div style="margin:30px 0; padding:20px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">
+    <h3 style="margin-top:0;">赛事入口</h3>
+    <div style="display:flex; gap:16px; flex-wrap:wrap;">
 
-<!-- ============================================================ -->
-<!-- 海选公示日展示结果 -->
-<!-- ============================================================ -->
-{% if phase == 'qualifying_result' %}
-<h3>海选结果公示</h3>
-<p style="color:#64748b;">以下为海选阶段票数前32名的角色，公示期结束后将进入小组赛。</p>
-{% if contest.config and contest.config.female_result %}
-<h4>女组前32名</h4>
-<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:12px; margin-bottom:20px;">
-    {% for item in contest.config.female_result %}
-    <div style="background:#f8fafc; border-radius:8px; padding:10px 14px; border:1px solid #e2e8f0;">
-        <div style="font-weight:600;">{{ loop.index }}. {{ item.name }}</div>
-        <div style="font-size:0.85rem; color:#64748b;">{{ item.source }}</div>
-        <div style="font-size:0.8rem; color:#4caf50;">票数：{{ item.votes }}</div>
+        {% if phase in ['qualifying', 'qualifying_result'] %}
+        <a class="btn-primary" href="{{ url_for('public.qualifying_vote_female', contest_id=contest.id) }}"
+           style="text-decoration:none; padding:8px 24px; background:#e91e63; color:white; border-radius:40px;">女组海选</a>
+        <a class="btn-primary" href="{{ url_for('public.qualifying_vote_male', contest_id=contest.id) }}"
+           style="text-decoration:none; padding:8px 24px; background:#2196f3; color:white; border-radius:40px;">男组海选</a>
+        {% endif %}
+
+        {% if phase in ['group_round_1', 'group_round_1_result', 'group_round_2', 'group_round_2_result',
+        'group_round_3', 'group_round_3_result'] %}
+        <a class="btn-primary" href="{{ url_for('public.group_vote_female', contest_id=contest.id) }}"
+           style="text-decoration:none; padding:8px 24px; background:#e91e63; color:white; border-radius:40px;">女组小组赛</a>
+        <a class="btn-primary" href="{{ url_for('public.group_vote_male', contest_id=contest.id) }}"
+           style="text-decoration:none; padding:8px 24px; background:#2196f3; color:white; border-radius:40px;">男组小组赛</a>
+        {% endif %}
+
+        {% if phase in ['knockout_16', 'knockout_16_result', 'knockout_8', 'knockout_8_result', 'knockout_4',
+        'knockout_4_result', 'final_vote', 'final_result'] %}
+        <a class="btn-primary" href="{{ url_for('public.knockout_vote_female', contest_id=contest.id) }}"
+           style="text-decoration:none; padding:8px 24px; background:#e91e63; color:white; border-radius:40px;">女组淘汰赛</a>
+        <a class="btn-primary" href="{{ url_for('public.knockout_vote_male', contest_id=contest.id) }}"
+           style="text-decoration:none; padding:8px 24px; background:#2196f3; color:white; border-radius:40px;">男组淘汰赛</a>
+        {% endif %}
+
+        {% if phase == 'closed' %}
+        <span style="color:#64748b; padding:8px 0;">赛事已结束，查看下方最终排名</span>
+        {% endif %}
+
     </div>
-    {% endfor %}
 </div>
-{% endif %}
-{% if contest.config and contest.config.male_result %}
-<h4>男组前32名</h4>
-<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:12px;">
-    {% for item in contest.config.male_result %}
-    <div style="background:#f8fafc; border-radius:8px; padding:10px 14px; border:1px solid #e2e8f0;">
-        <div style="font-weight:600;">{{ loop.index }}. {{ item.name }}</div>
-        <div style="font-size:0.85rem; color:#64748b;">{{ item.source }}</div>
-        <div style="font-size:0.8rem; color:#4caf50;">票数：{{ item.votes }}</div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-<p style="margin-top:20px; color:#94a3b8;">公示期结束后自动进入小组赛，请耐心等待。</p>
-{% endif %}
 
 <!-- ============================================================ -->
-<!-- 小组赛入口 -->
+<!-- 最终排名（决赛结束后显示） -->
 <!-- ============================================================ -->
-{% if phase in ['group_round_1', 'group_round_1_result', 'group_round_2', 'group_round_2_result', 'group_round_3', 'group_round_3_result'] %}
-<div style="display:flex; gap:16px; margin:30px 0 20px 0; flex-wrap:wrap;">
-    <a class="btn-primary" href="{{ url_for('public.group_vote_female', contest_id=contest.id) }}"
-       style="padding:10px 32px; background:#e91e63; text-decoration:none; color:white; border-radius:40px;">女组</a>
-    <a class="btn-primary" href="{{ url_for('public.group_vote_male', contest_id=contest.id) }}"
-       style="padding:10px 32px; background:#2196f3; text-decoration:none; color:white; border-radius:40px;">男组</a>
-</div>
-{% endif %}
-
-<!-- ============================================================ -->
-<!-- 小组赛分组展示 -->
-<!-- ============================================================ -->
-{% if phase in ['group_round_1', 'group_round_1_result', 'group_round_2', 'group_round_2_result', 'group_round_3', 'group_round_3_result', 'knockout_16', 'knockout_16_result', 'knockout_8', 'knockout_8_result', 'knockout_4', 'knockout_4_result', 'final_vote', 'final_result'] %}
-<h3>小组赛分组</h3>
-{% if contest.config and contest.config.female_groups %}
+{% if phase == 'final_result' or phase == 'closed' %}
+{% if contest.config and contest.config.female_ranking %}
+<h3 style="margin-top:30px;">最终排名</h3>
 <h4>女组</h4>
-<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:16px; margin-bottom:20px;">
-    {% for group in contest.config.female_groups %}
-    <div style="background:#f8fafc; border-radius:12px; padding:12px; border:1px solid #e2e8f0;">
-        <strong>第 {{ loop.index }} 组</strong>
-        <ul style="margin:8px 0 0 0; padding-left:16px; list-style:none;">
-            {% for cid in group %}
-            {% set c = candidates|selectattr('id', 'equalto', cid)|first %}
-            <li style="padding:2px 0;">{{ c.name if c else '已移除' }}</li>
-            {% endfor %}
-        </ul>
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px;">
+    {% for item in contest.config.female_ranking[:8] %}
+    <div style="background:#f8fafc; border-radius:10px; padding:10px; text-align:center; border:1px solid #e2e8f0; {% if loop.index == 1 %}border-color:gold; border-width:2px;{% endif %}">
+        <div style="font-weight:700;">{% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{%
+            endif %} {{ loop.index }}. {{ item.name }}
+        </div>
+        <div style="font-size:0.85rem; color:#64748b;">{{ item.source }}</div>
+        <div style="font-size:0.8rem; color:#4caf50;">票数：{{ item.votes }}</div>
     </div>
     {% endfor %}
 </div>
+{% endif %}
+
+{% if contest.config and contest.config.male_ranking %}
 <h4>男组</h4>
-<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:16px;">
-    {% for group in contest.config.male_groups %}
-    <div style="background:#f8fafc; border-radius:12px; padding:12px; border:1px solid #e2e8f0;">
-        <strong>第 {{ loop.index }} 组</strong>
-        <ul style="margin:8px 0 0 0; padding-left:16px; list-style:none;">
-            {% for cid in group %}
-            {% set c = candidates|selectattr('id', 'equalto', cid)|first %}
-            <li style="padding:2px 0;">{{ c.name if c else '已移除' }}</li>
-            {% endfor %}
-        </ul>
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px;">
+    {% for item in contest.config.male_ranking[:8] %}
+    <div style="background:#f8fafc; border-radius:10px; padding:10px; text-align:center; border:1px solid #e2e8f0; {% if loop.index == 1 %}border-color:gold; border-width:2px;{% endif %}">
+        <div style="font-weight:700;">{% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{%
+            endif %} {{ loop.index }}. {{ item.name }}
+        </div>
+        <div style="font-size:0.85rem; color:#64748b;">{{ item.source }}</div>
+        <div style="font-size:0.8rem; color:#4caf50;">票数：{{ item.votes }}</div>
     </div>
     {% endfor %}
 </div>
-{% else %}
-<p style="color:#94a3b8;">分组尚未生成</p>
 {% endif %}
 {% endif %}
 
@@ -350,7 +321,6 @@
 <script>
     function updateCurrentTime() {
         var now = new Date();
-        // 转为北京时间 (UTC+8)
         var beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
         var year = beijingTime.getUTCFullYear();
         var month = String(beijingTime.getUTCMonth() + 1).padStart(2, '0');
@@ -362,9 +332,7 @@
             year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
     }
 
-    // 立即执行一次
     updateCurrentTime();
-    // 每秒更新一次
     setInterval(updateCurrentTime, 1000);
 </script>
 

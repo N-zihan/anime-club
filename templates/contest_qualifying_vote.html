@@ -1,8 +1,10 @@
 {% extends "base.html" %}
-{% block title %}海选投票 - {{ contest.title }}{% endblock %}
+{% block title %}海选 - {{ contest.title }}{% endblock %}
 {% block content %}
 
-<h2>🗳海选投票：{{ contest.title }}</h2>
+{% if phase == 'qualifying' %}
+<!-- ========== 投票期 ========== -->
+<h2>海选投票：{{ contest.title }}</h2>
 <p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
 <p style="color:#64748b;">
     你共有 <strong>15票</strong>，最多可投给 <strong>5个</strong> 角色，每个角色最多 <strong>3票</strong>
@@ -129,7 +131,7 @@
 
         // 表单提交验证
         document.getElementById('voteForm').addEventListener('submit', function (e) {
-            e.preventDefault(); // 先阻止提交，验证通过后再提交
+            e.preventDefault();
             if (usedVotes === 0) {
                 alert('请至少投出1票');
                 return;
@@ -148,10 +150,79 @@
             this.submit();
         });
 
-        // 初始化统计
         updateStats();
     })();
 </script>
+
+{% elif phase == 'qualifying_result' %}
+<!-- ========== 公示期 ========== -->
+<h3>海选结果公示</h3>
+<p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
+<p style="color:#64748b;">以下为海选阶段票数前32名的角色，公示期结束后将进入小组赛。</p>
+
+{% if gender == 'female' %}
+{% set results = contest.config.female_result if contest.config else [] %}
+{% else %}
+{% set results = contest.config.male_result if contest.config else [] %}
+{% endif %}
+
+{% if results %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:14px; margin-bottom:20px;">
+    {% for item in results %}
+    <div style="background:#f8fafc; border-radius:10px; padding:12px; text-align:center; border:1px solid #e2e8f0;">
+        <div style="font-weight:700; font-size:1.1rem; color:#1e2a3a;">
+            {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% endif %}
+            {{ loop.index }}. {{ item.name }}
+        </div>
+        {% if item.image_url %}
+        <img src="{{ item.image_url }}"
+             style="width:60px; height:60px; object-fit:cover; border-radius:50%; margin:6px 0;">
+        {% endif %}
+        <div style="font-size:0.85rem; color:#64748b;">{{ item.source }}</div>
+        <div style="font-size:0.9rem; color:#4caf50; font-weight:600;">票数：{{ item.votes }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p style="color:#94a3b8;">暂无结果数据</p>
+{% endif %}
+
+<hr style="margin:30px 0;">
+
+<!-- 小组赛分组 -->
+<h3>小组赛分组（已生成）</h3>
+{% if gender == 'female' %}
+{% set groups = contest.config.female_groups if contest.config else [] %}
+{% else %}
+{% set groups = contest.config.male_groups if contest.config else [] %}
+{% endif %}
+
+{% if groups %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:14px;">
+    {% for group in groups %}
+    <div style="background:#f8fafc; border-radius:10px; padding:12px; border:1px solid #e2e8f0;">
+        <strong style="color:#1e2a3a;">{{ ['A','B','C','D','E','F','G','H'][loop.index0] }}组</strong>
+        <ul style="margin:6px 0 0 0; padding-left:0; list-style:none;">
+            {% for cid in group %}
+            {% set c = candidates|selectattr('id', 'equalto', cid)|first %}
+            <li style="padding:2px 0; display:flex; align-items:center; gap:6px;">
+                {% if c and c.image_url %}
+                <img src="{{ c.image_url }}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">
+                {% endif %}
+                <span>{{ c.name if c else '已移除' }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p style="color:#94a3b8;">分组尚未生成</p>
+{% endif %}
+
+{% else %}
+<p style="color:#e74c3c;">当前不可投票</p>
+{% endif %}
 
 <p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a>
 </p>

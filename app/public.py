@@ -18,32 +18,15 @@
 400、403、404、405、413、500 均有对应的自定义页面。
 """
 
-import io
 import uuid
 from datetime import timedelta, datetime, timezone
 
-from PIL import Image
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from sqlalchemy.orm import joinedload
 
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote, \
     Candidate
-from .utils import supabase
-
-
-def compress_image(file_data, max_size=(400, 400), quality=85):
-    """压缩图片到指定尺寸和品质，返回压缩后的字节数据"""
-    img = Image.open(io.BytesIO(file_data))
-    # 转换为RGB（防止PNG透明背景问题）
-    if img.mode in ('RGBA', 'LA'):
-        background = Image.new('RGB', img.size, (255, 255, 255))
-        background.paste(img, mask=img.split()[-1])
-        img = background
-    img.thumbnail(max_size, Image.Resampling.LANCZOS)
-    output = io.BytesIO()
-    img.save(output, format='JPEG', quality=quality, optimize=True)
-    return output.getvalue()
-
+from .utils import supabase, compress_image
 
 public_bp = Blueprint('public', __name__)
 
@@ -406,11 +389,23 @@ def contest_detail(contest_id):
         contest.config['female_top32'] = [c.id for c in female_top32]
         contest.config['male_top32'] = [c.id for c in male_top32]
         contest.config['female_result'] = [
-            {'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item
-            in female_result[:32]]
+            {
+                'name': item['candidate'].name,
+                'source': item['candidate'].source,
+                'votes': item['total_votes'],
+                'image_url': item['candidate'].image_url
+            }
+            for item in female_result[:32]
+        ]
         contest.config['male_result'] = [
-            {'name': item['candidate'].name, 'source': item['candidate'].source, 'votes': item['total_votes']} for item
-            in male_result[:32]]
+            {
+                'name': item['candidate'].name,
+                'source': item['candidate'].source,
+                'votes': item['total_votes'],
+                'image_url': item['candidate'].image_url
+            }
+            for item in male_result[:32]
+        ]
 
         contest.status = 'group_stage'
         db.session.commit()
@@ -701,6 +696,133 @@ def contest_detail(contest_id):
         flash('赛事已结束，最终排名已生成！', 'success')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
+    # ========== 小组赛公示期数据准备 ==========
+    group_round_results = None
+    overall_ranking_female = None
+    overall_ranking_male = None
+
+    if phase in ['group_round_1_result', 'group_round_2_result', 'group_round_3_result']:
+        round_num = int(phase.split('_')[1])  # 1, 2, 3
+        from sqlalchemy import func as sa_func
+
+        # 获取每组对决结果
+        def get_group_matches(gender):
+            groups = contest.config.get(f'{gender}_groups', [])
+            if not groups:
+                return []
+            result = []
+            candidates_map = {c.id: c for c in contest.candidates.all()}
+            for gi, group in enumerate(groups):
+                group_name = chr(65 + gi) + '组'
+                # 确定该轮配对（组内单循环）
+                if round_num == 1:
+                    pairs = [(group[0], group[1]), (group[2], group[3])]
+                elif round_num == 2:
+                    pairs = [(group[0], group[2]), (group[1], group[3])]
+                else:  # round_num == 3
+                    pairs = [(group[0], group[3]), (group[1], group[2])]
+
+                matches = []
+                for cid1, cid2 in pairs:
+                    c1 = candidates_map.get(cid1)
+                    c2 = candidates_map.get(cid2)
+                    if not c1 or not c2:
+                        continue
+                    votes1 = ContestVote.query.filter_by(
+                        contest_id=contest.id, candidate_id=cid1,
+                        round_number=round_num, gender=gender
+                    ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+                    votes2 = ContestVote.query.filter_by(
+                        contest_id=contest.id, candidate_id=cid2,
+                        round_number=round_num, gender=gender
+                    ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+                    winner = cid1 if votes1 > votes2 else (cid2 if votes2 > votes1 else None)
+                    matches.append({
+                        'candidate1': c1,
+                        'candidate2': c2,
+                        'votes1': votes1,
+                        'votes2': votes2,
+                        'winner': winner
+                    })
+                result.append({'group_name': group_name, 'matches': matches})
+            return result
+
+        # 统计总积分排名（男女组分开）
+        def get_overall_ranking(gender):
+            candidates = contest.candidates.filter_by(gender=gender, stage='group_stage').all()
+            if not candidates:
+                return []
+            groups = contest.config.get(f'{gender}_groups', [])
+            group_map = {}
+            for gi, group in enumerate(groups):
+                for cid in group:
+                    group_map[cid] = chr(65 + gi) + '组'
+
+            # 初始化统计数据
+            stats = {}
+            for c in candidates:
+                stats[c.id] = {
+                    'name': c.name,
+                    'image_url': c.image_url,
+                    'group': group_map.get(c.id, ''),
+                    'wins': 0,
+                    'draws': 0,
+                    'losses': 0,
+                    'points': 0,
+                }
+
+            # 遍历已完成的轮次（1 到 round_num）
+            for r in range(1, round_num + 1):
+                # 获取该轮所有配对
+                for gi, group in enumerate(groups):
+                    group_candidates = [cid for cid in group if cid in stats]
+                    if len(group_candidates) < 4:
+                        continue
+                    if r == 1:
+                        pairs = [(group_candidates[0], group_candidates[1]),
+                                 (group_candidates[2], group_candidates[3])]
+                    elif r == 2:
+                        pairs = [(group_candidates[0], group_candidates[2]),
+                                 (group_candidates[1], group_candidates[3])]
+                    else:
+                        pairs = [(group_candidates[0], group_candidates[3]),
+                                 (group_candidates[1], group_candidates[2])]
+
+                    for cid1, cid2 in pairs:
+                        votes1 = ContestVote.query.filter_by(
+                            contest_id=contest.id, candidate_id=cid1,
+                            round_number=r, gender=gender
+                        ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+                        votes2 = ContestVote.query.filter_by(
+                            contest_id=contest.id, candidate_id=cid2,
+                            round_number=r, gender=gender
+                        ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+
+                        if votes1 > votes2:
+                            stats[cid1]['wins'] += 1
+                            stats[cid2]['losses'] += 1
+                        elif votes1 < votes2:
+                            stats[cid2]['wins'] += 1
+                            stats[cid1]['losses'] += 1
+                        else:
+                            stats[cid1]['draws'] += 1
+                            stats[cid2]['draws'] += 1
+
+            # 计算积分
+            for cid, data in stats.items():
+                data['points'] = data['wins'] * 3 + data['draws'] * 1
+
+            # 按积分降序排序
+            sorted_list = sorted(stats.values(), key=lambda x: x['points'], reverse=True)
+            return sorted_list
+
+        group_round_results = {
+            'female': get_group_matches('female'),
+            'male': get_group_matches('male')
+        }
+        overall_ranking_female = get_overall_ranking('female')
+        overall_ranking_male = get_overall_ranking('male')
+
     # ========== 获取数据 ==========
     candidates = contest.candidates.all()
     user_nomination_count = Nomination.query.filter_by(
@@ -731,7 +853,10 @@ def contest_detail(contest_id):
                            final_vote_end=final_vote_end,
                            final_result_end=final_result_end,
                            now=now,
-                           current_time=now)
+                           current_time=now,
+                           group_round_results=group_round_results,
+                           overall_ranking_female=overall_ranking_female,
+                           overall_ranking_male=overall_ranking_male)
 
 
 @public_bp.route('/contest/<int:contest_id>/nominate', methods=['POST'])
@@ -1023,31 +1148,85 @@ def group_vote_submit(contest_id):
         flash('无效的组别', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    # 检查该用户当前轮次是否已投过该组别
+    candidate_id = request.form.get('candidate_id')
+    if not candidate_id:
+        flash('请选择你要支持的角色', 'danger')
+        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+    candidate_id = int(candidate_id)
+
+    # 获取该角色所在组和本轮配对
+    groups = contest.config.get(f'{gender}_groups', [])
+    if not groups:
+        flash('分组数据不存在', 'danger')
+        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+
+    # 找到角色所在组及组索引
+    target_group_index = None
+    target_group = None
+    for gi, group in enumerate(groups):
+        if candidate_id in group:
+            target_group_index = gi
+            target_group = group
+            break
+
+    if target_group is None or target_group_index is None:
+        flash('该角色不在任何分组中', 'danger')
+        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+
+    # 确定该轮该组的配对
+    if round_number == 1:
+        pairs = [(target_group[0], target_group[1]), (target_group[2], target_group[3])]
+    elif round_number == 2:
+        pairs = [(target_group[0], target_group[2]), (target_group[1], target_group[3])]
+    else:  # round_number == 3
+        pairs = [(target_group[0], target_group[3]), (target_group[1], target_group[2])]
+
+    # 找到该角色属于第几场对决
+    match_index = None
+    for mi, (cid1, cid2) in enumerate(pairs, start=1):
+        if candidate_id == cid1 or candidate_id == cid2:
+            match_index = mi
+            break
+
+    if match_index is None:
+        flash('该角色当前轮次无比赛', 'danger')
+        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+
+    # 检查该用户当前轮次是否已投过该场对决（任意一方）
     existing = ContestVote.query.filter_by(
         contest_id=contest.id,
         user_id=session.get('user_id'),
         round_number=round_number,
-        gender=gender
+        gender=gender,
+        match_index=match_index
     ).first()
 
     if existing:
-        flash(f'第{round_number}轮{"女组" if gender == "female" else "男组"}已投过票', 'warning')
+        flash(f'第{round_number}轮{"女组" if gender == "female" else "男组"}该场对决已投过票', 'warning')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
-    candidate_id = request.form.get('candidate_id')
-    if not candidate_id:
-        flash('请选择你要支持的角色', 'danger')
+    # 检查该用户当前轮次是否已投过该角色（防止重复投同一角色）
+    existing_candidate = ContestVote.query.filter_by(
+        contest_id=contest.id,
+        user_id=session.get('user_id'),
+        round_number=round_number,
+        candidate_id=candidate_id,
+        gender=gender
+    ).first()
+
+    if existing_candidate:
+        flash('该角色本轮已投过票', 'warning')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
     vote = ContestVote(
         contest_id=contest.id,
         round_id=None,
-        candidate_id=int(candidate_id),
+        candidate_id=candidate_id,
         user_id=session.get('user_id'),
         weight=1,
         round_number=round_number,
-        gender=gender
+        gender=gender,
+        match_index=match_index
     )
     db.session.add(vote)
     db.session.commit()

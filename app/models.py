@@ -203,10 +203,11 @@ class ContestVote(db.Model):
     weight = db.Column(db.Integer, default=1)
     round_number = db.Column(db.Integer, default=0)
     gender = db.Column(db.String(10), nullable=True)
-    sub_round = db.Column(db.Integer, default=0)  # 淘汰赛子轮次：1=16强, 2=8强, 3=4强, 4=决赛
+    sub_round = db.Column(db.Integer, default=0)  # 淘汰赛子轮次
+    match_index = db.Column(db.Integer, default=0)  # 小组赛同轮同组的第几场对决：1或2
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
-        db.UniqueConstraint('contest_id', 'round_number', 'user_id', 'gender', 'sub_round',
+        db.UniqueConstraint('contest_id', 'round_number', 'user_id', 'gender', 'sub_round', 'match_index',
                             name='uq_contest_vote_unique'),
     )
