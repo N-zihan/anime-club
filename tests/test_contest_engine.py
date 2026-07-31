@@ -1,4 +1,3 @@
-from app.models import db
 from datetime import datetime
 
 from app.contest_engine import (

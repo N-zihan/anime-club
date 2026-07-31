@@ -347,8 +347,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     (function () {
-        const contestId = {{ contest.id }};
-
+        const contestId = {{contest.id}};
         {% if session.user_id %}
         // 初始化 Supabase 客户端
         const supabase = window.supabase.createClient(
@@ -385,7 +384,8 @@
                     });
                 });
         }
-        {% endif %}
+
+        {%endif %}
     })();
 </script>
 

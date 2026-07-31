@@ -578,7 +578,7 @@ def run_final_ranking(contest):
                         'votes': get_knockout_votes(contest, winner.id, gender, 4)
                     })
                 loser_id = final_match['candidate1'] if final_match['winner'] == final_match['candidate2'] else \
-                final_match['candidate2']
+                    final_match['candidate2']
                 loser = db.session.get(Candidate, loser_id)
                 if loser:
                     ranking.append({

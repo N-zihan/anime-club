@@ -4,7 +4,7 @@
 
 {% if phase in ['group_round_1', 'group_round_2', 'group_round_3'] %}
 <!-- ========== 投票期 ========== -->
-<h2>🗳 小组赛：{{ contest.title }}</h2>
+<h2>小组赛：{{ contest.title }}</h2>
 <p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
 <p style="color:#64748b;">当前轮次：第 <strong>{{ phase.split('_')[1]|int }}</strong> 轮（共3轮）</p>
 <p style="color:#64748b;">每轮每组有 <strong>2场</strong> 对决，每场可投 <strong>1票</strong>，共可投
@@ -105,7 +105,7 @@
 {% elif phase in ['group_round_1_result', 'group_round_2_result', 'group_round_3_result'] %}
 <!-- ========== 公示期 ========== -->
 {% set round_num = phase.split('_')[1]|int %}
-<h3>📊 小组赛第{{ round_num }}轮公示</h3>
+<h3>小组赛第{{ round_num }}轮公示</h3>
 <p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
 
 <!-- 对决结果 -->
@@ -142,7 +142,7 @@
 <hr style="margin:30px 0;">
 
 <!-- 总积分排名 -->
-<h3>📊 总积分排名（第{{ round_num }}轮后）</h3>
+<h3>总积分排名（第{{ round_num }}轮后）</h3>
 {% if gender == 'female' %}
 {% set ranking = overall_ranking_female if overall_ranking_female else [] %}
 {% else %}
@@ -189,7 +189,7 @@
 {% if phase == 'group_round_3_result' %}
 <hr style="margin:30px 0;">
 
-<h3>🏆 晋级名单（16强）</h3>
+<h3>晋级名单（16强）</h3>
 {% if gender == 'female' %}
 {% set top16 = contest.config.female_top16 if contest.config else [] %}
 {% else %}
@@ -208,7 +208,7 @@
 <p style="color:#94a3b8;">晋级名单尚未生成</p>
 {% endif %}
 
-<h3 style="margin-top:24px;">📋 16强分组（已生成）</h3>
+<h3 style="margin-top:24px;">16强分组（已生成）</h3>
 {% if gender == 'female' %}
 {% set matches = contest.config.knockout_matches_female if contest.config else [] %}
 {% else %}
