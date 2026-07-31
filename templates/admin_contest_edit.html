@@ -21,8 +21,7 @@
         <div class="form-group">
             <label>性别分组</label>
             <select name="gender_mode">
-                <option contest.gender_mode== if value="separate" {%'separate' %}selected{% endif %}>男女分别进行</option>
-                <option contest.gender_mode== if value="mixed" {%'mixed' %}selected{% endif %}>混合进行</option>
+                <option value="separate" {% if contest.gender_mode == 'separate' %}selected{% endif %}>男女分别进行</option>
             </select>
         </div>
         <div class="form-group">
