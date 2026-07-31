@@ -339,5 +339,53 @@
     updateCurrentTime();
     setInterval(updateCurrentTime, 1000);
 </script>
+<!-- ============================================================ -->
+<!-- Supabase Realtime 实时投票更新 -->
+<!-- ============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    (function() {
+        const contestId = {{ contest.id }};
+
+        {% if session.user_id %}
+        // 初始化 Supabase 客户端
+        const supabase = window.supabase.createClient(
+            'https://ydpxvobwfyllqeetcyjc.supabase.co',
+            'sb_publishable_MW-rIRV_o8y8L1p5bBkabQ_JwFapUBm'
+        );
+
+        // 订阅投票变化
+        const channel = supabase
+            .channel('votes-channel')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'contest_votes',
+                filter: `contest_id=eq.${contestId}`
+            }, (payload) => {
+                console.log('新投票:', payload.new);
+                updateVoteDisplay(payload.new.candidate_id);
+            })
+            .subscribe();
+
+        console.log('实时投票监听已启动');
+
+        // 更新单个候选人的票数
+        function updateVoteDisplay(candidateId) {
+            fetch(`/api/votes/${candidateId}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.querySelectorAll(`[data-candidate-id="${candidateId}"]`).forEach(el => {
+                        const countSpan = el.querySelector('.vote-count');
+                        if (countSpan) {
+                            countSpan.textContent = data.total_votes;
+                        }
+                    });
+                });
+        }
+
+        {% endif %}
+    })();
+</script>
 
 {% endblock %}

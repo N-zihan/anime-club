@@ -818,6 +818,17 @@ def knockout_vote_submit(contest_id):
         return redirect(url_for('public.knockout_vote_male', contest_id=contest.id))
 
 
+# ========== API ==========
+
+@public_bp.route('/api/votes/<int:candidate_id>')
+def api_votes(candidate_id):
+    """获取某个候选人的总票数"""
+    total = ContestVote.query.filter_by(candidate_id=candidate_id).with_entities(
+        db.func.sum(ContestVote.weight)
+    ).scalar() or 0
+    return {'total_votes': total}
+
+
 # 错误处理器
 def page_not_found(e):
     return render_template('404.html'), 404
