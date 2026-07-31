@@ -21,7 +21,10 @@ import os
 
 from PIL import Image
 from dotenv import load_dotenv
+from flask import abort
 from supabase import create_client, Client
+
+from .models import db
 
 load_dotenv()
 
@@ -61,3 +64,10 @@ def compress_image(file_data, max_size=(800, 800), quality=85, output_format='JP
     output = io.BytesIO()
     img.save(output, format=output_format, quality=quality, optimize=True)
     return output.getvalue()
+
+
+def get_or_404(model, ident):
+    obj = db.session.get(model, ident)
+    if obj is None:
+        abort(404)
+    return obj

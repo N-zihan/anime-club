@@ -409,11 +409,11 @@ def run_group_promotion(contest):
     contest.config['male_top16'] = male_top16
 
     for cid in female_top16:
-        candidate = Candidate.query.get(cid)
+        candidate = db.session.get(Candidate, cid)
         if candidate:
             candidate.stage = 'knockout'
     for cid in male_top16:
-        candidate = Candidate.query.get(cid)
+        candidate = db.session.get(Candidate, cid)
         if candidate:
             candidate.stage = 'knockout'
 
@@ -437,6 +437,8 @@ def get_knockout_votes(contest, candidate_id, gender, sub_round):
     return total
 
 
+# contest_engine.py 修改 get_match_winner 函数
+
 def get_match_winner(contest, match, gender, sub_round):
     """确定一场比赛的胜者（票数高者，平票则比较海选总票数）"""
     c1_votes = get_knockout_votes(contest, match['candidate1'], gender, sub_round)
@@ -453,8 +455,10 @@ def get_match_winner(contest, match, gender, sub_round):
     else:
         results = contest.config.get('male_result', [])
 
-    c1_name = Candidate.query.get(match['candidate1']).name
-    c2_name = Candidate.query.get(match['candidate2']).name
+    c1 = db.session.get(Candidate, match['candidate1'])
+    c2 = db.session.get(Candidate, match['candidate2'])
+    c1_name = c1.name if c1 else ''
+    c2_name = c2.name if c2 else ''
 
     c1_qualifying = next((item['votes'] for item in results if item['name'] == c1_name), 0)
     c2_qualifying = next((item['votes'] for item in results if item['name'] == c2_name), 0)

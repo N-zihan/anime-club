@@ -30,7 +30,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from sqlalchemy import func
 
 from .models import db, User, Message, AnimeResource
-from .utils import allowed_file
+from .utils import allowed_file, get_or_404
 from .utils import compress_image
 
 user_bp = Blueprint('user', __name__)
@@ -42,7 +42,7 @@ def profile():
         flash('请先登录', 'warning')
         return redirect(url_for('auth.login'))
 
-    user = User.query.get(session['user_id'])
+    user = db.session.get(User, session['user_id'])
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -121,7 +121,7 @@ def user_profile():
 
 @user_bp.route('/avatar/<int:user_id>')
 def get_avatar(user_id):
-    user = User.query.get_or_404(user_id)
+    user = get_or_404(User, user_id)
     if user.avatar and user.avatar_mime:
         response = Response(user.avatar, mimetype=user.avatar_mime)
     else:

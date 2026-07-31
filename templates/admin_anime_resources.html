@@ -27,8 +27,8 @@
         <p>提取码：<strong>{{ res.extract_code }}</strong></p>
         {% endif %}
         <p><small>提交人：{{ res.user.username if res.user else '未知' }} | 提交时间：{{
-            res.upload_time.strftime('%Y-%m-%d %H:%M') }}</small></p>
-        }}</small></p>
+            res.upload_time.strftime('%Y-%m-%d %H:%M')
+            }}</small></p>
     </div>
     {% else %}
     <p>暂无待审核资源</p>

@@ -17,11 +17,12 @@
 此外，本模块还注册了全局错误处理器：
 400、403、404、405、413、500 均有对应的自定义页面。
 """
-
+import os
 import uuid
 from datetime import timedelta, datetime, timezone
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from .contest_engine import (
@@ -31,7 +32,7 @@ from .contest_engine import (
     prepare_group_round_data
 )
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote
-from .utils import supabase, compress_image
+from .utils import supabase, compress_image, get_or_404
 
 public_bp = Blueprint('public', __name__)
 
@@ -77,9 +78,6 @@ def gallery():
 @public_bp.route('/board', methods=['GET', 'POST'])
 def board():
     if request.method == 'POST':
-        if session.get('is_guest'):
-            flash('游客不能发表留言', 'warning')
-            return redirect(url_for('public.board'))
         nickname = session.get('username', '匿名')
         content = request.form.get('content')
         if content:
@@ -121,9 +119,6 @@ def board():
 def add_reply(message_id):
     if not session.get('user_id'):
         return redirect(url_for('auth.login'))
-    if session.get('is_guest'):
-        flash('游客不能回复留言', 'warning')
-        return redirect(url_for('public.board'))
 
     nickname = session.get('username', '匿名')
     content = request.form.get('content')
@@ -152,9 +147,6 @@ def anime_resources():
 def submit_anime():
     if not session.get('user_id'):
         return redirect(url_for('auth.login'))
-    if session.get('is_guest'):
-        flash('游客不能推荐番剧', 'warning')
-        return redirect(url_for('public.anime_resources'))
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
@@ -210,13 +202,13 @@ def contest_center():
 @public_bp.route('/contest/<int:contest_id>/rules')
 def contest_rules(contest_id):
     """赛事规则确认页"""
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
     return render_template('contest_rules.html', contest=contest)
 
 
 @public_bp.route('/contest/<int:contest_id>')
 def contest_detail(contest_id):
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     # 确保 open_at 是 naive（如果存在）
     if contest.open_at and contest.open_at.tzinfo is not None:
@@ -297,6 +289,8 @@ def contest_detail(contest_id):
                            knockout_4_result_end=times['knockout_4_result_end'],
                            final_vote_end=times['final_vote_end'],
                            final_result_end=times['final_result_end'],
+                           supabase_url=os.getenv('SUPABASE_URL'),
+                           supabase_anon_key=os.getenv('SUPABASE_ANON_KEY'),
                            now=now,
                            current_time=now,
                            group_round_results=group_round_results,
@@ -310,7 +304,7 @@ def submit_nomination(contest_id):
         flash('请先登录', 'warning')
         return redirect(url_for('auth.login'))
 
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
     if contest.status != 'open':
         flash('该赛事未开放提名', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest_id))
@@ -381,7 +375,7 @@ def submit_nomination(contest_id):
 @public_bp.route('/contest/<int:contest_id>/qualifying/female')
 def qualifying_vote_female(contest_id):
     """海选投票 - 女组"""
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     if contest.status != 'open':
         flash('该赛事未开放', 'danger')
@@ -402,7 +396,7 @@ def qualifying_vote_female(contest_id):
 @public_bp.route('/contest/<int:contest_id>/qualifying/male')
 def qualifying_vote_male(contest_id):
     """海选投票 - 男组"""
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     if contest.status != 'open':
         flash('该赛事未开放', 'danger')
@@ -426,7 +420,7 @@ def qualifying_vote_submit(contest_id):
         flash('请先登录', 'warning')
         return redirect(url_for('auth.login'))
 
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     if contest.status != 'open':
         flash('该赛事未开放', 'danger')
@@ -489,7 +483,12 @@ def qualifying_vote_submit(contest_id):
             gender=gender
         )
         db.session.add(vote)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash(f'{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交', 'warning')
+        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
     flash(f'{"女组" if gender == "female" else "男组"}投票成功！', 'success')
 
@@ -504,7 +503,7 @@ def qualifying_vote_submit(contest_id):
 @public_bp.route('/contest/<int:contest_id>/group/female')
 def group_vote_female(contest_id):
     """小组赛投票 - 女组"""
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     if contest.status not in ['open', 'group_stage']:
         flash('当前不可投票', 'danger')
@@ -530,7 +529,7 @@ def group_vote_female(contest_id):
 @public_bp.route('/contest/<int:contest_id>/group/male')
 def group_vote_male(contest_id):
     """小组赛投票 - 男组"""
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     if contest.status not in ['open', 'group_stage']:
         flash('当前不可投票', 'danger')
@@ -558,7 +557,7 @@ def group_vote_submit(contest_id):
         flash('请先登录', 'warning')
         return redirect(url_for('auth.login'))
 
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     if contest.status not in ['open', 'group_stage']:
         flash('当前不可投票', 'danger')
@@ -674,7 +673,12 @@ def group_vote_submit(contest_id):
         group_index=target_group_index
     )
     db.session.add(vote)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash(f'第{round_number}轮{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交', 'warning')
+        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
     flash(f'第{round_number}轮{"女组" if gender == "female" else "男组"}投票成功！', 'success')
 
@@ -689,7 +693,7 @@ def group_vote_submit(contest_id):
 @public_bp.route('/contest/<int:contest_id>/knockout/female')
 def knockout_vote_female(contest_id):
     """淘汰赛投票 - 女组"""
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     if contest.status not in ['open', 'knockout']:
         flash('当前不可投票', 'danger')
@@ -713,7 +717,7 @@ def knockout_vote_female(contest_id):
 @public_bp.route('/contest/<int:contest_id>/knockout/male')
 def knockout_vote_male(contest_id):
     """淘汰赛投票 - 男组"""
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     if contest.status not in ['open', 'knockout']:
         flash('当前不可投票', 'danger')
@@ -739,7 +743,7 @@ def knockout_vote_submit(contest_id):
         flash('请先登录', 'warning')
         return redirect(url_for('auth.login'))
 
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     if contest.status not in ['open', 'knockout']:
         flash('当前不可投票', 'danger')
@@ -812,7 +816,12 @@ def knockout_vote_submit(contest_id):
         gender=gender
     )
     db.session.add(vote)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash(f'{round_name}{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交', 'warning')
+        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
     flash(f'{round_name}{"女组" if gender == "female" else "男组"}投票成功！', 'success')
 

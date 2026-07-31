@@ -1,4 +1,4 @@
-from app.models import User
+from app.models import User, db
 
 
 class TestUser:
@@ -37,7 +37,7 @@ class TestUser:
             'new_username': 'newname123'
         }, follow_redirects=True)
         assert response.status_code == 200
-        sample_user = User.query.get(sample_user.id)
+        sample_user = db.session.get(User, sample_user.id)
         assert sample_user.username == 'newname123'
 
     def test_change_password(self, logged_in_client, sample_user):
@@ -48,5 +48,5 @@ class TestUser:
             'confirm_password': 'newpass456'
         }, follow_redirects=True)
         assert response.status_code == 200
-        sample_user = User.query.get(sample_user.id)
+        sample_user = db.session.get(User, sample_user.id)
         assert sample_user.check_password('newpass456') is True

@@ -74,7 +74,6 @@ def login():
         if user and user.check_password(password):
             session['user_id'] = user.id
             session['username'] = user.username
-            session.pop('is_guest', None)
 
             if user.is_owner:
                 session['user_role'] = 'owner'
@@ -101,7 +100,7 @@ def logout():
 
 @auth_bp.route('/delete_account', methods=['POST'])
 def delete_account():
-    if not session.get('user_id') or session.get('is_guest'):
+    if not session.get('user_id'):
         return redirect(url_for('auth.login'))
     user = db.session.get(User, session['user_id'])
     if user:

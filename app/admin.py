@@ -27,8 +27,9 @@ from flask import send_file
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
-from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, Candidate
-from .utils import supabase, allowed_file, compress_image
+from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, Candidate, \
+    ContestVote
+from .utils import supabase, allowed_file, compress_image, get_or_404
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -114,7 +115,7 @@ def admin_activity_add():
 @admin_bp.route('/admin/activities/edit/<int:id>', methods=['GET', 'POST'])
 @admin_required
 def admin_activity_edit(id):
-    activity = Activity.query.get_or_404(id)
+    activity = get_or_404(Activity, id)
     if request.method == 'POST':
         activity.title = request.form['title']
         activity.date = request.form['date']
@@ -128,7 +129,7 @@ def admin_activity_edit(id):
 @admin_bp.route('/admin/activities/delete/<int:id>')
 @admin_required
 def admin_activity_delete(id):
-    activity = Activity.query.get_or_404(id)
+    activity = get_or_404(Activity, id)
 
     # 先删除该活动关联的所有照片（文件 + 数据库记录）
     for photo in activity.photos:
@@ -208,7 +209,7 @@ def admin_gallery_upload():
 @admin_required
 def admin_gallery_delete(photo_id):
     """删除单张照片（文件 + 数据库记录）"""
-    photo = Photo.query.get_or_404(photo_id)
+    photo = get_or_404(Photo, photo_id)
 
     # 从 Supabase Storage 删除文件
     try:
@@ -236,7 +237,7 @@ def admin_anime_resources():
 @admin_bp.route('/admin/anime_resources/approve/<int:id>')
 @admin_required
 def approve_anime_resource(id):
-    resource = AnimeResource.query.get_or_404(id)
+    resource = get_or_404(AnimeResource, id)
     resource.status = 'approved'
     db.session.commit()
     flash('已通过审核', 'success')
@@ -246,7 +247,7 @@ def approve_anime_resource(id):
 @admin_bp.route('/admin/anime_resources/reject/<int:id>')
 @admin_required
 def reject_anime_resource(id):
-    resource = AnimeResource.query.get_or_404(id)
+    resource = get_or_404(AnimeResource, id)
     db.session.delete(resource)
     db.session.commit()
     flash('已拒绝并删除', 'warning')
@@ -256,7 +257,7 @@ def reject_anime_resource(id):
 @admin_bp.route('/admin/anime_resources/delete/<int:id>')
 @admin_required
 def admin_anime_resources_delete(id):
-    resource = AnimeResource.query.get_or_404(id)
+    resource = get_or_404(AnimeResource, id)
     db.session.delete(resource)
     db.session.commit()
     flash('已删除', 'success')
@@ -301,20 +302,41 @@ def admin_users():
 @admin_bp.route('/admin/users/delete/<int:user_id>')
 @admin_required
 def admin_delete_user(user_id):
-    user = User.query.get_or_404(user_id)
+    user = get_or_404(User, user_id)
     if user.id == session.get('user_id'):
         flash('不能删除自己', 'danger')
         return redirect(url_for('admin.admin_users'))
+
+    # 级联删除所有关联数据
+    # 注意：删除顺序很重要，先删子表，再删主表
+
+    # 1. 删除该用户的提名（Nomination）
+    Nomination.query.filter_by(user_id=user.id).delete()
+
+    # 2. 删除该用户的投票（ContestVote）
+    ContestVote.query.filter_by(user_id=user.id).delete()
+
+    # 3. 删除该用户的留言（Message）和回复（Reply）
+    # 留言：先删回复，再删留言
+    for msg in Message.query.filter_by(user_id=user.id).all():
+        Reply.query.filter_by(message_id=msg.id).delete()
+    Message.query.filter_by(user_id=user.id).delete()
+
+    # 4. 删除该用户的番剧推荐（AnimeResource）
+    AnimeResource.query.filter_by(user_id=user.id).delete()
+
+    # 5. 最后删除用户
     db.session.delete(user)
     db.session.commit()
-    flash('用户已删除', 'success')
+
+    flash('用户及其所有关联数据已删除', 'success')
     return redirect(url_for('admin.admin_users'))
 
 
 @admin_bp.route('/admin/users/toggle_staff/<int:user_id>')
 @admin_required
 def admin_toggle_staff(user_id):
-    user = User.query.get_or_404(user_id)
+    user = get_or_404(User, user_id)
     user.is_staff = not user.is_staff
     db.session.commit()
     flash(f'用户 {user.username} 的运营状态已更新', 'success')
@@ -324,7 +346,7 @@ def admin_toggle_staff(user_id):
 @admin_bp.route('/admin/users/toggle_owner/<int:user_id>')
 @admin_required
 def admin_toggle_owner(user_id):
-    user = User.query.get_or_404(user_id)
+    user = get_or_404(User, user_id)
     if not user.is_owner:
         User.query.update({User.is_owner: False})
         db.session.commit()
@@ -394,7 +416,7 @@ def admin_messages():
 @admin_required
 def admin_delete_message(message_id):
     """删除留言及其所有回复"""
-    message = Message.query.get_or_404(message_id)
+    message = get_or_404(Message, message_id)
     # 删除所有回复（如果有外键级联，可以直接删除message，但为了明确，手动删除回复）
     for reply in message.replies.all():
         db.session.delete(reply)
@@ -408,7 +430,7 @@ def admin_delete_message(message_id):
 @admin_required
 def admin_delete_reply(reply_id):
     """删除单条回复，保留留言和其他回复"""
-    reply = Reply.query.get_or_404(reply_id)
+    reply = get_or_404(Reply, reply_id)
     db.session.delete(reply)
     db.session.commit()
     flash('回复已删除', 'success')
@@ -460,7 +482,7 @@ def admin_contest_create():
 @admin_bp.route('/admin/contests/edit/<int:contest_id>', methods=['GET', 'POST'])
 @admin_required
 def admin_contest_edit(contest_id):
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     if request.method == 'POST':
         contest.title = request.form.get('title')
@@ -488,7 +510,7 @@ def admin_contest_edit(contest_id):
 @admin_bp.route('/admin/contests/delete/<int:contest_id>')
 @admin_required
 def admin_contest_delete(contest_id):
-    contest = Contest.query.get_or_404(contest_id)
+    contest = get_or_404(Contest, contest_id)
 
     # 1. 手动删除所有关联的候选角色 (Candidates)
     #    使用 delete() 直接执行 SQL，比循环删除更高效
@@ -509,7 +531,7 @@ def admin_contest_delete(contest_id):
 @admin_bp.route('/admin/nominations/approve/<int:nomination_id>')
 @admin_required
 def admin_nomination_approve(nomination_id):
-    nomination = Nomination.query.get_or_404(nomination_id)
+    nomination = get_or_404(Nomination, nomination_id)
     contest = nomination.contest
 
     existing = Candidate.query.filter_by(
@@ -542,7 +564,7 @@ def admin_nomination_approve(nomination_id):
 @admin_bp.route('/admin/nominations/reject/<int:nomination_id>')
 @admin_required
 def admin_nomination_reject(nomination_id):
-    nomination = Nomination.query.get_or_404(nomination_id)
+    nomination = get_or_404(Nomination, nomination_id)
     contest_id = nomination.contest_id
     nomination.status = 'rejected'
     db.session.commit()
@@ -553,7 +575,7 @@ def admin_nomination_reject(nomination_id):
 @admin_bp.route('/admin/candidates/delete/<int:candidate_id>')
 @admin_required
 def admin_candidate_delete(candidate_id):
-    candidate = Candidate.query.get_or_404(candidate_id)
+    candidate = get_or_404(Candidate, candidate_id)
     contest_id = candidate.contest_id
     db.session.delete(candidate)
     db.session.commit()

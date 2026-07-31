@@ -1,4 +1,4 @@
-from app.models import User
+from app.models import User, db
 
 
 class TestAuth:
@@ -65,5 +65,5 @@ class TestAuth:
     def test_delete_account(self, logged_in_client, sample_user):
         response = logged_in_client.post('/delete_account', follow_redirects=True)
         assert response.status_code == 200
-        user = User.query.get(sample_user.id)
+        user = db.session.get(User, sample_user.id)
         assert user is None

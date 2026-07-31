@@ -351,8 +351,8 @@
         {% if session.user_id %}
         // 初始化 Supabase 客户端
         const supabase = window.supabase.createClient(
-            'https://ydpxvobwfyllqeetcyjc.supabase.co',
-            'sb_publishable_MW-rIRV_o8y8L1p5bBkabQ_JwFapUBm'
+            '{{ supabase_url }}',
+            '{{ supabase_anon_key }}'
         );
 
         // 订阅投票变化
