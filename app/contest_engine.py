@@ -19,10 +19,11 @@
     run_qualifying_promotion(contest)
 """
 
+import random
 from datetime import timedelta
+
 from sqlalchemy import func as sa_func
 from sqlalchemy.orm.attributes import flag_modified
-import random
 
 from .models import db, Candidate, ContestVote
 
@@ -36,8 +37,13 @@ def calc_stage_times(open_at):
     根据开始时间计算所有赛程节点时间
     返回一个对象，包含所有阶段的截止时间
     """
+
     def set_time_to_18(dt):
-        return dt.replace(hour=18, minute=0, second=0, microsecond=0)
+        result = dt.replace(hour=18, minute=0, second=0, microsecond=0)
+        # 如果被拽回之前的时间，自动加一天
+        if result < dt:
+            result += timedelta(days=1)
+        return result
 
     if not open_at:
         return {
@@ -515,7 +521,8 @@ def run_knockout_advance(contest, phase, now, times):
         female_matches = contest.config.get('knockout_matches_female', [])
         male_matches = contest.config.get('knockout_matches_male', [])
         if female_matches:
-            contest.config['knockout_matches_female'] = generate_next_round(contest, female_matches, 'female', 3, '决赛')
+            contest.config['knockout_matches_female'] = generate_next_round(contest, female_matches, 'female', 3,
+                                                                            '决赛')
         if male_matches:
             contest.config['knockout_matches_male'] = generate_next_round(contest, male_matches, 'male', 3, '决赛')
         db.session.commit()
@@ -540,7 +547,8 @@ def run_final_ranking(contest):
 
     def get_final_ranking(candidates, gender):
         """按淘汰轮次排序生成排名"""
-        matches_16 = contest.config.get('knockout_matches_female' if gender == 'female' else 'knockout_matches_male', [])
+        matches_16 = contest.config.get('knockout_matches_female' if gender == 'female' else 'knockout_matches_male',
+                                        [])
         if not matches_16:
             return []
 
@@ -550,7 +558,8 @@ def run_final_ranking(contest):
         matches_4 = contest.config.get('knockout_matches_female' if gender == 'female' else 'knockout_matches_male', [])
         if not matches_4:
             matches_4 = []
-        matches_final = contest.config.get('knockout_matches_female' if gender == 'female' else 'knockout_matches_male', [])
+        matches_final = contest.config.get('knockout_matches_female' if gender == 'female' else 'knockout_matches_male',
+                                           [])
         if not matches_final:
             matches_final = []
 
@@ -568,7 +577,8 @@ def run_final_ranking(contest):
                         'stage': 'champion',
                         'votes': get_knockout_votes(contest, winner.id, gender, 4)
                     })
-                loser_id = final_match['candidate1'] if final_match['winner'] == final_match['candidate2'] else final_match['candidate2']
+                loser_id = final_match['candidate1'] if final_match['winner'] == final_match['candidate2'] else \
+                final_match['candidate2']
                 loser = db.session.get(Candidate, loser_id)
                 if loser:
                     ranking.append({

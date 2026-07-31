@@ -1,13 +1,12 @@
-import pytest
 from app.models import db
-from datetime import datetime, timedelta
-from app.models import User, Candidate, ContestVote, Contest
+from datetime import datetime
+
 from app.contest_engine import (
     calc_stage_times, calc_phase, auto_activate_contest,
-    run_qualifying_promotion, run_group_promotion,
-    run_knockout_advance, run_final_ranking,
-    prepare_group_round_data
+    run_qualifying_promotion, run_final_ranking
 )
+from app.models import User, Candidate, ContestVote, Contest
+from app.models import db
 
 
 class TestCalcStageTimes:
@@ -156,6 +155,7 @@ class TestRunQualifyingPromotion:
         for c in female_candidates[:32]:
             db_session.refresh(c)
             assert c.stage == 'group_stage'
+
 
 class TestRunFinalRanking:
     """测试最终排名"""

@@ -1,6 +1,3 @@
-import pytest
-
-
 class TestAdmin:
 
     def test_admin_entry_redirects_if_not_admin(self, client):

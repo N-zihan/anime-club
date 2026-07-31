@@ -123,7 +123,6 @@ class Contest(db.Model):
     candidates = db.relationship('Candidate', back_populates='contest', lazy='dynamic', cascade='all, delete-orphan')
 
 
-
 class Nomination(db.Model):
     __tablename__ = 'nominations'
     id = db.Column(db.Integer, primary_key=True)
@@ -171,11 +170,13 @@ class ContestVote(db.Model):
     weight = db.Column(db.Integer, default=1)
     round_number = db.Column(db.Integer, default=0)
     gender = db.Column(db.String(10), nullable=True)
-    sub_round = db.Column(db.Integer, default=0)  # 淘汰赛子轮次
-    match_index = db.Column(db.Integer, default=0)  # 小组赛同轮同组的第几场对决：1或2
+    sub_round = db.Column(db.Integer, default=0)
+    match_index = db.Column(db.Integer, default=0)
+    group_index = db.Column(db.Integer, default=0)  # ✅ 新增：记录第几组
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
         db.UniqueConstraint('contest_id', 'round_number', 'user_id', 'gender', 'sub_round', 'match_index',
+                            'group_index',
                             name='uq_contest_vote_unique'),
     )

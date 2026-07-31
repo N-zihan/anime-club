@@ -12,7 +12,6 @@
 
 🔗 在线访问：https://www.nanyi-anime-club.top
 
-
 ## 功能亮点
 
 - 用户系统：注册 / 登录 / 个人主页 / 头像上传 / 密码修改
@@ -24,11 +23,9 @@
 - 萌战系统：海选 → 小组赛 → 淘汰赛 → 最终排名
 - 管理后台：站长 / 运营双角色权限分离
 
-
 ## 技术栈
 
 Python 3.12 + Flask 3.0 / PostgreSQL (Supabase) / Supabase Storage / Vercel / HTML + CSS + Jinja2 / Pytest
-
 
 ## 本地运行
 

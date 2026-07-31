@@ -1,5 +1,5 @@
-import pytest
-from app.models import ContestVote, Candidate
+from app.models import ContestVote
+
 
 class TestAPI:
     """API 端点测试"""

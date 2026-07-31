@@ -208,13 +208,15 @@
         <a class="btn-primary" href="{{ url_for('public.qualifying_vote_male', contest_id=contest.id) }}"
            style="text-decoration:none; padding:8px 24px; background:#2196f3; color:white; border-radius:40px;">男组海选</a>
 
-        {% elif phase in ['group_round_1', 'group_round_1_result', 'group_round_2', 'group_round_2_result', 'group_round_3', 'group_round_3_result'] %}
+        {% elif phase in ['group_round_1', 'group_round_1_result', 'group_round_2', 'group_round_2_result',
+        'group_round_3', 'group_round_3_result'] %}
         <a class="btn-primary" href="{{ url_for('public.group_vote_female', contest_id=contest.id) }}"
            style="text-decoration:none; padding:8px 24px; background:#e91e63; color:white; border-radius:40px;">女组小组赛</a>
         <a class="btn-primary" href="{{ url_for('public.group_vote_male', contest_id=contest.id) }}"
            style="text-decoration:none; padding:8px 24px; background:#2196f3; color:white; border-radius:40px;">男组小组赛</a>
 
-        {% elif phase in ['knockout_16', 'knockout_16_result', 'knockout_8', 'knockout_8_result', 'knockout_4', 'knockout_4_result', 'final_vote', 'final_result'] %}
+        {% elif phase in ['knockout_16', 'knockout_16_result', 'knockout_8', 'knockout_8_result', 'knockout_4',
+        'knockout_4_result', 'final_vote', 'final_result'] %}
         <a class="btn-primary" href="{{ url_for('public.knockout_vote_female', contest_id=contest.id) }}"
            style="text-decoration:none; padding:8px 24px; background:#e91e63; color:white; border-radius:40px;">女组淘汰赛</a>
         <a class="btn-primary" href="{{ url_for('public.knockout_vote_male', contest_id=contest.id) }}"
@@ -344,7 +346,7 @@
 <!-- ============================================================ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    (function() {
+    (function () {
         const contestId = {{ contest.id }};
 
         {% if session.user_id %}
@@ -383,7 +385,6 @@
                     });
                 });
         }
-
         {% endif %}
     })();
 </script>

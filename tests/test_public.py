@@ -87,7 +87,7 @@ class TestVoting:
         """测试海选投票成功提交"""
         contest = db_session.get(Contest, sample_contest.id)
         contest.status = 'open'
-        contest.open_at = datetime.now() - timedelta(days=2)   # 仅用于满足业务逻辑，但提交接口不检查时间
+        contest.open_at = datetime.now() - timedelta(days=2)  # 仅用于满足业务逻辑，但提交接口不检查时间
         db_session.commit()
         db_session.refresh(contest)
 

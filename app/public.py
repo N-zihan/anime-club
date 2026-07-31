@@ -24,15 +24,14 @@ from datetime import timedelta, datetime, timezone
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from sqlalchemy.orm import joinedload
 
-from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote
-from .utils import supabase, compress_image
-
 from .contest_engine import (
     calc_stage_times, calc_phase, auto_activate_contest,
     run_qualifying_promotion, run_group_promotion,
     run_knockout_advance, run_final_ranking,
     prepare_group_round_data
 )
+from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote
+from .utils import supabase, compress_image
 
 public_bp = Blueprint('public', __name__)
 
@@ -243,7 +242,8 @@ def contest_detail(contest_id):
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
     # 小组赛 → 淘汰赛
-    if phase == 'group_round_3_result' and now >= times['group_round_3_result_end'] and contest.status in ['open', 'group_stage']:
+    if phase == 'group_round_3_result' and now >= times['group_round_3_result_end'] and contest.status in ['open',
+                                                                                                           'group_stage']:
         run_group_promotion(contest)
         flash('小组赛结束，淘汰赛16强对阵已生成！', 'success')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
@@ -642,7 +642,8 @@ def group_vote_submit(contest_id):
         user_id=session.get('user_id'),
         round_number=round_number,
         gender=gender,
-        match_index=match_index
+        match_index=match_index,
+        group_index=target_group_index
     ).first()
 
     if existing:
@@ -669,7 +670,8 @@ def group_vote_submit(contest_id):
         weight=1,
         round_number=round_number,
         gender=gender,
-        match_index=match_index
+        match_index=match_index,
+        group_index=target_group_index
     )
     db.session.add(vote)
     db.session.commit()

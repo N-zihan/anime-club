@@ -156,6 +156,7 @@ def admin_gallery():
 
 
 @admin_bp.route('/admin/gallery/upload', methods=['POST'])
+@admin_required
 def admin_gallery_upload():
     if not session.get('user_id'):
         flash('请先登录再上传照片', 'warning')

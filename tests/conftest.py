@@ -1,7 +1,9 @@
 import os
 import sys
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
+
 os.environ['GROUP_VERIFICATION_CODE'] = 'test_group_code'
 
 # 获取项目根目录（假设项目根目录是当前目录的父目录）
@@ -14,7 +16,7 @@ os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
 
 # 现在可以正常导入 app 模块
 from app import create_app
-from app.models import db, User, Contest, Candidate, Nomination, ContestVote, Activity, Photo, AnimeResource, Message, Reply
+from app.models import db, User, Contest, Candidate, Nomination, ContestVote, Activity, AnimeResource, Message
 
 
 @pytest.fixture

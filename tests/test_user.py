@@ -1,5 +1,5 @@
-import pytest
 from app.models import User
+
 
 class TestUser:
     """用户中心测试"""
