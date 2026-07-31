@@ -189,7 +189,7 @@ def members():
 
 @public_bp.route('/contest_center')
 def contest_center():
-    now = datetime.now(timezone.utc) + timedelta(hours=8)
+    now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     open_contests = Contest.query.filter(
         Contest.status == 'open',
         Contest.open_at <= now,
@@ -218,7 +218,9 @@ def contest_rules(contest_id):
 @public_bp.route('/contest/<int:contest_id>')
 def contest_detail(contest_id):
     contest = Contest.query.get_or_404(contest_id)
-    now = datetime.now(timezone.utc) + timedelta(hours=8)
+    # 获取当前 UTC 时间，去掉时区，再加 8 小时，得到东八区 naive 时间
+    now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
+    times = calc_stage_times(contest.open_at)
 
     # 1. 计算赛程时间
     times = calc_stage_times(contest.open_at)
@@ -560,7 +562,7 @@ def group_vote_submit(contest_id):
         flash('当前不可投票', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    now = datetime.now(timezone.utc) + timedelta(hours=8)
+    now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     open_at = contest.open_at
     if not open_at:
         flash('赛事开始时间未设置', 'danger')
@@ -740,7 +742,7 @@ def knockout_vote_submit(contest_id):
         flash('当前不可投票', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    now = datetime.now(timezone.utc) + timedelta(hours=8)
+    now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     open_at = contest.open_at
     if not open_at:
         flash('赛事开始时间未设置', 'danger')
@@ -823,6 +825,10 @@ def knockout_vote_submit(contest_id):
 @public_bp.route('/api/votes/<int:candidate_id>')
 def api_votes(candidate_id):
     """获取某个候选人的总票数"""
+    from .models import Candidate
+    candidate = db.session.get(Candidate, candidate_id)
+    if not candidate:
+        return {'error': 'Candidate not found'}, 404
     total = ContestVote.query.filter_by(candidate_id=candidate_id).with_entities(
         db.func.sum(ContestVote.weight)
     ).scalar() or 0

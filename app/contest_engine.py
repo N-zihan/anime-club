@@ -21,6 +21,7 @@
 
 from datetime import timedelta
 from sqlalchemy import func as sa_func
+from sqlalchemy.orm.attributes import flag_modified
 import random
 
 from .models import db, Candidate, ContestVote
@@ -219,7 +220,7 @@ def run_qualifying_promotion(contest):
         result = []
         for c in candidates:
             total = ContestVote.query.filter_by(
-                candidate_id=c.id, round_id=None, round_number=0
+                candidate_id=c.id, round_number=0
             ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
             result.append({'candidate': c, 'total_votes': total})
         result.sort(key=lambda x: x['total_votes'], reverse=True)
@@ -250,7 +251,6 @@ def run_qualifying_promotion(contest):
     contest.config['male_groups'] = [[c.id for c in group] for group in male_groups]
     contest.config['female_top32'] = [c.id for c in female_top32]
     contest.config['male_top32'] = [c.id for c in male_top32]
-
     contest.config['female_result'] = [
         {'name': item['candidate'].name, 'source': item['candidate'].source,
          'votes': item['total_votes'], 'image_url': item['candidate'].image_url}
@@ -261,6 +261,9 @@ def run_qualifying_promotion(contest):
          'votes': item['total_votes'], 'image_url': item['candidate'].image_url}
         for item in male_result[:32]
     ]
+
+    # 显式标记 config 字段已修改
+    flag_modified(contest, 'config')
 
     contest.status = 'group_stage'
     db.session.commit()
@@ -522,7 +525,6 @@ def run_final_ranking(contest):
     if contest.config is None:
         contest.config = {}
 
-    # 获取淘汰赛所有选手的轮次信息
     female_candidates = contest.candidates.filter_by(gender='female').filter(
         Candidate.stage.in_(['knockout', 'champion'])).all()
     male_candidates = contest.candidates.filter_by(gender='male').filter(
@@ -530,12 +532,10 @@ def run_final_ranking(contest):
 
     def get_final_ranking(candidates, gender):
         """按淘汰轮次排序生成排名"""
-        # 获取淘汰赛对阵数据
         matches_16 = contest.config.get('knockout_matches_female' if gender == 'female' else 'knockout_matches_male', [])
         if not matches_16:
             return []
 
-        # 从config中提取所有对阵信息
         matches_8 = contest.config.get('knockout_matches_female' if gender == 'female' else 'knockout_matches_male', [])
         if not matches_8:
             matches_8 = []
@@ -546,26 +546,22 @@ def run_final_ranking(contest):
         if not matches_final:
             matches_final = []
 
-        # 确定每个选手的淘汰轮次
-        # 选手信息: {'candidate': c, 'round': 'champion'|'finalist'|'semifinalist'|'quarterfinalist'|'round16'}
         ranking = []
 
-        # 1. 找到决赛选手和冠军
+        # 1. 决赛
         final_match = None
         if matches_final and len(matches_final) > 0:
-            final_match = matches_final[-1]  # 最后一场是决赛
+            final_match = matches_final[-1]
             if final_match.get('winner'):
-                # 冠军
-                winner = Candidate.query.get(final_match['winner'])
+                winner = db.session.get(Candidate, final_match['winner'])
                 if winner:
                     ranking.append({
                         'candidate': winner,
                         'stage': 'champion',
                         'votes': get_knockout_votes(contest, winner.id, gender, 4)
                     })
-                # 亚军（决赛败者）
                 loser_id = final_match['candidate1'] if final_match['winner'] == final_match['candidate2'] else final_match['candidate2']
-                loser = Candidate.query.get(loser_id)
+                loser = db.session.get(Candidate, loser_id)
                 if loser:
                     ranking.append({
                         'candidate': loser,
@@ -573,11 +569,11 @@ def run_final_ranking(contest):
                         'votes': get_knockout_votes(contest, loser.id, gender, 4)
                     })
 
-        # 2. 4强（半决赛败者）
+        # 2. 4强
         if matches_4 and len(matches_4) >= 2:
-            for match in matches_4[:2]:  # 4强有两场比赛
+            for match in matches_4[:2]:
                 loser_id = match['candidate1'] if match['winner'] == match['candidate2'] else match['candidate2']
-                loser = Candidate.query.get(loser_id)
+                loser = db.session.get(Candidate, loser_id)
                 if loser:
                     ranking.append({
                         'candidate': loser,
@@ -585,11 +581,11 @@ def run_final_ranking(contest):
                         'votes': get_knockout_votes(contest, loser.id, gender, 3)
                     })
 
-        # 3. 8强（四分之一决赛败者）
+        # 3. 8强
         if matches_8 and len(matches_8) >= 4:
             for match in matches_8[:4]:
                 loser_id = match['candidate1'] if match['winner'] == match['candidate2'] else match['candidate2']
-                loser = Candidate.query.get(loser_id)
+                loser = db.session.get(Candidate, loser_id)
                 if loser:
                     ranking.append({
                         'candidate': loser,
@@ -597,11 +593,11 @@ def run_final_ranking(contest):
                         'votes': get_knockout_votes(contest, loser.id, gender, 2)
                     })
 
-        # 4. 16强（八分之一决赛败者）
+        # 4. 16强
         if matches_16 and len(matches_16) >= 8:
             for match in matches_16[:8]:
                 loser_id = match['candidate1'] if match['winner'] == match['candidate2'] else match['candidate2']
-                loser = Candidate.query.get(loser_id)
+                loser = db.session.get(Candidate, loser_id)
                 if loser:
                     ranking.append({
                         'candidate': loser,
@@ -609,7 +605,6 @@ def run_final_ranking(contest):
                         'votes': get_knockout_votes(contest, loser.id, gender, 1)
                     })
 
-        # 按轮次优先排序：冠军 > 亚军 > 4强 > 8强 > 16强
         stage_order = {
             'champion': 0,
             'finalist': 1,
@@ -619,7 +614,6 @@ def run_final_ranking(contest):
         }
         ranking.sort(key=lambda x: (stage_order.get(x['stage'], 99), -x['votes']))
 
-        # 转换为最终输出格式（含票数）
         result = []
         for item in ranking:
             result.append({
@@ -633,18 +627,33 @@ def run_final_ranking(contest):
     contest.config['female_ranking'] = get_final_ranking(female_candidates, 'female')
     contest.config['male_ranking'] = get_final_ranking(male_candidates, 'male')
 
-    # 标记冠军（第一名）
+    # 强制标记 config 已修改
+    flag_modified(contest, 'config')
+
+    # 标记冠军和亚军（从排名列表中取前两名）
     if contest.config['female_ranking']:
+        # 冠军
         champion_name = contest.config['female_ranking'][0]['name']
         champion = Candidate.query.filter_by(contest_id=contest.id, name=champion_name).first()
         if champion:
             champion.stage = 'champion'
+        # 亚军（如果有）
+        if len(contest.config['female_ranking']) >= 2:
+            runner_name = contest.config['female_ranking'][1]['name']
+            runner = Candidate.query.filter_by(contest_id=contest.id, name=runner_name).first()
+            if runner:
+                runner.stage = 'finalist'
 
     if contest.config['male_ranking']:
         champion_name = contest.config['male_ranking'][0]['name']
         champion = Candidate.query.filter_by(contest_id=contest.id, name=champion_name).first()
         if champion:
             champion.stage = 'champion'
+        if len(contest.config['male_ranking']) >= 2:
+            runner_name = contest.config['male_ranking'][1]['name']
+            runner = Candidate.query.filter_by(contest_id=contest.id, name=runner_name).first()
+            if runner:
+                runner.stage = 'finalist'
 
     contest.status = 'closed'
     db.session.commit()

@@ -1,0 +1,11 @@
+# Python 缓存
+__pycache__/
+*.pyc
+
+# pytest 缓存
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 环境变量（重要！）
+.env

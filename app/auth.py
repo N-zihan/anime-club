@@ -103,7 +103,7 @@ def logout():
 def delete_account():
     if not session.get('user_id') or session.get('is_guest'):
         return redirect(url_for('auth.login'))
-    user = User.query.get(session['user_id'])
+    user = db.session.get(User, session['user_id'])
     if user:
         db.session.delete(user)
         db.session.commit()
