@@ -121,7 +121,6 @@ class Contest(db.Model):
     creator = db.relationship('User', backref='created_contests')
     nominations = db.relationship('Nomination', back_populates='contest', lazy='dynamic')
     candidates = db.relationship('Candidate', back_populates='contest', lazy='dynamic')
-    rounds = db.relationship('ContestRound', back_populates='contest', lazy='dynamic')
 
 
 class Nomination(db.Model):
@@ -166,7 +165,6 @@ class ContestVote(db.Model):
     __tablename__ = 'contest_votes'
     id = db.Column(db.Integer, primary_key=True)
     contest_id = db.Column(db.Integer, db.ForeignKey('contests.id'), nullable=False)
-    round_id = db.Column(db.Integer, db.ForeignKey('contest_rounds.id'), nullable=True)
     candidate_id = db.Column(db.Integer, db.ForeignKey('candidates.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     weight = db.Column(db.Integer, default=1)

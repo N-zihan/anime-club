@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="萌战系统">
-      <change afterPath="$PROJECT_DIR$/app/contest_engine.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/public.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/public.py" afterDir="false" />
-    </list>
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="feat: 萌战系统功能完善与bug修复" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -313,14 +308,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00127" summary="优化留言板界面">
-      <option name="closed" value="true" />
-      <created>1784024963535</created>
-      <option name="number" value="00127" />
-      <option name="presentableId" value="LOCAL-00127" />
-      <option name="project" value="LOCAL" />
-      <updated>1784024963535</updated>
     </task>
     <task id="LOCAL-00128" summary="优化留言板界面">
       <option name="closed" value="true" />
@@ -706,7 +693,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785429219879</updated>
     </task>
-    <option name="localTasksCounter" value="176" />
+    <task id="LOCAL-00176" summary="feat: 萌战系统功能完善与bug修复">
+      <option name="closed" value="true" />
+      <created>1785493983273</created>
+      <option name="number" value="00176" />
+      <option name="presentableId" value="LOCAL-00176" />
+      <option name="project" value="LOCAL" />
+      <updated>1785493983274</updated>
+    </task>
+    <option name="localTasksCounter" value="177" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -724,7 +719,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Merge remote-tracking branch 'origin/main'" />
     <MESSAGE value="最终版本：修复留言板、个人主页、头像容错等" />
     <MESSAGE value="动漫社网站" />
     <MESSAGE value="修复admin_gallery模板中supabase未定义错误" />
@@ -749,7 +743,8 @@
     <MESSAGE value="管理界面新增删除留言功能" />
     <MESSAGE value="萌战系统完整版 - 生产测试" />
     <MESSAGE value="萌战系统" />
-    <option name="LAST_COMMIT_MESSAGE" value="萌战系统" />
+    <MESSAGE value="feat: 萌战系统功能完善与bug修复" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: 萌战系统功能完善与bug修复" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
