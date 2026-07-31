@@ -162,37 +162,6 @@ class Candidate(db.Model):
     nomination = db.relationship('Nomination', backref='candidate')
 
 
-class ContestRound(db.Model):
-    __tablename__ = 'contest_rounds'
-    id = db.Column(db.Integer, primary_key=True)
-    contest_id = db.Column(db.Integer, db.ForeignKey('contests.id'), nullable=False)
-    round_number = db.Column(db.Integer, default=1, nullable=False)
-    round_type = db.Column(db.String(20), nullable=False)
-    name = db.Column(db.String(100), nullable=True)
-    start_at = db.Column(db.DateTime, nullable=True)
-    end_at = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.String(20), default='pending')
-
-    contest = db.relationship('Contest', back_populates='rounds')
-    matches = db.relationship('ContestMatch', back_populates='round', lazy='dynamic')
-
-
-class ContestMatch(db.Model):
-    __tablename__ = 'contest_matches'
-    id = db.Column(db.Integer, primary_key=True)
-    round_id = db.Column(db.Integer, db.ForeignKey('contest_rounds.id'), nullable=False)
-    candidate1_id = db.Column(db.Integer, db.ForeignKey('candidates.id'))
-    candidate2_id = db.Column(db.Integer, db.ForeignKey('candidates.id'))
-    winner_id = db.Column(db.Integer, db.ForeignKey('candidates.id'), nullable=True)
-    match_order = db.Column(db.Integer, default=0)
-    status = db.Column(db.String(20), default='pending')
-
-    round = db.relationship('ContestRound', back_populates='matches')
-    candidate1 = db.relationship('Candidate', foreign_keys=[candidate1_id])
-    candidate2 = db.relationship('Candidate', foreign_keys=[candidate2_id])
-    winner = db.relationship('Candidate', foreign_keys=[winner_id])
-
-
 class ContestVote(db.Model):
     __tablename__ = 'contest_votes'
     id = db.Column(db.Integer, primary_key=True)

@@ -5,7 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="萌战系统">
-      <change beforePath="$PROJECT_DIR$/templates/admin_contest_create.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_contest_create.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/contest_engine.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/public.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/public.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,61 +90,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="0.0" />
-      <entry key="MS500" value="0.0" />
-      <entry key="S2" value="0.0" />
-      <entry key="S5" value="4.379371992654477E-248" />
-      <entry key="S10" value="2.861193395873105E-124" />
-      <entry key="S30" value="2.2144728305131125E-41" />
-      <entry key="S60" value="1.3738127651521045E-20" />
-      <entry key="M2" value="3.495209637225816E-10" />
-      <entry key="M5" value="6.326887517963122E-4" />
-      <entry key="M10" value="0.08610559856575703" />
-      <entry key="M15" value="0.47100683926400255" />
-      <entry key="M30" value="2.731001615829298" />
-      <entry key="H1" value="6.849237703650398" />
-      <entry key="H2" value="12.568671388319315" />
-      <entry key="H4" value="25.972401157612776" />
-      <entry key="D1" value="146.6367573563247" />
-      <entry key="W1" value="270.7651974312152" />
-    </decayedCancelled>
-    <decayedSelected>
       <entry key="MS100" value="1.0" />
       <entry key="MS500" value="1.0" />
       <entry key="S2" value="1.0" />
-      <entry key="S5" value="1.0000003024080752" />
-      <entry key="S10" value="1.0005499164256249" />
-      <entry key="S30" value="1.081927976894495" />
-      <entry key="S60" value="1.2862306358419637" />
-      <entry key="M2" value="1.5350052671160945" />
-      <entry key="M5" value="1.7786516766047493" />
-      <entry key="M10" value="1.8824124186596363" />
-      <entry key="M15" value="1.9199856947329668" />
-      <entry key="M30" value="1.9591678994705608" />
-      <entry key="H1" value="1.9891533760669082" />
-      <entry key="H2" value="2.3455532581071505" />
-      <entry key="H4" value="4.307540029555033" />
-      <entry key="D1" value="17.512886224289538" />
-      <entry key="W1" value="28.215204579558897" />
+      <entry key="S5" value="1.0" />
+      <entry key="S10" value="1.0000000003217369" />
+      <entry key="S30" value="1.0006852255975114" />
+      <entry key="S60" value="1.026176814120733" />
+      <entry key="M2" value="1.1617925033461274" />
+      <entry key="M5" value="1.482900764790742" />
+      <entry key="M10" value="1.7544913513291727" />
+      <entry key="M15" value="2.1537640168636347" />
+      <entry key="M30" value="4.3041533535059315" />
+      <entry key="H1" value="8.38655714239808" />
+      <entry key="H2" value="14.16267264552125" />
+      <entry key="H4" value="27.56579432637845" />
+      <entry key="D1" value="148.26346179159128" />
+      <entry key="W1" value="272.6669262350638" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="1.015604032644971E-190" />
+      <entry key="S2" value="3.174542196541674E-48" />
+      <entry key="S5" value="1.0015498563501332E-19" />
+      <entry key="S10" value="3.1664671061787426E-10" />
+      <entry key="S30" value="7.372991921134085E-4" />
+      <entry key="S60" value="0.03357697389283988" />
+      <entry key="M2" value="0.2480111589281857" />
+      <entry key="M5" value="0.8578975879358058" />
+      <entry key="M10" value="1.307335485787672" />
+      <entry key="M15" value="1.5057267749986205" />
+      <entry key="M30" value="1.7349850881648026" />
+      <entry key="H1" value="1.8718899657811263" />
+      <entry key="H2" value="2.2753662971790587" />
+      <entry key="H4" value="4.242602399571576" />
+      <entry key="D1" value="17.468605137219985" />
+      <entry key="W1" value="28.205001839755308" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.1247781503990937E-5" />
-      <entry key="MS500" value="0.10237958723247848" />
-      <entry key="S2" value="0.5656572314229502" />
-      <entry key="S5" value="0.7961987300600977" />
-      <entry key="S10" value="0.8928117765336996" />
-      <entry key="S30" value="1.0427402550162972" />
-      <entry key="S60" value="1.2640515423428413" />
-      <entry key="M2" value="1.5223989580343062" />
-      <entry key="M5" value="1.7736529956410096" />
-      <entry key="M10" value="1.9655732430892967" />
-      <entry key="M15" value="2.3889871065430732" />
-      <entry key="M30" value="4.689116114134436" />
-      <entry key="H1" value="8.837822838284078" />
-      <entry key="H2" value="14.913800550111219" />
-      <entry key="H4" value="30.27932579054552" />
-      <entry key="D1" value="164.14895185771525" />
-      <entry key="W1" value="298.9802179455149" />
+      <entry key="MS100" value="0.5471468506303697" />
+      <entry key="MS500" value="0.8863816991948673" />
+      <entry key="S2" value="0.9702981317828073" />
+      <entry key="S5" value="0.9880116785180375" />
+      <entry key="S10" value="0.993987766377877" />
+      <entry key="S30" value="0.9993839540509738" />
+      <entry key="S60" value="1.0580983717248096" />
+      <entry key="M2" value="1.4070421823443995" />
+      <entry key="M5" value="2.337615875223058" />
+      <entry key="M10" value="3.0594902121799854" />
+      <entry key="M15" value="3.657707293130828" />
+      <entry key="M30" value="6.038090911127313" />
+      <entry key="H1" value="10.257852490181582" />
+      <entry key="H2" value="16.437596934297687" />
+      <entry key="H4" value="31.80777513534418" />
+      <entry key="D1" value="165.73137435242566" />
+      <entry key="W1" value="300.87174370374237" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -156,46 +159,46 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Flask 服务器.anime-club.executor": "Run",
-    "Flask 服务器.动漫社网站.executor": "Run",
-    "HTTP 请求.generated-requests | #1.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.app (1).executor": "Run",
-    "Python.app.executor": "Run",
-    "Python.app.py.executor": "Run",
-    "Python.baidu_push.executor": "Run",
-    "Python.index (1).executor": "Run",
-    "Python.public.executor": "Run",
-    "Python.run.executor": "Run",
-    "Python.test.executor": "Run",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "C:/Users/NZH/Desktop/动漫社网站/test",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.jshint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.jshint": "",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "MTThemeTableConfigurable",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Flask 服务器.anime-club.executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.动漫社网站.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP 请求.generated-requests | #1.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.app (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python.baidu_push.executor&quot;: &quot;Run&quot;,
+    &quot;Python.index (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.public.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/NZH/Desktop/动漫社网站/test&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;MTThemeTableConfigurable&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\NZH\Desktop\动漫社网站\test" />
