@@ -9,3 +9,4 @@ htmlcov/
 
 # 环境变量（重要！）
 .env
+*.env
