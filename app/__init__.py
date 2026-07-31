@@ -39,7 +39,9 @@ def create_app():
         static_folder=os.path.join(base_dir, 'static'),
         static_url_path='/static'
     )
-    app.secret_key = os.getenv('SECRET_KEY', '20090929nzh')
+    app.secret_key = os.getenv('SECRET_KEY')
+    if not app.secret_key:
+        raise RuntimeError("SECRET_KEY must be set in environment variables")
 
     # 数据库配置
     DATABASE_URL = os.getenv('DATABASE_URL')

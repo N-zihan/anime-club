@@ -468,8 +468,18 @@ def admin_contest_edit(contest_id):
 @admin_required
 def admin_contest_delete(contest_id):
     contest = Contest.query.get_or_404(contest_id)
+
+    # 1. 手动删除所有关联的候选角色 (Candidates)
+    #    使用 delete() 直接执行 SQL，比循环删除更高效
+    Candidate.query.filter_by(contest_id=contest.id).delete()
+
+    # 2. 手动删除所有关联的提名 (Nominations)
+    Nomination.query.filter_by(contest_id=contest.id).delete()
+
+    # 3. 最后删除赛事本身
     db.session.delete(contest)
     db.session.commit()
+
     flash('赛事已删除', 'success')
     return redirect(url_for('admin.admin_contests_manage'))
 

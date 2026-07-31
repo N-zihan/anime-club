@@ -119,8 +119,9 @@ class Contest(db.Model):
     config = db.Column(db.JSON, nullable=True)
 
     creator = db.relationship('User', backref='created_contests')
-    nominations = db.relationship('Nomination', back_populates='contest', lazy='dynamic')
-    candidates = db.relationship('Candidate', back_populates='contest', lazy='dynamic')
+    nominations = db.relationship('Nomination', back_populates='contest', lazy='dynamic', cascade='all, delete-orphan')
+    candidates = db.relationship('Candidate', back_populates='contest', lazy='dynamic', cascade='all, delete-orphan')
+
 
 
 class Nomination(db.Model):

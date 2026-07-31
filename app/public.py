@@ -479,7 +479,6 @@ def qualifying_vote_submit(contest_id):
     for candidate_id, weight in votes_data.items():
         vote = ContestVote(
             contest_id=contest.id,
-            round_id=None,
             candidate_id=candidate_id,
             user_id=session.get('user_id'),
             weight=weight,
@@ -662,7 +661,6 @@ def group_vote_submit(contest_id):
 
     vote = ContestVote(
         contest_id=contest.id,
-        round_id=None,
         candidate_id=candidate_id,
         user_id=session.get('user_id'),
         weight=1,
@@ -801,7 +799,6 @@ def knockout_vote_submit(contest_id):
 
     vote = ContestVote(
         contest_id=contest.id,
-        round_id=None,
         candidate_id=int(candidate_id),
         user_id=session.get('user_id'),
         weight=1,
