@@ -204,6 +204,26 @@ def admin_gallery_upload():
     return redirect(url_for('admin.admin_gallery'))
 
 
+@admin_bp.route('/admin/gallery/delete/<int:photo_id>')
+@admin_required
+def admin_gallery_delete(photo_id):
+    """删除单张照片（文件 + 数据库记录）"""
+    photo = Photo.query.get_or_404(photo_id)
+
+    # 从 Supabase Storage 删除文件
+    try:
+        supabase.storage.from_('photos').remove([photo.filename])
+    except Exception as e:
+        # 云文件删不掉也继续，至少删数据库记录
+        flash(f'云存储文件删除失败（但数据库记录已删）: {str(e)}', 'warning')
+
+    db.session.delete(photo)
+    db.session.commit()
+
+    flash('照片已删除', 'success')
+    return redirect(url_for('admin.admin_gallery'))
+
+
 # ---------- 番剧资源管理 ----------
 @admin_bp.route('/admin/anime_resources')
 @admin_required
