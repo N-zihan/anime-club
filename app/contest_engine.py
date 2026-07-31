@@ -197,10 +197,18 @@ def calc_phase(contest, now, times):
 
 def auto_activate_contest(contest, now):
     """草稿赛事在到达开始时间后自动激活"""
-    if contest.status == 'draft' and contest.open_at and now >= contest.open_at:
-        contest.status = 'open'
-        db.session.commit()
-        return True
+    if contest.status == 'draft' and contest.open_at:
+        # 确保 open_at 是 naive（去掉时区）
+        open_at = contest.open_at
+        if open_at.tzinfo is not None:
+            open_at = open_at.replace(tzinfo=None)
+        # now 应该已是 naive，但为了安全也处理
+        if now.tzinfo is not None:
+            now = now.replace(tzinfo=None)
+        if now >= open_at:
+            contest.status = 'open'
+            db.session.commit()
+            return True
     return False
 
 

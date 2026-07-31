@@ -218,9 +218,12 @@ def contest_rules(contest_id):
 @public_bp.route('/contest/<int:contest_id>')
 def contest_detail(contest_id):
     contest = Contest.query.get_or_404(contest_id)
-    # 获取当前 UTC 时间，去掉时区，再加 8 小时，得到东八区 naive 时间
+
+    # 确保 open_at 是 naive（如果存在）
+    if contest.open_at and contest.open_at.tzinfo is not None:
+        contest.open_at = contest.open_at.replace(tzinfo=None)
+
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
-    times = calc_stage_times(contest.open_at)
 
     # 1. 计算赛程时间
     times = calc_stage_times(contest.open_at)
