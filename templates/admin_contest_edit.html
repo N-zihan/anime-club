@@ -21,23 +21,17 @@
         <div class="form-group">
             <label>性别分组</label>
             <select name="gender_mode">
-                <option contest.gender_mode== if value="separate" {%
-                'separate' %}selected{% endif %}>男女分别进行</option>
-                <option contest.gender_mode== if value="mixed" {%
-                'mixed' %}selected{% endif %}>混合进行</option>
+                <option contest.gender_mode== if value="separate" {%'separate' %}selected{% endif %}>男女分别进行</option>
+                <option contest.gender_mode== if value="mixed" {%'mixed' %}selected{% endif %}>混合进行</option>
             </select>
         </div>
         <div class="form-group">
             <label>状态</label>
             <select name="status">
-                <option contest.status== if value="draft" {%
-                'draft' %}selected{% endif %}>草稿</option>
-                <option contest.status== if value="open" {%
-                'open' %}selected{% endif %}>开放中</option>
-                <option contest.status== if value="closed" {%
-                'closed' %}selected{% endif %}>已结束</option>
-                <option contest.status== if value="archived" {%
-                'archived' %}selected{% endif %}>已归档</option>
+                <option contest.status== if value="draft" {%'draft' %}selected{% endif %}>草稿</option>
+                <option contest.status== if value="open" {%'open' %}selected{% endif %}>开放中</option>
+                <option contest.status== if value="closed" {%'closed' %}selected{% endif %}>已结束</option>
+                <option contest.status== if value="archived" {%'archived' %}selected{% endif %}>已归档</option>
             </select>
         </div>
         <div class="form-group">
