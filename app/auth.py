@@ -26,7 +26,7 @@ import sys
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
 from .models import db, User
 
@@ -190,6 +190,9 @@ def login():
             # 老用户未绑定邮箱 → 登录后显示横幅
             if not user.email:
                 session['show_bind_prompt'] = True
+            else:
+                # 确保已经绑定的用户不会看到横幅
+                session.pop('show_bind_prompt', None)
 
             flash('登录成功', 'success')
             return redirect(url_for('public.index'))

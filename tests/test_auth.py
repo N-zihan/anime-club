@@ -1,5 +1,7 @@
-from app.models import User, db
 import os
+
+from app.models import User, db
+
 os.environ['GROUP_VERIFICATION_CODE'] = 'test_group_code'
 
 
