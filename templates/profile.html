@@ -4,14 +4,6 @@
 
 <div style="max-width:600px; margin:0 auto; padding:20px 0;">
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="flash {{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
     <h2 style="text-align:center; margin-bottom:24px;">个人设置</h2>
 
     <div style="display:grid; gap:16px;">
@@ -60,13 +52,24 @@
             <h4 style="margin-top:0; margin-bottom:4px;">绑定邮箱</h4>
             <p style="color:#64748b; font-size:0.9rem; margin-bottom:16px;">用于修改密码，请填写常用QQ邮箱</p>
 
+            <!-- ========== 绑定邮箱专用 flash 消息 ========== -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if '邮箱' in message or '验证码' in message %}
+                            <div class="flash {{ category }}" style="margin-bottom:12px;">{{ message }}</div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
             {% if user.email %}
                 <p style="margin-bottom:12px;">当前已绑定：<strong>{{ user.email }}</strong></p>
                 <hr style="margin:12px 0;">
                 <p style="font-size:0.9rem; color:#64748b; margin-bottom:8px;">更换邮箱：</p>
                 <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
                     <input type="hidden" name="action" value="send_email_code">
-                    <input type="email" name="email" placeholder="新邮箱" required style="padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; min-width:200px;">
+                    <input type="email" name="email" placeholder="新邮箱" value="{{ session.get('temp_email') or '' }}" required style="padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; min-width:200px;">
                     <button type="submit" style="padding:8px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">发送验证码</button>
                 </form>
                 <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
@@ -77,7 +80,7 @@
             {% else %}
                 <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
                     <input type="hidden" name="action" value="send_email_code">
-                    <input type="email" name="email" placeholder="请输入你的QQ邮箱" required style="padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; min-width:200px;">
+                    <input type="email" name="email" placeholder="请输入你的QQ邮箱" value="{{ session.get('temp_email') or '' }}" required style="padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; min-width:200px;">
                     <button type="submit" style="padding:8px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">发送验证码</button>
                 </form>
                 <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
