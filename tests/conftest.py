@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import pytest
 
 os.environ['GROUP_VERIFICATION_CODE'] = 'test_group_code'
+os.environ['TESTING'] = '1'
 
 # 获取项目根目录（假设项目根目录是当前目录的父目录）
 # 如果测试失败，可以手动设置路径

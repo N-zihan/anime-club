@@ -75,6 +75,16 @@
             </form>
         {% endif %}
     </div>
+    <!-- ========== 退出登录 / 注销账号 ========== -->
+    <div style="margin-top:30px; padding:20px; background:#fef2f2; border-radius:12px; border:1px solid #fca5a5;">
+        <h4 style="color:#991b1b;">账号操作</h4>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:10px;">
+            <a href="{{ url_for('auth.logout') }}" class="btn-primary" style="background:#64748b;">退出登录</a>
+            <form method="POST" action="{{ url_for('auth.delete_account') }}" style="display:inline;" onsubmit="return confirm('确定要注销账号吗？此操作不可恢复！');">
+                <button type="submit" style="padding:10px 24px; background:#dc2626; color:white; border:none; border-radius:40px; cursor:pointer; font-weight:600;">注销账号</button>
+            </form>
+        </div>
+    </div>
 
 </div>
 

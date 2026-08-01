@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 {% block title %}登录{% endblock %}
 {% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 <h2>社员登录</h2>
 <form method="POST">
     <div style="max-width:300px;">

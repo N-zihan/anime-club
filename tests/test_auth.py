@@ -1,4 +1,6 @@
 from app.models import User, db
+import os
+os.environ['GROUP_VERIFICATION_CODE'] = 'test_group_code'
 
 
 class TestAuth:
@@ -17,8 +19,10 @@ class TestAuth:
         response = client.post('/register', data={
             'username': 'newuser',
             'qq': '1111122222',
+            'email': 'test123@qq.com',
             'group': 'test_group_code',
-            'password': 'testpass123'
+            'password': 'testpass123',
+            'code': '123456'  # 随便填
         }, follow_redirects=True)
         assert response.status_code == 200
         user = User.query.filter_by(username='newuser').first()
@@ -29,8 +33,10 @@ class TestAuth:
         response = client.post('/register', data={
             'username': sample_user.username,
             'qq': '9999999999',
+            'email': 'test456@qq.com',
             'group': 'test_group_code',
-            'password': 'testpass123'
+            'password': 'testpass123',
+            'code': '123456'  # 随便填
         }, follow_redirects=True)
         assert '用户名已被注册' in response.text
 
@@ -38,8 +44,10 @@ class TestAuth:
         response = client.post('/register', data={
             'username': 'testuser2',
             'qq': '1111122222',
+            'email': 'test789@qq.com',
             'group': 'wrong_code',
-            'password': 'testpass123'
+            'password': 'testpass123',
+            'code': '123456'  # 随便填
         }, follow_redirects=True)
         assert '验证码错误' in response.text
 

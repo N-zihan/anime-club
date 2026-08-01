@@ -35,9 +35,8 @@ from .utils import allowed_file, compress_image, get_or_404
 
 user_bp = Blueprint('user', __name__)
 
-
 # ---------- 发邮件函数（复用 auth 的） ----------
-from .auth import send_verification_email, MAIL_USERNAME, MAIL_PASSWORD
+from .auth import send_verification_email
 
 
 @user_bp.route('/profile', methods=['GET', 'POST'])
@@ -188,3 +187,9 @@ def get_avatar(user_id):
         response = Response(default, mimetype='image/png')
     response.headers['Cache-Control'] = 'public, max-age=86400'
     return response
+
+
+@user_bp.route('/dismiss_bind_prompt')
+def dismiss_bind_prompt():
+    session.pop('show_bind_prompt', None)
+    return redirect(url_for('public.index'))
