@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="fix: 添加 dismiss_bind_prompt 路由；登录页显示 flash 消息">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/sitemap.xml" beforeDir="false" afterPath="$PROJECT_DIR$/static/sitemap.xml" afterDir="false" />
-    </list>
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="fix: 修改sitemap" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -91,21 +88,21 @@
     <decayedCancelled>
       <entry key="MS100" value="1.0" />
       <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0000000382677103" />
-      <entry key="S5" value="1.003146976652489" />
-      <entry key="S10" value="1.1375172081797864" />
-      <entry key="S30" value="2.9600686855185323" />
-      <entry key="S60" value="5.960722765270571" />
-      <entry key="M2" value="10.895309300250165" />
-      <entry key="M5" value="21.20474970741946" />
-      <entry key="M10" value="32.47173384307797" />
-      <entry key="M15" value="40.510072163284306" />
-      <entry key="M30" value="57.918157816860564" />
-      <entry key="H1" value="82.83090743755815" />
-      <entry key="H2" value="116.77461859981666" />
-      <entry key="H4" value="156.74414303215076" />
-      <entry key="D1" value="315.68204103774104" />
-      <entry key="W1" value="484.1309545955754" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0" />
+      <entry key="S10" value="1.0" />
+      <entry key="S30" value="1.0" />
+      <entry key="S60" value="1.0" />
+      <entry key="M2" value="1.0000000030440064" />
+      <entry key="M5" value="1.0031982731694877" />
+      <entry key="M10" value="1.398792223282527" />
+      <entry key="M15" value="3.1563726665153204" />
+      <entry key="M30" value="14.36272837750059" />
+      <entry key="H1" value="40.78621448534004" />
+      <entry key="H2" value="81.93168037233976" />
+      <entry key="H4" value="131.48974182130155" />
+      <entry key="D1" value="307.1827486929293" />
+      <entry key="W1" value="483.0224409114923" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -114,36 +111,36 @@
       <entry key="S5" value="0.0" />
       <entry key="S10" value="0.0" />
       <entry key="S30" value="0.0" />
-      <entry key="S60" value="1.2110719009324178E-216" />
-      <entry key="M2" value="1.4894825141920132E-108" />
-      <entry key="M5" value="1.108820181117836E-43" />
-      <entry key="M10" value="4.70002196036543E-22" />
-      <entry key="M15" value="7.612980746772579E-15" />
-      <entry key="M30" value="1.2336729025807796E-7" />
-      <entry key="H1" value="4.991515865493667E-4" />
-      <entry key="H2" value="0.03715586624322556" />
-      <entry key="H4" value="0.5421511310602055" />
-      <entry key="D1" value="12.397655586063024" />
-      <entry key="W1" value="26.856662279625915" />
+      <entry key="S60" value="9.453267529996113E-236" />
+      <entry key="M2" value="4.16141874989336E-118" />
+      <entry key="M5" value="1.672412965956789E-47" />
+      <entry key="M10" value="5.772196261858632E-24" />
+      <entry key="M15" value="4.052430103525355E-16" />
+      <entry key="M30" value="2.8462983846959794E-8" />
+      <entry key="H1" value="2.3975775103178475E-4" />
+      <entry key="H2" value="0.025751201132665148" />
+      <entry key="H4" value="0.4513416562280215" />
+      <entry key="D1" value="12.024593645589125" />
+      <entry key="W1" value="26.739694671197128" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.6285066872609142" />
-      <entry key="MS500" value="0.9113012806371416" />
-      <entry key="S2" value="0.9770471272119049" />
-      <entry key="S5" value="0.9938996545382695" />
-      <entry key="S10" value="1.1328365700634118" />
-      <entry key="S30" value="2.958301042326622" />
-      <entry key="S60" value="5.959679822653915" />
-      <entry key="M2" value="10.894653551600756" />
-      <entry key="M5" value="21.204344832074" />
-      <entry key="M10" value="32.471420761382625" />
-      <entry key="M15" value="40.509741474873096" />
-      <entry key="M30" value="57.91767964662463" />
-      <entry key="H1" value="82.83087093917474" />
-      <entry key="H2" value="116.81133644187668" />
-      <entry key="H4" value="157.28593450757504" />
-      <entry key="D1" value="328.0791458173762" />
-      <entry key="W1" value="510.9874324763126" />
+      <entry key="MS100" value="0.9659363289248456" />
+      <entry key="MS500" value="0.9930924954370359" />
+      <entry key="S2" value="0.9982686325973925" />
+      <entry key="S5" value="0.9993070929904525" />
+      <entry key="S10" value="0.9996534864594093" />
+      <entry key="S30" value="0.9998844821426083" />
+      <entry key="S60" value="0.9999422394031608" />
+      <entry key="M2" value="0.9999711223283557" />
+      <entry key="M5" value="1.0031866597166084" />
+      <entry key="M10" value="1.3987826020502627" />
+      <entry key="M15" value="3.156351212985223" />
+      <entry key="M30" value="14.362616129886863" />
+      <entry key="H1" value="40.78619599134788" />
+      <entry key="H2" value="81.95712751559303" />
+      <entry key="H4" value="131.94078382297957" />
+      <entry key="D1" value="319.2068080664756" />
+      <entry key="W1" value="509.7619519811745" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -339,14 +336,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00155" summary="管理界面新增删除留言功能">
-      <option name="closed" value="true" />
-      <created>1784617016958</created>
-      <option name="number" value="00155" />
-      <option name="presentableId" value="LOCAL-00155" />
-      <option name="project" value="LOCAL" />
-      <updated>1784617016958</updated>
     </task>
     <task id="LOCAL-00156" summary="萌战系统完整版 - 生产测试">
       <option name="closed" value="true" />
@@ -732,7 +721,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785574846693</updated>
     </task>
-    <option name="localTasksCounter" value="204" />
+    <task id="LOCAL-00204" summary="fix: 修改sitemap">
+      <option name="closed" value="true" />
+      <created>1785575786694</created>
+      <option name="number" value="00204" />
+      <option name="presentableId" value="LOCAL-00204" />
+      <option name="project" value="LOCAL" />
+      <updated>1785575786694</updated>
+    </task>
+    <option name="localTasksCounter" value="205" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -750,7 +747,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="新增413错误页面以备用" />
     <MESSAGE value="简化注释，调整格式" />
     <MESSAGE value="删除无用文件" />
     <MESSAGE value="README.md太丑了，所以改了" />
@@ -775,7 +771,8 @@
     <MESSAGE value="fix: ......" />
     <MESSAGE value="feat: 完成萌战系统全流程（海选/小组赛/淘汰赛/排名），77个测试用例全通过，无失败，无警告，修复并发竞态、时区、权限、JSON更新等多项安全与稳定性问题" />
     <MESSAGE value="fix: 添加 dismiss_bind_prompt 路由；登录页显示 flash 消息" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: 添加 dismiss_bind_prompt 路由；登录页显示 flash 消息" />
+    <MESSAGE value="fix: 修改sitemap" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: 修改sitemap" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

@@ -27,7 +27,7 @@ import base64
 import secrets
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, Response
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, Response, jsonify
 from sqlalchemy import func
 
 from .models import db, User, Message, AnimeResource
@@ -108,42 +108,34 @@ def profile():
         if action == 'send_email_code':
             email = request.form.get('email')
             if not email:
-                flash('邮箱不能为空', 'danger')
-                return redirect(url_for('user.profile'))
+                return jsonify({'error': '邮箱不能为空'}), 400
             if User.query.filter(User.email == email, User.id != user.id).first():
-                flash('该邮箱已被其他用户绑定', 'danger')
-                return redirect(url_for('user.profile'))
+                return jsonify({'error': '该邮箱已被其他用户绑定'}), 400
 
             code = ''.join(secrets.choice('0123456789') for _ in range(6))
             session['profile_email_code'] = code
             session['profile_pending_email'] = email
-            session['temp_email'] = email  # ← 存一下，供模板保留值
             session['profile_email_expires'] = (datetime.now() + timedelta(minutes=10)).isoformat()
 
             if send_verification_email(email, code):
-                flash('验证码已发送至您的邮箱，10分钟内有效', 'success')
-            else:
-                flash('邮件发送失败，请检查邮箱地址', 'danger')
-            return redirect(url_for('user.profile'))
+                return jsonify({'success': True, 'message': '验证码已发送'})
+            return jsonify({'error': '邮件发送失败，请检查邮箱地址'}), 500
 
         # ---------- 绑定邮箱：验证验证码 ----------
         # 绑定邮箱：验证验证码
         if action == 'verify_email_code':
             code = request.form.get('code')
             stored_code = session.get('profile_email_code')
-            pending_email = session.get('profile_pending_email')  # ← 定义这个变量
+            pending_email = session.get('profile_pending_email')
 
             if not pending_email:
-                flash('请先发送验证码', 'danger')
-                return redirect(url_for('user.profile'))
+                return jsonify({'error': '请先发送验证码'}), 400
             if not stored_code or stored_code != code:
-                flash('验证码错误', 'danger')
-                return redirect(url_for('user.profile'))
+                return jsonify({'error': '验证码错误'}), 400
 
             expires = session.get('profile_email_expires')
             if expires and datetime.fromisoformat(expires) < datetime.now():
-                flash('验证码已过期，请重新获取', 'danger')
-                return redirect(url_for('user.profile'))
+                return jsonify({'error': '验证码已过期，请重新获取'}), 400
 
             user.email = pending_email
             db.session.commit()
@@ -151,10 +143,8 @@ def profile():
             session.pop('profile_pending_email', None)
             session.pop('profile_email_expires', None)
             session.pop('show_bind_prompt', None)
-            session['temp_email'] = pending_email  # ← 验证成功后也存一下
 
-            flash('邮箱绑定成功', 'success')
-            return redirect(url_for('user.profile'))
+            return jsonify({'success': True, 'message': '邮箱绑定成功', 'email': pending_email})
 
     return render_template('profile.html', user=user)
 

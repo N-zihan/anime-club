@@ -52,43 +52,27 @@
             <h4 style="margin-top:0; margin-bottom:4px;">绑定邮箱</h4>
             <p style="color:#64748b; font-size:0.9rem; margin-bottom:16px;">用于修改密码，请填写常用QQ邮箱</p>
 
-            <!-- ========== 绑定邮箱专用 flash 消息 ========== -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        {% if '邮箱' in message or '验证码' in message %}
-                            <div class="flash {{ category }}" style="margin-bottom:12px;">{{ message }}</div>
-                        {% endif %}
-                    {% endfor %}
+            <div id="emailBindStatus">
+                {% if user.email %}
+                    <p style="margin-bottom:12px;">当前已绑定：<strong>{{ user.email }}</strong></p>
+                    <hr style="margin:12px 0;">
+                    <p style="font-size:0.9rem; color:#64748b; margin-bottom:8px;">更换邮箱：</p>
                 {% endif %}
-            {% endwith %}
+            </div>
 
-            {% if user.email %}
-                <p style="margin-bottom:12px;">当前已绑定：<strong>{{ user.email }}</strong></p>
-                <hr style="margin:12px 0;">
-                <p style="font-size:0.9rem; color:#64748b; margin-bottom:8px;">更换邮箱：</p>
-                <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
-                    <input type="hidden" name="action" value="send_email_code">
-                    <input type="email" name="email" placeholder="新邮箱" value="{{ session.get('temp_email') or '' }}" required style="padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; min-width:200px;">
-                    <button type="submit" style="padding:8px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">发送验证码</button>
-                </form>
-                <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                    <input type="hidden" name="action" value="verify_email_code">
-                    <input type="text" name="code" placeholder="6位验证码" required style="padding:10px; border:1px solid #ccc; border-radius:6px; width:150px; font-size:14px;">
-                    <button type="submit" style="padding:8px 16px; background:#f39c12; color:white; border:none; border-radius:6px; cursor:pointer;">确认更换</button>
-                </form>
-            {% else %}
-                <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
-                    <input type="hidden" name="action" value="send_email_code">
-                    <input type="email" name="email" placeholder="请输入你的QQ邮箱" value="{{ session.get('temp_email') or '' }}" required style="padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; min-width:200px;">
-                    <button type="submit" style="padding:8px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">发送验证码</button>
-                </form>
-                <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                    <input type="hidden" name="action" value="verify_email_code">
-                    <input type="text" name="code" placeholder="6位验证码" required style="padding:10px; border:1px solid #ccc; border-radius:6px; width:150px; font-size:14px;">
-                    <button type="submit" style="padding:8px 16px; background:#f39c12; color:white; border:none; border-radius:6px; cursor:pointer;">确认绑定</button>
-                </form>
-            {% endif %}
+            <div id="emailBindForm">
+                <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
+                    <input type="email" id="bindEmailInput" placeholder="请输入你的QQ邮箱" required
+                           style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; min-width:200px;">
+                    <button id="sendEmailCodeBtn" style="padding:8px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">发送验证码</button>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                    <input type="text" id="bindEmailCode" placeholder="6位验证码" required
+                           style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px; min-width:120px; font-size:14px;">
+                    <button id="verifyEmailCodeBtn" style="padding:8px 16px; background:#f39c12; color:white; border:none; border-radius:6px; cursor:pointer;">确认绑定</button>
+                </div>
+                <div id="emailBindMessage" style="margin-top:10px; font-size:0.9rem;"></div>
+            </div>
         </div>
 
         <!-- 退出登录 / 注销账号 -->
@@ -105,5 +89,114 @@
     </div>
 
 </div>
+
+<script>
+(function() {
+    const sendBtn = document.getElementById('sendEmailCodeBtn');
+    const verifyBtn = document.getElementById('verifyEmailCodeBtn');
+    const emailInput = document.getElementById('bindEmailInput');
+    const codeInput = document.getElementById('bindEmailCode');
+    const msgDiv = document.getElementById('emailBindMessage');
+    let countdown = 0;
+
+    function showMsg(text, type) {
+        msgDiv.textContent = text;
+        msgDiv.style.color = type === 'success' ? '#16a34a' : '#dc2626';
+        if (type === 'success') {
+            msgDiv.style.color = '#16a34a';
+        } else {
+            msgDiv.style.color = '#dc2626';
+        }
+    }
+
+    // 发送验证码
+    sendBtn.addEventListener('click', function() {
+        const email = emailInput.value.trim();
+        if (!email) {
+            showMsg('请先填写邮箱', 'error');
+            return;
+        }
+        if (countdown > 0) return;
+
+        sendBtn.disabled = true;
+        sendBtn.textContent = '发送中...';
+
+        fetch('/profile', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'action=send_email_code&email=' + encodeURIComponent(email)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                showMsg(data.error, 'error');
+                sendBtn.disabled = false;
+                sendBtn.textContent = '发送验证码';
+                return;
+            }
+            showMsg(data.message, 'success');
+            countdown = 60;
+            const timer = setInterval(() => {
+                countdown--;
+                sendBtn.textContent = countdown + 's';
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = '重新发送';
+                }
+            }, 1000);
+        })
+        .catch(() => {
+            showMsg('网络错误，请重试', 'error');
+            sendBtn.disabled = false;
+            sendBtn.textContent = '发送验证码';
+        });
+    });
+
+    // 验证验证码
+    verifyBtn.addEventListener('click', function() {
+        const code = codeInput.value.trim();
+        if (!code) {
+            showMsg('请填写验证码', 'error');
+            return;
+        }
+
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = '验证中...';
+
+        fetch('/profile', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'action=verify_email_code&code=' + encodeURIComponent(code)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                showMsg(data.error, 'error');
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = '确认绑定';
+                return;
+            }
+            showMsg(data.message, 'success');
+            // 更新页面：显示已绑定的邮箱
+            document.getElementById('emailBindStatus').innerHTML = '<p style="margin-bottom:12px;">当前已绑定：<strong>' + data.email + '</strong></p><hr style="margin:12px 0;"><p style="font-size:0.9rem; color:#64748b; margin-bottom:8px;">更换邮箱：</p>';
+            emailInput.value = '';
+            codeInput.value = '';
+            // 移除绑定横幅
+            document.querySelector('#emailBindForm .flash')?.remove();
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = '确认绑定';
+            // 如果有横幅，关闭它
+            const banner = document.querySelector('[style*="background:#fff3cd;"]');
+            if (banner) banner.remove();
+        })
+        .catch(() => {
+            showMsg('网络错误，请重试', 'error');
+            verifyBtn.disabled = false;
+            verifyBtn.textContent = '确认绑定';
+        });
+    });
+})();
+</script>
 
 {% endblock %}
