@@ -336,14 +336,6 @@
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
     </task>
-    <task id="LOCAL-00153" summary="优化登录功能">
-      <option name="closed" value="true" />
-      <created>1784552257053</created>
-      <option name="number" value="00153" />
-      <option name="presentableId" value="LOCAL-00153" />
-      <option name="project" value="LOCAL" />
-      <updated>1784552257053</updated>
-    </task>
     <task id="LOCAL-00154" summary="管理界面新增删除留言功能">
       <option name="closed" value="true" />
       <created>1784616586528</created>
@@ -728,7 +720,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785573933491</updated>
     </task>
-    <option name="localTasksCounter" value="202" />
+    <task id="LOCAL-00202" summary="fix: 添加 dismiss_bind_prompt 路由；登录页显示 flash 消息">
+      <option name="closed" value="true" />
+      <created>1785574347052</created>
+      <option name="number" value="00202" />
+      <option name="presentableId" value="LOCAL-00202" />
+      <option name="project" value="LOCAL" />
+      <updated>1785574347052</updated>
+    </task>
+    <option name="localTasksCounter" value="203" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
