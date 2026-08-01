@@ -1,0 +1,782 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="feat: 完成萌战系统全流程（海选/小组赛/淘汰赛/排名），77个测试用例全通过，无失败，无警告，修复并发竞态、时区、权限、JSON更新等多项安全与稳定性问题" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Flask Main" />
+        <option value="Python Script" />
+        <option value="HTML File" />
+      </list>
+    </option>
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform)); sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo, NoAppException&#10;for module in [&quot;main.py&quot;, &quot;wsgi.py&quot;, &quot;app.py&quot;]:&#10;    try: locals().update(ScriptInfo(app_import_path=module, create_app=None).load_app().make_shell_context()); print(&quot;\nFlask App: %s&quot; % app.import_name); break&#10;    except NoAppException: pass">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform)); sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo, NoAppException&#10;for module in [&quot;main.py&quot;, &quot;wsgi.py&quot;, &quot;app.py&quot;]:&#10;    try: locals().update(ScriptInfo(app_import_path=module, create_app=None).load_app().make_shell_context()); print(&quot;\nFlask App: %s&quot; % app.import_name); break&#10;    except NoAppException: pass" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;N-zihan&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:N-zihan/anime-club.git&quot;,
+    &quot;accountId&quot;: &quot;9864df25-fa90-4eda-ad53-ffb50cec7a37&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/app/__init__.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/admin.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/auth.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/models.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/public.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/user.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/app/utils.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/run.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/static/sitemap.xml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/400.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/413.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/500.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/about.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/activities.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_activities.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_activity_form.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_anime_resources.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_dashboard.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_gallery.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_messages.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/admin_users.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/anime_resources.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/base.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/board.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/gallery.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/login.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/members.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/profile.html" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/templates/staff_dashboard.html" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="HttpClientOnboardingState">{
+  &quot;isOnboardingCommentShown&quot;: true
+}</component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0" />
+      <entry key="S10" value="1.0" />
+      <entry key="S30" value="1.0" />
+      <entry key="S60" value="1.0000000037296355" />
+      <entry key="M2" value="1.000203235999878" />
+      <entry key="M5" value="1.172308417393123" />
+      <entry key="M10" value="3.1129199041580535" />
+      <entry key="M15" value="6.423517229767898" />
+      <entry key="M30" value="17.830706624631368" />
+      <entry key="H1" value="37.86717921921477" />
+      <entry key="H2" value="66.8119819067297" />
+      <entry key="H4" value="101.6786141504757" />
+      <entry key="D1" value="252.55748003636455" />
+      <entry key="W1" value="417.24594790432553" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="1.2206295958949165E-205" />
+      <entry key="M2" value="4.72870687009162E-103" />
+      <entry key="M5" value="1.7601266366768825E-41" />
+      <entry key="M10" value="5.921630217747968E-21" />
+      <entry key="M15" value="4.1220728481321154E-14" />
+      <entry key="M30" value="2.870651627748719E-7" />
+      <entry key="H1" value="7.614172097969601E-4" />
+      <entry key="H2" value="0.045890470162211226" />
+      <entry key="H4" value="0.6025150873084628" />
+      <entry key="D1" value="12.61771829145678" />
+      <entry key="W1" value="26.92425198686998" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.9592641193252643" />
+      <entry key="MS500" value="0.9917167307382933" />
+      <entry key="S2" value="0.9979227189990506" />
+      <entry key="S5" value="0.999168569213607" />
+      <entry key="S10" value="0.9995841981612189" />
+      <entry key="S30" value="0.9998613801725043" />
+      <entry key="S60" value="0.9999306914131869" />
+      <entry key="M2" value="1.000168559620586" />
+      <entry key="M5" value="1.1722685224743197" />
+      <entry key="M10" value="3.1126342415591015" />
+      <entry key="M15" value="6.422985657512759" />
+      <entry key="M30" value="17.829935134567645" />
+      <entry key="H1" value="37.86725198708035" />
+      <entry key="H2" value="66.85738746398465" />
+      <entry key="H4" value="102.28075578518482" />
+      <entry key="D1" value="265.17464188818866" />
+      <entry key="W1" value="444.1700156147767" />
+    </decayedShown>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3DU44Cr3IFYQ4fjl9CstX2UWae4" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Flask 服务器.anime-club.executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.动漫社网站.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP 请求.generated-requests | #1.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.app (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python.baidu_push.executor&quot;: &quot;Run&quot;,
+    &quot;Python.contest_engine.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.index (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.public.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git.auto.fetch.suggestion.counter&quot;: &quot;1&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/NZH/Desktop/动漫社网站/test&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;MTThemeTableConfigurable&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\NZH\Desktop\动漫社网站\test" />
+      <recent name="C:\Users\NZH\Desktop\动漫社网站" />
+      <recent name="C:\Users\NZH\Desktop\动漫社网站\static" />
+      <recent name="C:\Users\NZH\Desktop\动漫社网站\static\avatars" />
+      <recent name="C:\Users\NZH\Desktop\动漫社网站\static\images" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\NZH\Desktop\动漫社网站" />
+      <recent name="C:\Users\NZH\Desktop\动漫社网站\app" />
+      <recent name="C:\Users\NZH\Desktop\动漫社网站\api" />
+      <recent name="C:\Users\NZH\Desktop\动漫社网站\static" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.run">
+    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="动漫社网站" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="C:\Users\NZH\Desktop\动漫社网站\app.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="动漫社网站" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/api" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="C:\Users\NZH\Desktop\动漫社网站\app.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="contest_engine" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="动漫社网站" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/contest_engine.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="动漫社网站" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.14 (动漫社网站)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="false" />
+      <option name="RUN_TOOL" value="" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.run" />
+        <item itemvalue="Python.contest_engine" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-6fa658e1df1a-5bd6d13a2a75-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-262.8665.369" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="" />
+      <created>1778323120471</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1778323120471</updated>
+      <workItem from="1778323121497" duration="12287000" />
+      <workItem from="1778346154955" duration="5245000" />
+      <workItem from="1778357814198" duration="2561000" />
+      <workItem from="1778388493202" duration="24277000" />
+      <workItem from="1778472761851" duration="43000" />
+    </task>
+    <task id="LOCAL-00146" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784298706710</created>
+      <option name="number" value="00146" />
+      <option name="presentableId" value="LOCAL-00146" />
+      <option name="project" value="LOCAL" />
+      <updated>1784298706710</updated>
+    </task>
+    <task id="LOCAL-00147" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784299200771</created>
+      <option name="number" value="00147" />
+      <option name="presentableId" value="LOCAL-00147" />
+      <option name="project" value="LOCAL" />
+      <updated>1784299200771</updated>
+    </task>
+    <task id="LOCAL-00148" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784299303950</created>
+      <option name="number" value="00148" />
+      <option name="presentableId" value="LOCAL-00148" />
+      <option name="project" value="LOCAL" />
+      <updated>1784299303951</updated>
+    </task>
+    <task id="LOCAL-00149" summary="收录至各浏览器">
+      <option name="closed" value="true" />
+      <created>1784299429789</created>
+      <option name="number" value="00149" />
+      <option name="presentableId" value="LOCAL-00149" />
+      <option name="project" value="LOCAL" />
+      <updated>1784299429789</updated>
+    </task>
+    <task id="LOCAL-00150" summary="fix： 恢复新手引导代码，保留CSS版本号">
+      <option name="closed" value="true" />
+      <created>1784544305444</created>
+      <option name="number" value="00150" />
+      <option name="presentableId" value="LOCAL-00150" />
+      <option name="project" value="LOCAL" />
+      <updated>1784544305444</updated>
+    </task>
+    <task id="LOCAL-00151" summary="fix： 恢复新手引导代码，保留CSS版本号">
+      <option name="closed" value="true" />
+      <created>1784544757399</created>
+      <option name="number" value="00151" />
+      <option name="presentableId" value="LOCAL-00151" />
+      <option name="project" value="LOCAL" />
+      <updated>1784544757399</updated>
+    </task>
+    <task id="LOCAL-00152" summary="fix： 恢复新手引导代码，保留CSS版本号">
+      <option name="closed" value="true" />
+      <created>1784544984683</created>
+      <option name="number" value="00152" />
+      <option name="presentableId" value="LOCAL-00152" />
+      <option name="project" value="LOCAL" />
+      <updated>1784544984683</updated>
+    </task>
+    <task id="LOCAL-00153" summary="优化登录功能">
+      <option name="closed" value="true" />
+      <created>1784552257053</created>
+      <option name="number" value="00153" />
+      <option name="presentableId" value="LOCAL-00153" />
+      <option name="project" value="LOCAL" />
+      <updated>1784552257053</updated>
+    </task>
+    <task id="LOCAL-00154" summary="管理界面新增删除留言功能">
+      <option name="closed" value="true" />
+      <created>1784616586528</created>
+      <option name="number" value="00154" />
+      <option name="presentableId" value="LOCAL-00154" />
+      <option name="project" value="LOCAL" />
+      <updated>1784616586529</updated>
+    </task>
+    <task id="LOCAL-00155" summary="管理界面新增删除留言功能">
+      <option name="closed" value="true" />
+      <created>1784617016958</created>
+      <option name="number" value="00155" />
+      <option name="presentableId" value="LOCAL-00155" />
+      <option name="project" value="LOCAL" />
+      <updated>1784617016958</updated>
+    </task>
+    <task id="LOCAL-00156" summary="萌战系统完整版 - 生产测试">
+      <option name="closed" value="true" />
+      <created>1785398606911</created>
+      <option name="number" value="00156" />
+      <option name="presentableId" value="LOCAL-00156" />
+      <option name="project" value="LOCAL" />
+      <updated>1785398606912</updated>
+    </task>
+    <task id="LOCAL-00157" summary="萌战系统完整版 - 生产测试">
+      <option name="closed" value="true" />
+      <created>1785398845410</created>
+      <option name="number" value="00157" />
+      <option name="presentableId" value="LOCAL-00157" />
+      <option name="project" value="LOCAL" />
+      <updated>1785398845410</updated>
+    </task>
+    <task id="LOCAL-00158" summary="萌战系统完整版 - 生产测试">
+      <option name="closed" value="true" />
+      <created>1785399154805</created>
+      <option name="number" value="00158" />
+      <option name="presentableId" value="LOCAL-00158" />
+      <option name="project" value="LOCAL" />
+      <updated>1785399154805</updated>
+    </task>
+    <task id="LOCAL-00159" summary="萌战系统完整版 - 生产测试">
+      <option name="closed" value="true" />
+      <created>1785399952075</created>
+      <option name="number" value="00159" />
+      <option name="presentableId" value="LOCAL-00159" />
+      <option name="project" value="LOCAL" />
+      <updated>1785399952075</updated>
+    </task>
+    <task id="LOCAL-00160" summary="萌战系统完整版 - 生产测试">
+      <option name="closed" value="true" />
+      <created>1785400275063</created>
+      <option name="number" value="00160" />
+      <option name="presentableId" value="LOCAL-00160" />
+      <option name="project" value="LOCAL" />
+      <updated>1785400275064</updated>
+    </task>
+    <task id="LOCAL-00161" summary="萌战系统完整版 - 生产测试">
+      <option name="closed" value="true" />
+      <created>1785400669477</created>
+      <option name="number" value="00161" />
+      <option name="presentableId" value="LOCAL-00161" />
+      <option name="project" value="LOCAL" />
+      <updated>1785400669477</updated>
+    </task>
+    <task id="LOCAL-00162" summary="萌战系统完整版 - 生产测试">
+      <option name="closed" value="true" />
+      <created>1785403317614</created>
+      <option name="number" value="00162" />
+      <option name="presentableId" value="LOCAL-00162" />
+      <option name="project" value="LOCAL" />
+      <updated>1785403317614</updated>
+    </task>
+    <task id="LOCAL-00163" summary="萌战系统完整版 - 生产测试">
+      <option name="closed" value="true" />
+      <created>1785403983952</created>
+      <option name="number" value="00163" />
+      <option name="presentableId" value="LOCAL-00163" />
+      <option name="project" value="LOCAL" />
+      <updated>1785403983952</updated>
+    </task>
+    <task id="LOCAL-00164" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785404187169</created>
+      <option name="number" value="00164" />
+      <option name="presentableId" value="LOCAL-00164" />
+      <option name="project" value="LOCAL" />
+      <updated>1785404187169</updated>
+    </task>
+    <task id="LOCAL-00165" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785404291532</created>
+      <option name="number" value="00165" />
+      <option name="presentableId" value="LOCAL-00165" />
+      <option name="project" value="LOCAL" />
+      <updated>1785404291532</updated>
+    </task>
+    <task id="LOCAL-00166" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785404482743</created>
+      <option name="number" value="00166" />
+      <option name="presentableId" value="LOCAL-00166" />
+      <option name="project" value="LOCAL" />
+      <updated>1785404482743</updated>
+    </task>
+    <task id="LOCAL-00167" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785412738066</created>
+      <option name="number" value="00167" />
+      <option name="presentableId" value="LOCAL-00167" />
+      <option name="project" value="LOCAL" />
+      <updated>1785412738066</updated>
+    </task>
+    <task id="LOCAL-00168" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785419740217</created>
+      <option name="number" value="00168" />
+      <option name="presentableId" value="LOCAL-00168" />
+      <option name="project" value="LOCAL" />
+      <updated>1785419740217</updated>
+    </task>
+    <task id="LOCAL-00169" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785420001118</created>
+      <option name="number" value="00169" />
+      <option name="presentableId" value="LOCAL-00169" />
+      <option name="project" value="LOCAL" />
+      <updated>1785420001119</updated>
+    </task>
+    <task id="LOCAL-00170" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785420351812</created>
+      <option name="number" value="00170" />
+      <option name="presentableId" value="LOCAL-00170" />
+      <option name="project" value="LOCAL" />
+      <updated>1785420351812</updated>
+    </task>
+    <task id="LOCAL-00171" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785421153160</created>
+      <option name="number" value="00171" />
+      <option name="presentableId" value="LOCAL-00171" />
+      <option name="project" value="LOCAL" />
+      <updated>1785421153160</updated>
+    </task>
+    <task id="LOCAL-00172" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785421977803</created>
+      <option name="number" value="00172" />
+      <option name="presentableId" value="LOCAL-00172" />
+      <option name="project" value="LOCAL" />
+      <updated>1785421977803</updated>
+    </task>
+    <task id="LOCAL-00173" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785428108221</created>
+      <option name="number" value="00173" />
+      <option name="presentableId" value="LOCAL-00173" />
+      <option name="project" value="LOCAL" />
+      <updated>1785428108221</updated>
+    </task>
+    <task id="LOCAL-00174" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785428981923</created>
+      <option name="number" value="00174" />
+      <option name="presentableId" value="LOCAL-00174" />
+      <option name="project" value="LOCAL" />
+      <updated>1785428981923</updated>
+    </task>
+    <task id="LOCAL-00175" summary="萌战系统">
+      <option name="closed" value="true" />
+      <created>1785429219879</created>
+      <option name="number" value="00175" />
+      <option name="presentableId" value="LOCAL-00175" />
+      <option name="project" value="LOCAL" />
+      <updated>1785429219879</updated>
+    </task>
+    <task id="LOCAL-00176" summary="feat: 萌战系统功能完善与bug修复">
+      <option name="closed" value="true" />
+      <created>1785493983273</created>
+      <option name="number" value="00176" />
+      <option name="presentableId" value="LOCAL-00176" />
+      <option name="project" value="LOCAL" />
+      <updated>1785493983274</updated>
+    </task>
+    <task id="LOCAL-00177" summary="feat: 萌战系统功能完善与bug修复">
+      <option name="closed" value="true" />
+      <created>1785494257223</created>
+      <option name="number" value="00177" />
+      <option name="presentableId" value="LOCAL-00177" />
+      <option name="project" value="LOCAL" />
+      <updated>1785494257223</updated>
+    </task>
+    <task id="LOCAL-00178" summary="feat: 集成Supabase Realtime实时投票更新">
+      <option name="closed" value="true" />
+      <created>1785507238392</created>
+      <option name="number" value="00178" />
+      <option name="presentableId" value="LOCAL-00178" />
+      <option name="project" value="LOCAL" />
+      <updated>1785507238393</updated>
+    </task>
+    <task id="LOCAL-00179" summary="feat: 添加完整的单元测试，覆盖认证、模型、引擎、API及页面路由，共72项全部通过">
+      <option name="closed" value="true" />
+      <created>1785513087887</created>
+      <option name="number" value="00179" />
+      <option name="presentableId" value="LOCAL-00179" />
+      <option name="project" value="LOCAL" />
+      <updated>1785513087887</updated>
+    </task>
+    <task id="LOCAL-00180" summary="feat: 添加完整的单元测试，覆盖认证、模型、引擎、API及页面路由，共72项全部通过">
+      <option name="closed" value="true" />
+      <created>1785516113678</created>
+      <option name="number" value="00180" />
+      <option name="presentableId" value="LOCAL-00180" />
+      <option name="project" value="LOCAL" />
+      <updated>1785516113678</updated>
+    </task>
+    <task id="LOCAL-00181" summary="fix: 统一处理时区比较，确保所有时间比较基于 naive 时间">
+      <option name="closed" value="true" />
+      <created>1785516901852</created>
+      <option name="number" value="00181" />
+      <option name="presentableId" value="LOCAL-00181" />
+      <option name="project" value="LOCAL" />
+      <updated>1785516901852</updated>
+    </task>
+    <task id="LOCAL-00182" summary="fix: 统一处理时区比较，确保所有时间比较基于 naive 时间">
+      <option name="closed" value="true" />
+      <created>1785517409915</created>
+      <option name="number" value="00182" />
+      <option name="presentableId" value="LOCAL-00182" />
+      <option name="project" value="LOCAL" />
+      <updated>1785517409915</updated>
+    </task>
+    <task id="LOCAL-00183" summary="fix: 统一处理时区比较，确保所有时间比较基于 naive 时间">
+      <option name="closed" value="true" />
+      <created>1785517446981</created>
+      <option name="number" value="00183" />
+      <option name="presentableId" value="LOCAL-00183" />
+      <option name="project" value="LOCAL" />
+      <updated>1785517446981</updated>
+    </task>
+    <task id="LOCAL-00184" summary="调整README.md">
+      <option name="closed" value="true" />
+      <created>1785517472328</created>
+      <option name="number" value="00184" />
+      <option name="presentableId" value="LOCAL-00184" />
+      <option name="project" value="LOCAL" />
+      <updated>1785517472328</updated>
+    </task>
+    <task id="LOCAL-00185" summary="调整README.md">
+      <option name="closed" value="true" />
+      <created>1785517557202</created>
+      <option name="number" value="00185" />
+      <option name="presentableId" value="LOCAL-00185" />
+      <option name="project" value="LOCAL" />
+      <updated>1785517557202</updated>
+    </task>
+    <task id="LOCAL-00186" summary="调整README.md">
+      <option name="closed" value="true" />
+      <created>1785517573442</created>
+      <option name="number" value="00186" />
+      <option name="presentableId" value="LOCAL-00186" />
+      <option name="project" value="LOCAL" />
+      <updated>1785517573442</updated>
+    </task>
+    <task id="LOCAL-00187" summary="调整README.md">
+      <option name="closed" value="true" />
+      <created>1785518249498</created>
+      <option name="number" value="00187" />
+      <option name="presentableId" value="LOCAL-00187" />
+      <option name="project" value="LOCAL" />
+      <updated>1785518249498</updated>
+    </task>
+    <task id="LOCAL-00188" summary="fix: 修复小组赛锁串漏洞、管理后门上传漏洞、18点时间逻辑">
+      <option name="closed" value="true" />
+      <created>1785522526364</created>
+      <option name="number" value="00188" />
+      <option name="presentableId" value="LOCAL-00188" />
+      <option name="project" value="LOCAL" />
+      <updated>1785522526364</updated>
+    </task>
+    <task id="LOCAL-00189" summary="fix: 修复小组赛锁串漏洞、管理后门上传漏洞、18点时间逻辑">
+      <option name="closed" value="true" />
+      <created>1785522705643</created>
+      <option name="number" value="00189" />
+      <option name="presentableId" value="LOCAL-00189" />
+      <option name="project" value="LOCAL" />
+      <updated>1785522705643</updated>
+    </task>
+    <task id="LOCAL-00190" summary="fix: 修复小组赛锁串漏洞、管理后门上传漏洞、18点时间逻辑">
+      <option name="closed" value="true" />
+      <created>1785522846343</created>
+      <option name="number" value="00190" />
+      <option name="presentableId" value="LOCAL-00190" />
+      <option name="project" value="LOCAL" />
+      <updated>1785522846343</updated>
+    </task>
+    <task id="LOCAL-00191" summary="fix: 修复小组赛锁串漏洞、管理后门上传漏洞、18点时间逻辑">
+      <option name="closed" value="true" />
+      <created>1785523184074</created>
+      <option name="number" value="00191" />
+      <option name="presentableId" value="LOCAL-00191" />
+      <option name="project" value="LOCAL" />
+      <updated>1785523184074</updated>
+    </task>
+    <task id="LOCAL-00192" summary="fix: ......">
+      <option name="closed" value="true" />
+      <created>1785523499029</created>
+      <option name="number" value="00192" />
+      <option name="presentableId" value="LOCAL-00192" />
+      <option name="project" value="LOCAL" />
+      <updated>1785523499029</updated>
+    </task>
+    <task id="LOCAL-00193" summary="fix: ......">
+      <option name="closed" value="true" />
+      <created>1785523714989</created>
+      <option name="number" value="00193" />
+      <option name="presentableId" value="LOCAL-00193" />
+      <option name="project" value="LOCAL" />
+      <updated>1785523714989</updated>
+    </task>
+    <task id="LOCAL-00194" summary="feat: 完成萌战系统全流程（海选/小组赛/淘汰赛/排名），77个测试用例全通过，无失败，无警告，修复并发竞态、时区、权限、JSON更新等多项安全与稳定性问题">
+      <option name="closed" value="true" />
+      <created>1785529906689</created>
+      <option name="number" value="00194" />
+      <option name="presentableId" value="LOCAL-00194" />
+      <option name="project" value="LOCAL" />
+      <updated>1785529906689</updated>
+    </task>
+    <option name="localTasksCounter" value="195" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="style: 后台表格现代化" />
+    <MESSAGE value="新增413错误页面以备用" />
+    <MESSAGE value="简化注释，调整格式" />
+    <MESSAGE value="删除无用文件" />
+    <MESSAGE value="README.md太丑了，所以改了" />
+    <MESSAGE value="修复URL使用中文导致报错的问题" />
+    <MESSAGE value="上传图片功能面向全体社员，创建新手引导" />
+    <MESSAGE value="优化留言板界面" />
+    <MESSAGE value="admin新增用户管理导出Excel文件" />
+    <MESSAGE value="&quot;退出&quot;和&quot;注销&quot;功能从导航栏转移至个人主页" />
+    <MESSAGE value="。" />
+    <MESSAGE value="收录至各浏览器" />
+    <MESSAGE value="fix： 恢复新手引导代码，保留CSS版本号" />
+    <MESSAGE value="优化登录功能" />
+    <MESSAGE value="管理界面新增删除留言功能" />
+    <MESSAGE value="萌战系统完整版 - 生产测试" />
+    <MESSAGE value="萌战系统" />
+    <MESSAGE value="feat: 萌战系统功能完善与bug修复" />
+    <MESSAGE value="feat: 集成Supabase Realtime实时投票更新" />
+    <MESSAGE value="feat: 添加完整的单元测试，覆盖认证、模型、引擎、API及页面路由，共72项全部通过" />
+    <MESSAGE value="fix: 统一处理时区比较，确保所有时间比较基于 naive 时间" />
+    <MESSAGE value="调整README.md" />
+    <MESSAGE value="fix: 修复小组赛锁串漏洞、管理后门上传漏洞、18点时间逻辑" />
+    <MESSAGE value="fix: ......" />
+    <MESSAGE value="feat: 完成萌战系统全流程（海选/小组赛/淘汰赛/排名），77个测试用例全通过，无失败，无警告，修复并发竞态、时区、权限、JSON更新等多项安全与稳定性问题" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: 完成萌战系统全流程（海选/小组赛/淘汰赛/排名），77个测试用例全通过，无失败，无警告，修复并发竞态、时区、权限、JSON更新等多项安全与稳定性问题" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/$anime_club.coverage" NAME="anime-club 覆盖结果" MODIFIED="1778428028033" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/$test.coverage" NAME="test 覆盖结果" MODIFIED="1778410448352" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778334755384" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+  </component>
+</project>

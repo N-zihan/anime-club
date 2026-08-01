@@ -37,6 +37,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     qq = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
     registered_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     avatar = db.Column(db.LargeBinary, nullable=True)

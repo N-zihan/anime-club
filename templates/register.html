@@ -1,37 +1,64 @@
 {% extends "base.html" %}
-{% block title %}社员注册{% endblock %}
+{% block title %}注册{% endblock %}
 {% block content %}
-<div class="card-form">
-    <h2>社团成员注册</h2>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-    <form method="POST">
-        <div class="form-group">
-            <label>用户名：</label>
-            <input name="username" pattern="[A-Za-z0-9_]{2,20}"
-                   required
-                   title="只允许字母、数字、下划线，长度2-20个字符"
-                   type="text">
+<h2>社团成员注册</h2>
+<form method="POST">
+    <div style="max-width:400px;">
+        <input type="text" name="username" placeholder="用户名（2-20位，中文/字母/数字/下划线）" required
+               style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:10px;">
+        <input type="text" name="qq" placeholder="QQ号（5-12位数字）" required
+               style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:10px;">
+
+        <!-- 邮箱 + 验证码 -->
+        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+            <input type="email" id="registerEmail" name="email" placeholder="QQ邮箱（用于修改密码）" required
+                   style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px;">
+            <button type="button" id="sendCodeBtn" onclick="sendCode()"
+                    style="padding:10px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer; white-space:nowrap;">
+                获取验证码
+            </button>
         </div>
-        <div class="form-group">
-            <label>QQ号：</label>
-            <input name="qq" pattern="\d{5,12}" required title="请填写5-12位数字QQ号" type="text">
-        </div>
-        <div class="form-group">
-            <label>社团QQ群号：</label>
-            <input name="group" placeholder="（非社团成员禁止入内）" required type="text">
-        </div>
-        <div class="form-group">
-            <label>密码：</label>
-            <input name="password" required type="password">
-        </div>
-        <button class="btn-primary" type="submit">注册</button>
-    </form>
-    <p>已有账号？<a href="{{ url_for('auth.login') }}">立即登录</a></p>
-</div>
+        <input type="text" name="code" placeholder="6位验证码" required
+               style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:10px;">
+        <small style="color:#94a3b8; display:block; margin-bottom:10px;">验证码将发送至你的QQ邮箱</small>
+
+        <input type="text" name="group" placeholder="社团验证码（QQ群号）" required
+               style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:10px;">
+        <input type="password" name="password" placeholder="密码（至少6位）" required
+               style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:10px;">
+        <button type="submit" class="btn-primary" style="width:100%;">注册</button>
+    </div>
+</form>
+<p style="margin-top:10px;">已有账号？<a href="{{ url_for('auth.login') }}">登录</a></p>
+
+<script>
+let countdown = 0;
+function sendCode() {
+    const email = document.getElementById('registerEmail').value;
+    if (!email) { alert('请先填写邮箱'); return; }
+    if (countdown > 0) return;
+    fetch('/send_register_code', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'email=' + encodeURIComponent(email)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) { alert(data.error); return; }
+        alert('验证码已发送，请查收');
+        countdown = 60;
+        const btn = document.getElementById('sendCodeBtn');
+        btn.disabled = true;
+        const timer = setInterval(() => {
+            countdown--;
+            btn.textContent = countdown + 's';
+            if (countdown <= 0) {
+                clearInterval(timer);
+                btn.disabled = false;
+                btn.textContent = '重新发送';
+            }
+        }, 1000);
+    });
+}
+</script>
 {% endblock %}

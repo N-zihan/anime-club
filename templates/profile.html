@@ -1,70 +1,81 @@
 {% extends "base.html" %}
 {% block title %}个人设置{% endblock %}
 {% block content %}
-<div class="card-form">
-    <h2>个人设置</h2>
+
+<h2>个人设置</h2>
+
+<div style="display:grid; gap:20px; max-width:600px;">
 
     <!-- 头像 -->
-    <div style="text-align:center; margin-bottom:20px;">
-        <img alt="头像" src="{{ url_for('user.get_avatar', user_id=user.id) }}"
-             style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid #ddd;">
+    <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
+        <h4>头像</h4>
+        <img src="{{ url_for('user.get_avatar', user_id=user.id) }}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0;">
+        <form method="POST" enctype="multipart/form-data" style="margin-top:10px;">
+            <input type="hidden" name="action" value="change_avatar">
+            <input type="file" name="avatar" accept="image/*" required>
+            <button type="submit" style="padding:6px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">上传</button>
+        </form>
+        <small style="color:#94a3b8;">支持 png, jpg, jpeg, gif，不超过2MB</small>
     </div>
-    <form enctype="multipart/form-data" method="POST">
-        <input name="action" type="hidden" value="change_avatar">
-        <div class="form-group">
-            <label>更换头像（支持 jpg/png/gif）：</label>
-            <input accept="image/*" name="avatar" required type="file">
-        </div>
-        <button class="btn-primary" type="submit">上传头像</button>
-    </form>
 
-    <hr style="margin: 40px 0;">
-
-    <!-- 修改用户名 -->
-    <h3>修改用户名</h3>
-    <form method="POST" onsubmit="return confirm('确定要修改用户名吗？修改后请重新登录。');">
-        <input name="action" type="hidden" value="change_username">
-        <div class="form-group">
-            <label>新用户名：</label>
-            <input maxlength="20" minlength="2" name="new_username" required type="text">
-        </div>
-        <button class="btn-primary" type="submit">修改用户名</button>
-    </form>
-
-    <hr style="margin: 40px 0;">
-
-    <!-- 修改密码 -->
-    <h3>修改密码</h3>
-    <form method="POST" onsubmit="return confirm('确认修改密码？');">
-        <input name="action" type="hidden" value="change_password">
-        <div class="form-group">
-            <label>原密码：</label>
-            <input name="old_password" required type="password">
-        </div>
-        <div class="form-group">
-            <label>新密码（至少6位）：</label>
-            <input minlength="6" name="new_password" required type="password">
-        </div>
-        <div class="form-group">
-            <label>确认新密码：</label>
-            <input name="confirm_password" required type="password">
-        </div>
-        <button class="btn-primary" type="submit">修改密码</button>
-    </form>
-    <!-- 退出和注销 -->
-    <hr style="margin: 40px 0;">
-
-    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-        <a class="btn-primary" href="{{ url_for('auth.logout') }}" style="background: #4a6a7a;">退出登录</a>
-        <form action="{{ url_for('auth.delete_account') }}" method="POST"
-              onsubmit="return confirm('⚠️ 确定要永久注销账号吗？此操作不可撤销！');">
-            <button style="background: #e74c3c; color: white; border: none; padding: 8px 20px; border-radius: 40px; cursor: pointer; font-size: 1rem; font-weight: 600;"
-                    type="submit">
-                注销账号
-            </button>
+    <!-- 用户名 -->
+    <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
+        <h4>用户名</h4>
+        <p>当前：<strong>{{ user.username }}</strong></p>
+        <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <input type="hidden" name="action" value="change_username">
+            <input type="text" name="new_username" placeholder="新用户名" required style="padding:8px; border:1px solid #ccc; border-radius:6px;">
+            <button type="submit" style="padding:6px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">修改</button>
         </form>
     </div>
 
-    <p style="margin-top:20px;"><a href="{{ url_for('public.members') }}">返回社员列表</a></p>
+    <!-- 修改密码 -->
+    <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
+        <h4>修改密码</h4>
+        <form method="POST">
+            <input type="hidden" name="action" value="change_password">
+            <div style="display:flex; flex-direction:column; gap:8px; max-width:300px;">
+                <input type="password" name="old_password" placeholder="原密码" required style="padding:8px; border:1px solid #ccc; border-radius:6px;">
+                <input type="password" name="new_password" placeholder="新密码（至少6位）" required style="padding:8px; border:1px solid #ccc; border-radius:6px;">
+                <input type="password" name="confirm_password" placeholder="确认新密码" required style="padding:8px; border:1px solid #ccc; border-radius:6px;">
+                <button type="submit" style="padding:6px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer; align-self:flex-start;">修改密码</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 绑定邮箱 -->
+    <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
+        <h4>绑定邮箱</h4>
+        <p style="color:#64748b; font-size:0.9rem;">用于修改密码，请填写常用QQ邮箱</p>
+
+        {% if user.email %}
+            <p>当前已绑定：<strong>{{ user.email }}</strong></p>
+            <hr style="margin:12px 0;">
+            <p style="font-size:0.9rem; color:#64748b;">更换邮箱：</p>
+            <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <input type="hidden" name="action" value="send_email_code">
+                <input type="email" name="email" placeholder="新邮箱" required style="padding:8px; border:1px solid #ccc; border-radius:6px;">
+                <button type="submit" style="padding:6px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">发送验证码</button>
+            </form>
+            <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px;">
+                <input type="hidden" name="action" value="verify_email_code">
+                <input type="text" name="code" placeholder="6位验证码" required style="padding:8px; border:1px solid #ccc; border-radius:6px; width:150px;">
+                <button type="submit" style="padding:6px 16px; background:#f39c12; color:white; border:none; border-radius:6px; cursor:pointer;">确认更换</button>
+            </form>
+        {% else %}
+            <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <input type="hidden" name="action" value="send_email_code">
+                <input type="email" name="email" placeholder="请输入你的QQ邮箱" required style="padding:8px; border:1px solid #ccc; border-radius:6px; min-width:200px;">
+                <button type="submit" style="padding:6px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">发送验证码</button>
+            </form>
+            <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px;">
+                <input type="hidden" name="action" value="verify_email_code">
+                <input type="text" name="code" placeholder="6位验证码" required style="padding:8px; border:1px solid #ccc; border-radius:6px; width:150px;">
+                <button type="submit" style="padding:6px 16px; background:#f39c12; color:white; border:none; border-radius:6px; cursor:pointer;">确认绑定</button>
+            </form>
+        {% endif %}
+    </div>
+
 </div>
+
 {% endblock %}

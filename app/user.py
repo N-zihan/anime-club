@@ -24,16 +24,20 @@
 """
 
 import base64
-from datetime import timedelta
+import secrets
+from datetime import datetime, timedelta
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, Response
 from sqlalchemy import func
 
 from .models import db, User, Message, AnimeResource
-from .utils import allowed_file, get_or_404
-from .utils import compress_image
+from .utils import allowed_file, compress_image, get_or_404
 
 user_bp = Blueprint('user', __name__)
+
+
+# ---------- 发邮件函数（复用 auth 的） ----------
+from .auth import send_verification_email, MAIL_USERNAME, MAIL_PASSWORD
 
 
 @user_bp.route('/profile', methods=['GET', 'POST'])
@@ -47,6 +51,7 @@ def profile():
     if request.method == 'POST':
         action = request.form.get('action')
 
+        # ---------- 更换头像 ----------
         if action == 'change_avatar':
             if 'avatar' in request.files:
                 file = request.files['avatar']
@@ -55,17 +60,17 @@ def profile():
                         flash('头像文件不能超过2MB', 'danger')
                     else:
                         raw_data = file.read()
-                        # 头像压缩到 200x200，品质80
                         compressed = compress_image(raw_data, max_size=(200, 200), quality=80)
                         user.avatar = compressed
-                        user.avatar_mime = 'image/jpeg'  # 统一转为JPEG
+                        user.avatar_mime = 'image/jpeg'
                         db.session.commit()
                         flash('头像更新成功', 'success')
                 else:
                     flash('不支持的文件类型（支持 png, jpg, jpeg, gif）', 'danger')
             return redirect(url_for('user.profile'))
 
-        elif action == 'change_username':
+        # ---------- 修改用户名 ----------
+        if action == 'change_username':
             new_username = request.form.get('new_username', '').strip()
             if not new_username:
                 flash('用户名不能为空', 'danger')
@@ -83,7 +88,8 @@ def profile():
                     flash(f'用户名已从 "{old_username}" 更新为 "{new_username}"', 'success')
             return redirect(url_for('user.profile'))
 
-        elif action == 'change_password':
+        # ---------- 修改密码 ----------
+        if action == 'change_password':
             old = request.form.get('old_password')
             new = request.form.get('new_password')
             confirm = request.form.get('confirm_password')
@@ -99,9 +105,61 @@ def profile():
                 flash('密码修改成功', 'success')
             return redirect(url_for('user.profile'))
 
+        # ---------- 绑定邮箱：发送验证码 ----------
+        if action == 'send_email_code':
+            email = request.form.get('email')
+            if not email:
+                flash('邮箱不能为空', 'danger')
+                return redirect(url_for('user.profile'))
+            if User.query.filter(User.email == email, User.id != user.id).first():
+                flash('该邮箱已被其他用户绑定', 'danger')
+                return redirect(url_for('user.profile'))
+
+            code = ''.join(secrets.choice('0123456789') for _ in range(6))
+            session['profile_email_code'] = code
+            session['profile_pending_email'] = email
+            session['profile_email_expires'] = (datetime.now() + timedelta(minutes=10)).isoformat()
+
+            if send_verification_email(email, code):
+                flash('验证码已发送至您的邮箱，10分钟内有效', 'success')
+            else:
+                flash('邮件发送失败，请检查邮箱地址', 'danger')
+            return redirect(url_for('user.profile'))
+
+        # ---------- 绑定邮箱：验证验证码 ----------
+        if action == 'verify_email_code':
+            code = request.form.get('code')
+            stored_code = session.get('profile_email_code')
+            pending_email = session.get('profile_pending_email')
+
+            if not pending_email:
+                flash('请先发送验证码', 'danger')
+                return redirect(url_for('user.profile'))
+            if not stored_code or stored_code != code:
+                flash('验证码错误', 'danger')
+                return redirect(url_for('user.profile'))
+
+            expires = session.get('profile_email_expires')
+            if expires and datetime.fromisoformat(expires) < datetime.now():
+                flash('验证码已过期，请重新获取', 'danger')
+                return redirect(url_for('user.profile'))
+
+            user.email = pending_email
+            db.session.commit()
+            session.pop('profile_email_code', None)
+            session.pop('profile_pending_email', None)
+            session.pop('profile_email_expires', None)
+
+            # 如果有绑定横幅提示，关掉
+            session.pop('show_bind_prompt', None)
+
+            flash('邮箱绑定成功', 'success')
+            return redirect(url_for('user.profile'))
+
     return render_template('profile.html', user=user)
 
 
+# ---------- 个人主页 ----------
 @user_bp.route('/user')
 def user_profile():
     username = request.args.get('name')
@@ -113,12 +171,12 @@ def user_profile():
     messages = Message.query.filter_by(user_id=user.id).order_by(Message.timestamp.desc()).limit(10).all()
     for msg in messages:
         msg.timestamp = msg.timestamp + timedelta(hours=8)
-    # 通过 user_id 查询推荐记录
     anime = AnimeResource.query.filter_by(user_id=user.id, status='approved').order_by(
         AnimeResource.upload_time.desc()).all()
     return render_template('user_profile.html', user=user, messages=messages, anime=anime)
 
 
+# ---------- 头像 ----------
 @user_bp.route('/avatar/<int:user_id>')
 def get_avatar(user_id):
     user = get_or_404(User, user_id)
