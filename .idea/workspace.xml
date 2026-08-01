@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="fix: 修改sitemap">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/contest_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/contest_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/contest_qualifying_vote.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/contest_qualifying_vote.html" afterDir="false" />
+    <list default="true" id="18b50fe1-35ef-4982-9cbe-614f77bd6d99" name="更改" comment="feat: 投票实时更新（所有投票页面加 data-candidate-id + Supabase 监听）">
+      <change beforePath="$PROJECT_DIR$/templates/anime_resources.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/anime_resources.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,23 +88,23 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0" />
-      <entry key="S2" value="1.0" />
-      <entry key="S5" value="1.0" />
-      <entry key="S10" value="1.0" />
-      <entry key="S30" value="1.0" />
-      <entry key="S60" value="1.0" />
-      <entry key="M2" value="1.0000000030440064" />
-      <entry key="M5" value="1.0031982731694877" />
-      <entry key="M10" value="1.398792223282527" />
-      <entry key="M15" value="3.1563726665153204" />
-      <entry key="M30" value="14.36272837750059" />
-      <entry key="H1" value="40.78621448534004" />
-      <entry key="H2" value="81.93168037233976" />
-      <entry key="H4" value="131.48974182130155" />
-      <entry key="D1" value="307.1827486929293" />
-      <entry key="W1" value="483.0224409114923" />
+      <entry key="MS100" value="1.471017939393824" />
+      <entry key="MS500" value="2.8226449076049676" />
+      <entry key="S2" value="3.6243813788633004" />
+      <entry key="S5" value="3.8414949088237207" />
+      <entry key="S10" value="3.919291256716533" />
+      <entry key="S30" value="3.9727656803938696" />
+      <entry key="S60" value="3.986340917776211" />
+      <entry key="M2" value="3.9931986619360327" />
+      <entry key="M5" value="4.014502838841997" />
+      <entry key="M10" value="4.1820077767731005" />
+      <entry key="M15" value="4.813634984779314" />
+      <entry key="M30" value="11.295818560725392" />
+      <entry key="H1" value="33.069804931335725" />
+      <entry key="H2" value="73.16990994822102" />
+      <entry key="H4" value="124.81606872122622" />
+      <entry key="D1" value="306.87887299130017" />
+      <entry key="W1" value="486.04979560391007" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -115,36 +113,36 @@
       <entry key="S5" value="0.0" />
       <entry key="S10" value="0.0" />
       <entry key="S30" value="0.0" />
-      <entry key="S60" value="9.453267529996113E-236" />
-      <entry key="M2" value="4.16141874989336E-118" />
-      <entry key="M5" value="1.672412965956789E-47" />
-      <entry key="M10" value="5.772196261858632E-24" />
-      <entry key="M15" value="4.052430103525355E-16" />
-      <entry key="M30" value="2.8462983846959794E-8" />
-      <entry key="H1" value="2.3975775103178475E-4" />
-      <entry key="H2" value="0.025751201132665148" />
-      <entry key="H4" value="0.4513416562280215" />
-      <entry key="D1" value="12.024593645589125" />
-      <entry key="W1" value="26.739694671197128" />
+      <entry key="S60" value="1.4174565479147629E-244" />
+      <entry key="M2" value="1.6114072842247518E-122" />
+      <entry key="M5" value="2.874280093331862E-49" />
+      <entry key="M10" value="7.567176605414009E-25" />
+      <entry key="M15" value="1.0457889609792585E-16" />
+      <entry key="M30" value="1.445921403606947E-8" />
+      <entry key="H1" value="1.7088533191726894E-4" />
+      <entry key="H2" value="0.021740201048276075" />
+      <entry key="H4" value="0.41470421620975717" />
+      <entry key="D1" value="11.856119855238198" />
+      <entry key="W1" value="26.68584996337527" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9659363289248456" />
-      <entry key="MS500" value="0.9930924954370359" />
-      <entry key="S2" value="0.9982686325973925" />
-      <entry key="S5" value="0.9993070929904525" />
-      <entry key="S10" value="0.9996534864594093" />
-      <entry key="S30" value="0.9998844821426083" />
-      <entry key="S60" value="0.9999422394031608" />
-      <entry key="M2" value="0.9999711223283557" />
-      <entry key="M5" value="1.0031866597166084" />
-      <entry key="M10" value="1.3987826020502627" />
-      <entry key="M15" value="3.156351212985223" />
-      <entry key="M30" value="14.362616129886863" />
-      <entry key="H1" value="40.78619599134788" />
-      <entry key="H2" value="81.95712751559303" />
-      <entry key="H4" value="131.94078382297957" />
-      <entry key="D1" value="319.2068080664756" />
-      <entry key="W1" value="509.7619519811745" />
+      <entry key="MS100" value="1.4269601733822028" />
+      <entry key="MS500" value="2.8036568673688893" />
+      <entry key="S2" value="3.6181439601720804" />
+      <entry key="S5" value="3.8388393603400157" />
+      <entry key="S10" value="3.9179347503187163" />
+      <entry key="S30" value="3.9723069320816395" />
+      <entry key="S60" value="3.9861107086998198" />
+      <entry key="M2" value="3.9930833466011806" />
+      <entry key="M5" value="4.014456463116937" />
+      <entry key="M10" value="4.1819834189750456" />
+      <entry key="M15" value="4.813614048854686" />
+      <entry key="M30" value="11.29575383816639" />
+      <entry key="H1" value="33.06978789931383" />
+      <entry key="H2" value="73.19139152601218" />
+      <entry key="H4" value="125.23049664450895" />
+      <entry key="D1" value="318.7344658996068" />
+      <entry key="W1" value="512.7354623125603" />
     </decayedShown>
   </component>
   <component name="ProblemsViewState">
@@ -340,14 +338,6 @@
       <workItem from="1778357814198" duration="2561000" />
       <workItem from="1778388493202" duration="24277000" />
       <workItem from="1778472761851" duration="43000" />
-    </task>
-    <task id="LOCAL-00156" summary="萌战系统完整版 - 生产测试">
-      <option name="closed" value="true" />
-      <created>1785398606911</created>
-      <option name="number" value="00156" />
-      <option name="presentableId" value="LOCAL-00156" />
-      <option name="project" value="LOCAL" />
-      <updated>1785398606912</updated>
     </task>
     <task id="LOCAL-00157" summary="萌战系统完整版 - 生产测试">
       <option name="closed" value="true" />
@@ -733,7 +723,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785575786694</updated>
     </task>
-    <option name="localTasksCounter" value="205" />
+    <task id="LOCAL-00205" summary="feat: 投票实时更新（所有投票页面加 data-candidate-id + Supabase 监听）">
+      <option name="closed" value="true" />
+      <created>1785590058520</created>
+      <option name="number" value="00205" />
+      <option name="presentableId" value="LOCAL-00205" />
+      <option name="project" value="LOCAL" />
+      <updated>1785590058520</updated>
+    </task>
+    <option name="localTasksCounter" value="206" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -751,7 +749,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="简化注释，调整格式" />
     <MESSAGE value="删除无用文件" />
     <MESSAGE value="README.md太丑了，所以改了" />
     <MESSAGE value="修复URL使用中文导致报错的问题" />
@@ -776,7 +773,8 @@
     <MESSAGE value="feat: 完成萌战系统全流程（海选/小组赛/淘汰赛/排名），77个测试用例全通过，无失败，无警告，修复并发竞态、时区、权限、JSON更新等多项安全与稳定性问题" />
     <MESSAGE value="fix: 添加 dismiss_bind_prompt 路由；登录页显示 flash 消息" />
     <MESSAGE value="fix: 修改sitemap" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: 修改sitemap" />
+    <MESSAGE value="feat: 投票实时更新（所有投票页面加 data-candidate-id + Supabase 监听）" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: 投票实时更新（所有投票页面加 data-candidate-id + Supabase 监听）" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/anime_club$.coverage" NAME="动漫社网站 覆盖结果" MODIFIED="1778360200673" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

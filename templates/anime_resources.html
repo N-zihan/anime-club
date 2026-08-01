@@ -13,15 +13,15 @@
     {% for res in resources %}
     <div class="anime-card">
         <h3>{{ res.title }}</h3>
-        <p>{{ res.description or '暂无描述' }}</p>】
+        <p>{{ res.description or '暂无描述' }}</p>
 
         <p>链接：<a href="{{ res.link }}" target="_blank">{{ res.link }}</a></p>
         {% if res.extract_code %}
         <p>提取码：<strong>{{ res.extract_code }}</strong></p>
+        {% endif %}
 
         <p><small>提交人：{{ res.user.username if res.user else '未知' }} | 审核通过时间：{{
             res.upload_time.strftime('%Y-%m-%d') }}</small></p>
-        </p>
     </div>
     {% else %}
     <p>暂无资源，敬请期待。</p>
