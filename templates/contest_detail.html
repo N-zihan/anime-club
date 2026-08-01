@@ -156,7 +156,7 @@
 {% if candidates %}
 <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px; margin-top:10px;">
     {% for c in candidates %}
-    <div style="background:#f8fafc; border-radius:8px; padding:12px; text-align:center;">
+    <div style="background:#f8fafc; border-radius:8px; padding:12px; text-align:center;" data-candidate-id="{{ c.id }}">
         {% if c.image_url %}<img alt="{{ c.name }}" src="{{ c.image_url }}"
                                  style="width:80px; height:80px; object-fit:cover; border-radius:50%;">{% endif %}
         <div><strong>{{ c.name }}</strong></div>
@@ -376,6 +376,7 @@
             fetch(`/api/votes/${candidateId}`)
                 .then(res => res.json())
                 .then(data => {
+                    // 更新所有带 data-candidate-id 的元素内的 .vote-count
                     document.querySelectorAll(`[data-candidate-id="${candidateId}"]`).forEach(el => {
                         const countSpan = el.querySelector('.vote-count');
                         if (countSpan) {

@@ -23,7 +23,7 @@
         {% endif %}
     </div>
     <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:16px; align-items:center;">
-        <div style="text-align:center;">
+        <div style="text-align:center;" data-candidate-id="{{ match.candidate1 }}">
             {% set c1 = candidates.get(match.candidate1) %}
             {% if c1 and c1.image_url %}
             <img alt="{{ c1.name }}" src="{{ c1.image_url }}"
@@ -33,7 +33,7 @@
             <div style="font-size:0.8rem; color:#64748b;">票数：{{ match.votes1 or 0 }}</div>
         </div>
         <div style="font-size:1.2rem; font-weight:600; color:#94a3b8;">VS</div>
-        <div style="text-align:center;">
+        <div style="text-align:center;" data-candidate-id="{{ match.candidate2 }}">
             {% set c2 = candidates.get(match.candidate2) %}
             {% if c2 and c2.image_url %}
             <img alt="{{ c2.name }}" src="{{ c2.image_url }}"
@@ -188,5 +188,38 @@
 
 <p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a>
 </p>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    (function () {
+        const contestId = {{ contest.id }};
+        {% if session.user_id %}
+        const supabase = window.supabase.createClient(
+            '{{ supabase_url }}',
+            '{{ supabase_anon_key }}'
+        );
+        const channel = supabase
+            .channel('votes-channel')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'contest_votes',
+                filter: `contest_id=eq.${contestId}`
+            }, (payload) => {
+                fetch(`/api/votes/${payload.new.candidate_id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.querySelectorAll(`[data-candidate-id="${payload.new.candidate_id}"]`).forEach(el => {
+                            const countSpan = el.querySelector('.vote-count');
+                            if (countSpan) {
+                                countSpan.textContent = data.total_votes;
+                            }
+                        });
+                    });
+            })
+            .subscribe();
+        {% endif %}
+    })();
+</script>
 
 {% endblock %}

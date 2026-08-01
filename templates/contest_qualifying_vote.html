@@ -15,8 +15,8 @@
     <input name="gender" type="hidden" value="{{ gender }}">
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:16px; margin:20px 0;">
         {% for c in candidates %}
-        <div class="candidate-card" data-cid="{{ c.id }}"
-             style="background:#f8fafc; border-radius:12px; padding:16px; text-align:center; border:1px solid #e2e8f0;">
+        <div class="candidate-card" data-candidate-id="{{ c.id }}"
+            style="background:#f8fafc; border-radius:12px; padding:16px; text-align:center; border:1px solid #e2e8f0;">
             {% if c.image_url %}
             <img alt="{{ c.name }}" src="{{ c.image_url }}"
                  style="width:80px; height:80px; object-fit:cover; border-radius:50%; margin-bottom:8px;">
@@ -226,5 +226,38 @@
 
 <p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a>
 </p>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    (function () {
+        const contestId = {{ contest.id }};
+        {% if session.user_id %}
+        const supabase = window.supabase.createClient(
+            '{{ supabase_url }}',
+            '{{ supabase_anon_key }}'
+        );
+        const channel = supabase
+            .channel('votes-channel')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'contest_votes',
+                filter: `contest_id=eq.${contestId}`
+            }, (payload) => {
+                fetch(`/api/votes/${payload.new.candidate_id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.querySelectorAll(`[data-candidate-id="${payload.new.candidate_id}"]`).forEach(el => {
+                            const countSpan = el.querySelector('.vote-count');
+                            if (countSpan) {
+                                countSpan.textContent = data.total_votes;
+                            }
+                        });
+                    });
+            })
+            .subscribe();
+        {% endif %}
+    })();
+</script>
 
 {% endblock %}
