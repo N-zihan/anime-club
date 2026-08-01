@@ -1,27 +1,38 @@
 {% extends "base.html" %}
 {% block title %}登录{% endblock %}
 {% block content %}
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
-<h2>社员登录</h2>
-<form method="POST">
-    <div style="max-width:300px;">
-        <input name="username" placeholder="用户名" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:10px;" type="text"
-               value="{{ username }}">
-        <input name="password" placeholder="密码" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:10px;"
-               type="password">
-        <button class="btn-primary" style="width:100%;" type="submit">登录</button>
+
+<div style="max-width:400px; margin:0 auto; padding:20px 0;">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div style="background:#fff; padding:32px 28px; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border:1px solid #e2e8f0;">
+        <h2 style="margin-top:0; margin-bottom:24px; text-align:center;">社员登录</h2>
+
+        <form method="POST">
+            <input name="username" placeholder="用户名" required
+                   style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:12px; box-sizing:border-box; font-size:16px;"
+                   type="text" value="{{ username }}">
+            <input name="password" placeholder="密码" required
+                   style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:16px; box-sizing:border-box; font-size:16px;"
+                   type="password">
+            <button class="btn-primary" style="width:100%; padding:12px; font-size:16px; border:none; border-radius:8px; cursor:pointer;" type="submit">登录</button>
+        </form>
+
+        <p style="margin-top:16px; text-align:center; font-size:14px; color:#64748b;">
+            还没有账号？<a href="{{ url_for('auth.register') }}" style="color:#1e2a3a; font-weight:600;">注册</a>
+        </p>
+        <p style="margin-top:6px; text-align:center; font-size:14px;">
+            <a href="{{ url_for('auth.forgot_password') }}" style="color:#94a3b8;">忘记密码？</a>
+        </p>
     </div>
-</form>
-<p style="margin-top:10px;">
-    还没有账号？<a href="{{ url_for('auth.register') }}">注册</a>
-</p>
-<p style="margin-top:6px;">
-    <a href="{{ url_for('auth.forgot_password') }}">忘记密码？</a>
-</p>
+
+</div>
+
 {% endblock %}
