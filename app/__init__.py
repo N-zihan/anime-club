@@ -67,7 +67,17 @@ def create_app():
     # 登录拦截器
     @app.before_request
     def require_login():
-        public_routes = ['auth.login', 'auth.register', 'static', 'public.splash']
+        public_routes = [
+            'auth.login',
+            'auth.register',
+            'static',
+            'public.splash',
+            'auth.forgot_password',
+            'auth.forgot_password_bind',
+            'auth.reset_password',
+            'auth.forgot_bind_send_code',
+            'auth.forgot_bind_verify'
+        ]
         if not session.get('user_id') and request.endpoint not in public_routes and request.endpoint != 'static':
             return redirect(url_for('auth.login'))
 
