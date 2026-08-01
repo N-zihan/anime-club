@@ -117,6 +117,7 @@ def profile():
             code = ''.join(secrets.choice('0123456789') for _ in range(6))
             session['profile_email_code'] = code
             session['profile_pending_email'] = email
+            session['temp_email'] = email  # ← 存一下，供模板保留值
             session['profile_email_expires'] = (datetime.now() + timedelta(minutes=10)).isoformat()
 
             if send_verification_email(email, code):
@@ -126,10 +127,11 @@ def profile():
             return redirect(url_for('user.profile'))
 
         # ---------- 绑定邮箱：验证验证码 ----------
+        # 绑定邮箱：验证验证码
         if action == 'verify_email_code':
             code = request.form.get('code')
             stored_code = session.get('profile_email_code')
-            pending_email = session.get('profile_pending_email')
+            pending_email = session.get('profile_pending_email')  # ← 定义这个变量
 
             if not pending_email:
                 flash('请先发送验证码', 'danger')
@@ -148,9 +150,8 @@ def profile():
             session.pop('profile_email_code', None)
             session.pop('profile_pending_email', None)
             session.pop('profile_email_expires', None)
-
-            # 如果有绑定横幅提示，关掉
             session.pop('show_bind_prompt', None)
+            session['temp_email'] = pending_email  # ← 验证成功后也存一下
 
             flash('邮箱绑定成功', 'success')
             return redirect(url_for('user.profile'))
