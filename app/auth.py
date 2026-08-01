@@ -113,10 +113,8 @@ def register():
             flash('该邮箱已被绑定', 'danger')
             return redirect(url_for('auth.register'))
 
-        # 验证邮箱验证码
         # 验证邮箱验证码（测试环境完全跳过）
         if 'pytest' not in sys.modules:
-            # 非测试环境：正常验证
             stored_code = session.get('email_code')
             stored_email = session.get('pending_email')
             if not stored_code or not stored_email or stored_email != email:
@@ -129,7 +127,6 @@ def register():
             if expires and datetime.fromisoformat(expires) < datetime.now():
                 flash('验证码已过期，请重新获取', 'danger')
                 return redirect(url_for('auth.register'))
-        # 测试环境下：跳过所有验证码检查，直接通过
 
         # 创建用户
         new_user = User(username=username, qq=qq, email=email)
@@ -187,11 +184,9 @@ def login():
             else:
                 session['user_role'] = 'member'
 
-            # 老用户未绑定邮箱 → 登录后显示横幅
             if not user.email:
                 session['show_bind_prompt'] = True
             else:
-                # 确保已经绑定的用户不会看到横幅
                 session.pop('show_bind_prompt', None)
 
             flash('登录成功', 'success')
@@ -235,11 +230,11 @@ def forgot_password():
             return redirect(url_for('auth.forgot_password'))
 
         if user.email:
-            # 已绑定 → 发重置链接
+            # 已绑定 → 发重置链接（存数据库）
             token = secrets.token_urlsafe(32)
-            session['reset_token'] = token
-            session['reset_user_id'] = user.id
-            session['reset_expires'] = (datetime.now() + timedelta(hours=1)).isoformat()
+            user.reset_token = token
+            user.reset_token_expires = datetime.now() + timedelta(hours=1)
+            db.session.commit()
 
             reset_link = url_for('auth.reset_password', token=token, _external=True)
             if send_reset_email(user.email, reset_link):
@@ -323,11 +318,12 @@ def forgot_bind_verify():
 
     flash('邮箱绑定成功！', 'success')
 
-    # 绑定后直接发重置链接
+    # 绑定后直接发重置链接（存数据库）
     token = secrets.token_urlsafe(32)
-    session['reset_token'] = token
-    session['reset_user_id'] = user.id
-    session['reset_expires'] = (datetime.now() + timedelta(hours=1)).isoformat()
+    user.reset_token = token
+    user.reset_token_expires = datetime.now() + timedelta(hours=1)
+    db.session.commit()
+
     reset_link = url_for('auth.reset_password', token=token, _external=True)
     send_reset_email(email, reset_link)
     flash(f'重置链接已发送至 {email}，请查收', 'success')
@@ -347,20 +343,18 @@ def forgot_password_bind():
 # ---------- 忘记密码：第三步：重置密码 ----------
 @auth_bp.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
-    stored_token = session.get('reset_token')
-    if not stored_token or stored_token != token:
+    # 从数据库查 token
+    user = User.query.filter_by(reset_token=token).first()
+    if not user:
         flash('链接无效或已过期', 'danger')
         return redirect(url_for('auth.forgot_password'))
 
-    expires = session.get('reset_expires')
-    if expires and datetime.fromisoformat(expires) < datetime.now():
+    if user.reset_token_expires is None or user.reset_token_expires < datetime.now():
         flash('链接已过期，请重新申请', 'danger')
-        return redirect(url_for('auth.forgot_password'))
-
-    user_id = session.get('reset_user_id')
-    user = db.session.get(User, user_id)
-    if not user:
-        flash('用户不存在', 'danger')
+        # 清除过期 token
+        user.reset_token = None
+        user.reset_token_expires = None
+        db.session.commit()
         return redirect(url_for('auth.forgot_password'))
 
     if request.method == 'POST':
@@ -374,11 +368,9 @@ def reset_password(token):
             return redirect(url_for('auth.reset_password', token=token))
 
         user.set_password(password)
+        user.reset_token = None
+        user.reset_token_expires = None
         db.session.commit()
-
-        session.pop('reset_token', None)
-        session.pop('reset_user_id', None)
-        session.pop('reset_expires', None)
 
         flash('密码修改成功，请重新登录', 'success')
         return redirect(url_for('auth.login'))
