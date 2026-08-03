@@ -10,5 +10,5 @@ htmlcov/
 # 环境变量
 .env
 *.env.
-idea/
+.idea/
 .idea
