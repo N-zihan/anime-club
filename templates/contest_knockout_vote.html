@@ -26,8 +26,7 @@
         <div style="text-align:center;" data-candidate-id="{{ match.candidate1 }}">
             {% set c1 = candidates.get(match.candidate1) %}
             {% if c1 and c1.image_url %}
-            <img alt="{{ c1.name }}" src="{{ c1.image_url }}"
-                 style="width:60px; height:60px; object-fit:cover; border-radius:50%;">
+            <img alt="{{ c1.name }}" src="{{ c1.image_url }}" style="width:60px; height:60px; object-fit:cover; border-radius:50%;">
             {% endif %}
             <div><strong>{{ c1.name if c1 else '已移除' }}</strong></div>
             <div style="font-size:0.8rem; color:#64748b;">票数：{{ match.votes1 or 0 }}</div>
@@ -36,8 +35,7 @@
         <div style="text-align:center;" data-candidate-id="{{ match.candidate2 }}">
             {% set c2 = candidates.get(match.candidate2) %}
             {% if c2 and c2.image_url %}
-            <img alt="{{ c2.name }}" src="{{ c2.image_url }}"
-                 style="width:60px; height:60px; object-fit:cover; border-radius:50%;">
+            <img alt="{{ c2.name }}" src="{{ c2.image_url }}" style="width:60px; height:60px; object-fit:cover; border-radius:50%;">
             {% endif %}
             <div><strong>{{ c2.name if c2 else '已移除' }}</strong></div>
             <div style="font-size:0.8rem; color:#64748b;">票数：{{ match.votes2 or 0 }}</div>
@@ -45,23 +43,9 @@
     </div>
     {% if match.status == 'active' and not match.voted %}
     <div style="text-align:center; margin-top:12px;">
-        <form action="{{ url_for('public.knockout_vote_submit', contest_id=contest.id) }}" method="POST"
-              style="display:inline;">
-            <input name="candidate_id" type="hidden" value="{{ match.candidate1 }}">
-            <input name="gender" type="hidden" value="{{ gender }}">
-            <button class="btn-primary" style="padding:6px 24px; background:#e91e63;" type="submit">投给 {{ c1.name if
-                c1 else '' }}
-            </button>
-        </form>
+        <button class="btn-primary vote-btn" data-candidate="{{ match.candidate1 }}" data-name="{{ c1.name if c1 else '' }}" style="padding:6px 24px; background:#e91e63; border:none; border-radius:30px; cursor:pointer; color:white;">投给 {{ c1.name if c1 else '' }}</button>
         <span style="margin:0 16px; color:#94a3b8;">或</span>
-        <form action="{{ url_for('public.knockout_vote_submit', contest_id=contest.id) }}" method="POST"
-              style="display:inline;">
-            <input name="candidate_id" type="hidden" value="{{ match.candidate2 }}">
-            <input name="gender" type="hidden" value="{{ gender }}">
-            <button class="btn-primary" style="padding:6px 24px; background:#2196f3;" type="submit">投给 {{ c2.name if
-                c2 else '' }}
-            </button>
-        </form>
+        <button class="btn-primary vote-btn" data-candidate="{{ match.candidate2 }}" data-name="{{ c2.name if c2 else '' }}" style="padding:6px 24px; background:#2196f3; border:none; border-radius:30px; cursor:pointer; color:white;">投给 {{ c2.name if c2 else '' }}</button>
     </div>
     {% elif match.status == 'finished' %}
     <div style="text-align:center; margin-top:12px; color:#4caf50;">
@@ -186,39 +170,68 @@
 <p style="color:#94a3b8;">淘汰赛尚未开始</p>
 {% endif %}
 
-<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a>
-</p>
+<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     (function () {
-        const contestId = {{ contest.id }};
-        {% if session.user_id %}
-        const supabase = window.supabase.createClient(
-            '{{ supabase_url }}',
-            '{{ supabase_anon_key }}'
-        );
-        const channel = supabase
-            .channel('votes-channel')
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'contest_votes',
-                filter: `contest_id=eq.${contestId}`
-            }, (payload) => {
-                fetch(`/api/votes/${payload.new.candidate_id}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        document.querySelectorAll(`[data-candidate-id="${payload.new.candidate_id}"]`).forEach(el => {
-                            const countSpan = el.querySelector('.vote-count');
-                            if (countSpan) {
-                                countSpan.textContent = data.total_votes;
-                            }
-                        });
-                    });
-            })
-            .subscribe();
-        {% endif %}
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("public.knockout_vote_submit", contest_id=contest.id) }}';
+        const genderInput = document.createElement('input');
+        genderInput.type = 'hidden';
+        genderInput.name = 'gender';
+        genderInput.value = '{{ gender }}';
+        form.appendChild(genderInput);
+        document.body.appendChild(form);
+
+        document.querySelectorAll('.vote-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const candidateId = parseInt(this.dataset.candidate);
+                const name = this.dataset.name || '该角色';
+                if (!candidateId || this.disabled) return;
+
+                if (!confirm('确定要投给 ' + name + ' 吗？')) {
+                    return;
+                }
+
+                this.disabled = true;
+                this.textContent = '提交中...';
+
+                const existingInput = form.querySelector('input[name="candidate_id"]');
+                if (existingInput) existingInput.remove();
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'candidate_id';
+                input.value = candidateId;
+                form.appendChild(input);
+
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.message);
+                        this.disabled = false;
+                        this.textContent = '投给 ' + name;
+                        return;
+                    }
+                    window.location.reload();
+                })
+                .catch(() => {
+                    alert('网络错误，请重试');
+                    this.disabled = false;
+                    this.textContent = '投给 ' + name;
+                });
+            });
+        });
     })();
 </script>
 

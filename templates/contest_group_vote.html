@@ -3,12 +3,10 @@
 {% block content %}
 
 {% if phase in ['group_round_1', 'group_round_2', 'group_round_3'] %}
-<!-- ========== 投票期 ========== -->
 <h2>小组赛：{{ contest.title }}</h2>
 <p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
 <p style="color:#64748b;">当前轮次：第 <strong>{{ phase.split('_')[1]|int }}</strong> 轮（共3轮）</p>
-<p style="color:#64748b;">每轮每组有 <strong>2场</strong> 对决，每场可投 <strong>1票</strong>，共可投
-    <strong>16票</strong></p>
+<p style="color:#64748b;">每轮每组有 <strong>2场</strong> 对决，每场可投 <strong>1票</strong>，共可投 <strong>16票</strong></p>
 
 {% if groups %}
 {% for group in groups %}
@@ -27,12 +25,10 @@
     {% for pair in pairs %}
     <div style="background:white; border-radius:10px; padding:12px; margin-bottom:10px; border:1px solid #e2e8f0; {% if loop.last %}margin-bottom:0;{% endif %}">
         <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center;">
-            <!-- 左选手 -->
             <div style="text-align:center;" data-candidate-id="{{ pair[0] }}">
                 {% set c1 = candidates.get(pair[0]) %}
                 {% if c1 and c1.image_url %}
-                <img src="{{ c1.image_url }}"
-                     style="width:50px; height:50px; object-fit:cover; border-radius:50%; display:block; margin:0 auto 4px;">
+                <img src="{{ c1.image_url }}" style="width:50px; height:50px; object-fit:cover; border-radius:50%; display:block; margin:0 auto 4px;">
                 {% endif %}
                 <div><strong>{{ c1.name if c1 else '已移除' }}</strong></div>
                 <div style="font-size:0.75rem; color:#94a3b8;">{{ c1.source if c1 else '' }}</div>
@@ -41,16 +37,11 @@
                     投票
                 </button>
             </div>
-
-            <!-- VS -->
             <div style="font-size:1.2rem; font-weight:700; color:#94a3b8;">VS</div>
-
-            <!-- 右选手 -->
             <div style="text-align:center;" data-candidate-id="{{ pair[1] }}">
                 {% set c2 = candidates.get(pair[1]) %}
                 {% if c2 and c2.image_url %}
-                <img src="{{ c2.image_url }}"
-                     style="width:50px; height:50px; object-fit:cover; border-radius:50%; display:block; margin:0 auto 4px;">
+                <img src="{{ c2.image_url }}" style="width:50px; height:50px; object-fit:cover; border-radius:50%; display:block; margin:0 auto 4px;">
                 {% endif %}
                 <div><strong>{{ c2.name if c2 else '已移除' }}</strong></div>
                 <div style="font-size:0.75rem; color:#94a3b8;">{{ c2.source if c2 else '' }}</div>
@@ -68,35 +59,60 @@
 <p style="color:#94a3b8;">暂无分组数据</p>
 {% endif %}
 
-<form action="{{ url_for('public.group_vote_submit', contest_id=contest.id) }}" id="voteForm" method="POST"
-      style="display:none;">
+<form action="{{ url_for('public.group_vote_submit', contest_id=contest.id) }}" id="voteForm" method="POST" style="display:none;">
     <input id="candidateInput" name="candidate_id" type="hidden" value="">
     <input name="gender" type="hidden" value="{{ gender }}">
 </form>
 
 <script>
     (function () {
-        // 为所有投票按钮绑定点击事件
-        var buttons = document.querySelectorAll('.vote-btn');
+        const form = document.getElementById('voteForm');
+        const buttons = document.querySelectorAll('.vote-btn');
+
         buttons.forEach(function (btn) {
             btn.addEventListener('click', function () {
-                var candidateId = parseInt(this.dataset.candidate);
+                const candidateId = parseInt(this.dataset.candidate);
                 if (!candidateId) {
                     alert('该角色已被移除');
                     return;
                 }
                 if (this.disabled) return;
 
-                // 获取角色名
-                var card = this.parentElement;
-                var name = card.querySelector('strong').textContent;
+                const card = this.parentElement;
+                const name = card.querySelector('strong').textContent;
 
                 if (!confirm('确定要投给 ' + name + ' 吗？')) {
                     return;
                 }
 
+                this.disabled = true;
+                this.textContent = '提交中...';
+
                 document.getElementById('candidateInput').value = candidateId;
-                document.getElementById('voteForm').submit();
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.message);
+                        this.disabled = false;
+                        this.textContent = '投票';
+                        return;
+                    }
+                    window.location.reload();
+                })
+                .catch(() => {
+                    alert('网络错误，请重试');
+                    this.disabled = false;
+                    this.textContent = '投票';
+                });
             });
         });
     })();
@@ -239,40 +255,6 @@
 <p style="color:#e74c3c;">当前不可操作</p>
 {% endif %}
 
-<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a>
-</p>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    (function () {
-        const contestId = {{ contest.id }};
-        {% if session.user_id %}
-        const supabase = window.supabase.createClient(
-            '{{ supabase_url }}',
-            '{{ supabase_anon_key }}'
-        );
-        const channel = supabase
-            .channel('votes-channel')
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'contest_votes',
-                filter: `contest_id=eq.${contestId}`
-            }, (payload) => {
-                fetch(`/api/votes/${payload.new.candidate_id}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        document.querySelectorAll(`[data-candidate-id="${payload.new.candidate_id}"]`).forEach(el => {
-                            const countSpan = el.querySelector('.vote-count');
-                            if (countSpan) {
-                                countSpan.textContent = data.total_votes;
-                            }
-                        });
-                    });
-            })
-            .subscribe();
-        {% endif %}
-    })();
-</script>
+<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
 
 {% endblock %}

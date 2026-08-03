@@ -143,6 +143,13 @@
     </div>
     <button class="btn-primary" style="margin-top:10px;" type="submit">提交提名</button>
 </form>
+<script>
+    document.getElementById('nominationForm').addEventListener('submit', function() {
+        var btn = document.getElementById('nominateBtn');
+        btn.disabled = true;
+        btn.textContent = '提交中...';
+    });
+</script>
 {% endif %}
 {% else %}
 <p><a href="{{ url_for('auth.login') }}">登录</a> 后可以提名角色</p>

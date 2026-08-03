@@ -11,7 +11,7 @@
 </p>
 <p style="color:#e74c3c; font-size:0.9rem;">提交后不可修改，请谨慎分配</p>
 
-<form action="{{ url_for('public.qualifying_vote_submit', contest_id=contest.id) }}" id="voteForm" method="POST">
+<form id="voteForm" method="POST" action="{{ url_for('public.qualifying_vote_submit', contest_id=contest.id) }}">
     <input name="gender" type="hidden" value="{{ gender }}">
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:16px; margin:20px 0;">
         {% for c in candidates %}
@@ -25,17 +25,10 @@
             <div style="font-size:0.85rem; color:#64748b;">{{ c.source }}</div>
             <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px;">
                 <button class="vote-btn" data-action="decrease"
-                        style="background:#e2e8f0; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;"
-                        type="button">
-                    −
-                </button>
-                <span class="vote-count"
-                      style="font-size:1.2rem; font-weight:600; width:30px; text-align:center;">0</span>
+                        style="background:#e2e8f0; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;" type="button">−</button>
+                <span class="vote-count" style="font-size:1.2rem; font-weight:600; width:30px; text-align:center;">0</span>
                 <button class="vote-btn" data-action="increase"
-                        style="background:#1e2a3a; color:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;"
-                        type="button">
-                    +
-                </button>
+                        style="background:#1e2a3a; color:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;" type="button">+</button>
             </div>
             <div style="font-size:0.7rem; color:#94a3b8; margin-top:4px;">最多3票</div>
             <input class="vote-input" name="vote_{{ c.id }}" type="hidden" value="0">
@@ -49,7 +42,7 @@
     </div>
 
     <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-        <button class="btn-primary" style="padding:12px 40px;" type="submit">确认投票</button>
+        <button class="btn-primary" id="submitBtn" style="padding:12px 40px;" type="submit">确认投票</button>
         <a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}"
            style="padding:12px 24px; background:#e2e8f0; border-radius:40px; text-decoration:none; color:#1e2a3a;">取消</a>
     </div>
@@ -65,10 +58,9 @@
         let usedCandidates = 0;
         let usedVotes = 0;
 
-        // 收集所有候选卡片
         const cards = document.querySelectorAll('.candidate-card');
         cards.forEach(card => {
-            const cid = parseInt(card.dataset.cid);
+            const cid = parseInt(card.dataset.candidateId);
             voteCounts[cid] = 0;
         });
 
@@ -85,7 +77,7 @@
 
         function updateDisplay(cid) {
             const count = voteCounts[cid];
-            const card = document.querySelector(`.candidate-card[data-cid="${cid}"]`);
+            const card = document.querySelector(`.candidate-card[data-candidate-id="${cid}"]`);
             if (card) {
                 const countSpan = card.querySelector('.vote-count');
                 const hiddenInput = card.querySelector('.vote-input');
@@ -97,10 +89,8 @@
         function changeVote(cid, delta) {
             const current = voteCounts[cid] || 0;
             const newVal = current + delta;
-
             if (newVal < 0) return;
             if (newVal > MAX_PER_CANDIDATE) return;
-
             if (delta > 0) {
                 if (usedVotes >= MAX_VOTES) {
                     alert('总票数已达上限（15票）');
@@ -111,27 +101,31 @@
                     return;
                 }
             }
-
             voteCounts[cid] = newVal;
             updateDisplay(cid);
             updateStats();
         }
 
-        // 为所有加减按钮绑定事件
         document.querySelectorAll('.vote-btn').forEach(btn => {
             btn.addEventListener('click', function (e) {
                 const card = this.closest('.candidate-card');
                 if (!card) return;
-                const cid = parseInt(card.dataset.cid);
+                const cid = parseInt(card.dataset.candidateId);
                 const action = this.dataset.action;
                 const delta = action === 'increase' ? 1 : -1;
                 changeVote(cid, delta);
             });
         });
 
-        // 表单提交验证
-        document.getElementById('voteForm').addEventListener('submit', function (e) {
+        // ========== AJAX 提交 ==========
+        const form = document.getElementById('voteForm');
+        const submitBtn = document.getElementById('submitBtn');
+        let isSubmitting = false;
+
+        form.addEventListener('submit', function (e) {
             e.preventDefault();
+
+            if (isSubmitting) return;
             if (usedVotes === 0) {
                 alert('请至少投出1票');
                 return;
@@ -147,7 +141,36 @@
             if (!confirm('确认提交投票？提交后不可修改')) {
                 return;
             }
-            this.submit();
+
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '确认投票';
+                    isSubmitting = false;
+                    return;
+                }
+                window.location.reload();
+            })
+            .catch(() => {
+                alert('网络错误，请重试');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '确认投票';
+                isSubmitting = false;
+            });
         });
 
         updateStats();
@@ -155,7 +178,7 @@
 </script>
 
 {% elif phase == 'qualifying_result' %}
-<!-- ========== 公示期 ========== -->
+<!-- 公示期不变 -->
 <h3>海选结果公示</h3>
 <p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
 <p style="color:#64748b;">以下为海选阶段票数前32名的角色，公示期结束后将进入小组赛。</p>
@@ -175,8 +198,7 @@
             {{ loop.index }}. {{ item.name }}
         </div>
         {% if item.image_url %}
-        <img src="{{ item.image_url }}"
-             style="width:60px; height:60px; object-fit:cover; border-radius:50%; margin:6px 0;">
+        <img src="{{ item.image_url }}" style="width:60px; height:60px; object-fit:cover; border-radius:50%; margin:6px 0;">
         {% endif %}
         <div style="font-size:0.85rem; color:#64748b;">{{ item.source }}</div>
         <div style="font-size:0.9rem; color:#4caf50; font-weight:600;">票数：{{ item.votes }}</div>
@@ -189,7 +211,6 @@
 
 <hr style="margin:30px 0;">
 
-<!-- 小组赛分组 -->
 <h3>小组赛分组（已生成）</h3>
 {% if gender == 'female' %}
 {% set groups = contest.config.female_groups if contest.config else [] %}
@@ -224,8 +245,7 @@
 <p style="color:#e74c3c;">当前不可投票</p>
 {% endif %}
 
-<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a>
-</p>
+<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>

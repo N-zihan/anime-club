@@ -21,7 +21,7 @@ import os
 import uuid
 from datetime import timedelta, datetime, timezone
 
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -487,11 +487,16 @@ def qualifying_vote_submit(contest_id):
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify(
+                {'error': True, 'message': f'{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交'}), 400
         flash(f'{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交', 'warning')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
-    flash(f'{"女组" if gender == "female" else "男组"}投票成功！', 'success')
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'success': True, 'message': '投票成功'})
 
+    flash(f'{"女组" if gender == "female" else "男组"}投票成功！', 'success')
     if gender == 'female':
         return redirect(url_for('public.qualifying_vote_female', contest_id=contest.id))
     else:
@@ -677,11 +682,16 @@ def group_vote_submit(contest_id):
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'error': True,
+                            'message': f'第{round_number}轮{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交'}), 400
         flash(f'第{round_number}轮{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交', 'warning')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
-    flash(f'第{round_number}轮{"女组" if gender == "female" else "男组"}投票成功！', 'success')
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'success': True, 'message': '投票成功'})
 
+    flash(f'第{round_number}轮{"女组" if gender == "female" else "男组"}投票成功！', 'success')
     if gender == 'female':
         return redirect(url_for('public.group_vote_female', contest_id=contest.id))
     else:
@@ -820,11 +830,16 @@ def knockout_vote_submit(contest_id):
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'error': True,
+                            'message': f'{round_name}{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交'}), 400
         flash(f'{round_name}{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交', 'warning')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
-    flash(f'{round_name}{"女组" if gender == "female" else "男组"}投票成功！', 'success')
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'success': True, 'message': '投票成功'})
 
+    flash(f'{round_name}{"女组" if gender == "female" else "男组"}投票成功！', 'success')
     if gender == 'female':
         return redirect(url_for('public.knockout_vote_female', contest_id=contest.id))
     else:
