@@ -1,7 +1,7 @@
 [![Vercel](https://img.shields.io/badge/部署-Vercel-000000?logo=vercel)](https://www.nanyi-anime-club.top)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com)
-[![Tests](https://img.shields.io/badge/tests-77_passing-brightgreen)](#)
+[![Tests](https://img.shields.io/badge/tests-79_passing-brightgreen)](#)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
 
 # 南平一中动漫社官网
