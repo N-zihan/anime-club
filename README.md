@@ -28,7 +28,7 @@
 Python 3.14 + Flask 3.0 / PostgreSQL (Supabase) / Supabase Storage / Vercel / HTML + CSS + Jinja2 / Pytest
 
 ## 项目结构
-
+<pre>
 动漫社网站/
 ├── app/ # 应用核心代码
 │ ├── init.py # Flask 应用工厂
@@ -61,6 +61,7 @@ Python 3.14 + Flask 3.0 / PostgreSQL (Supabase) / Supabase Storage / Vercel / HT
 ├── run.py # 应用启动入口
 ├── README.md # 项目说明
 └── .gitignore # Git 忽略规则
+</pre>
 
 ## 本地运行
 
