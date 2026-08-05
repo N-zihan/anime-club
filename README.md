@@ -25,7 +25,7 @@
 
 ## 技术栈
 
-Python 3.12 + Flask 3.0 / PostgreSQL (Supabase) / Supabase Storage / Vercel / HTML + CSS + Jinja2 / Pytest
+Python 3.14 + Flask 3.0 / PostgreSQL (Supabase) / Supabase Storage / Vercel / HTML + CSS + Jinja2 / Pytest
 
 ## 本地运行
 
