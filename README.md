@@ -2,6 +2,7 @@
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
+![Tests](https://github.com/N-zihan/anime-club/actions/workflows/test.yml/badge.svg)
 
 # 南平一中动漫社官网
 
