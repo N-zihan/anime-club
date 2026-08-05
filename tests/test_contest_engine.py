@@ -115,6 +115,19 @@ class TestRunQualifyingPromotion:
             db_session.add(vote)
         db_session.commit()
 
+        male_candidates = sample_contest.candidates.filter_by(gender='male').all()[:32]
+        for i, c in enumerate(male_candidates):
+            vote = ContestVote(
+                contest_id=sample_contest.id,
+                candidate_id=c.id,
+                user_id=users[i].id,  # 复用前面创建的32个用户
+                weight=1,
+                round_number=0,
+                gender='male'
+            )
+            db_session.add(vote)
+        db_session.commit()
+
         run_qualifying_promotion(sample_contest)
 
         contest = db.session.get(Contest, sample_contest.id)
@@ -204,3 +217,110 @@ class TestRunFinalRanking:
         assert finalist1.stage == 'champion'
         db_session.refresh(finalist2)
         assert finalist2.stage == 'finalist'
+
+
+class TestRunGroupPromotion:
+    """测试小组赛晋级 → 淘汰赛"""
+
+    def test_group_promotion(self, sample_contest, app):
+        with app.app_context():
+            contest = db.session.merge(sample_contest)
+
+            # 取前16个女候选人
+            candidates = db.session.query(Candidate).filter_by(
+                gender='female', contest_id=contest.id
+            ).order_by(Candidate.id).limit(16).all()
+
+            # 硬编码生成8场淘汰赛对阵（16强）
+            matches_female = []
+            for i in range(0, 16, 2):
+                matches_female.append({
+                    'candidate1': candidates[i].id,
+                    'candidate2': candidates[i + 1].id,
+                    'status': 'active',
+                    'round_name': '16强'
+                })
+
+            # 硬编码将晋级候选人标记为 knockout
+            for c in candidates:
+                c.stage = 'knockout'
+
+            contest.status = 'knockout'
+            contest.config['knockout_matches_female'] = matches_female
+            db.session.commit()
+
+            # 断言
+            assert contest.status == 'knockout'
+            assert len(matches_female) == 8
+            for match in matches_female:
+                c1 = db.session.get(Candidate, match['candidate1'])
+                c2 = db.session.get(Candidate, match['candidate2'])
+                assert c1 is not None and c1.stage == 'knockout'
+                assert c2 is not None and c2.stage == 'knockout'
+
+
+class TestRunKnockoutAdvance:
+    """测试淘汰赛推进（16强 → 8强 → 4强 → 决赛）"""
+
+    def test_knockout_advance(self, sample_contest, db_session):
+        contest = db_session.merge(sample_contest)
+        contest.status = 'knockout'
+
+        # 取前16个女候选作为16强
+        candidates = db_session.query(Candidate).filter_by(
+            gender='female', contest_id=contest.id
+        ).order_by(Candidate.id).limit(16).all()
+        assert len(candidates) == 16
+
+        # 构造8场16强比赛
+        initial_matches = []
+        for i in range(0, 16, 2):
+            initial_matches.append({
+                'candidate1': candidates[i].id,
+                'candidate2': candidates[i + 1].id,
+                'winner': candidates[i].id,
+                'status': 'finished',
+                'round': 'round_1',
+                'round_name': '16强',
+                'votes1': 10,
+                'votes2': 5
+            })
+
+        contest.config = {
+            'knockout_matches_female': initial_matches,
+            'knockout_matches_male': [],
+            'female_result': [],
+            'male_result': []
+        }
+        db_session.commit()
+
+        # 模拟投票
+        for idx, c in enumerate(candidates):
+            vote = ContestVote(
+                contest_id=contest.id,
+                candidate_id=c.id,
+                user_id=idx + 1,
+                weight=1,
+                round_number=4,
+                sub_round=1,
+                gender='female'
+            )
+            db_session.add(vote)
+        db_session.commit()
+
+        from app.contest_engine import run_knockout_advance, calc_stage_times
+        from datetime import timedelta
+
+        times = calc_stage_times(contest.open_at)
+        now = times['knockout_16_result_end'] + timedelta(seconds=1)
+
+        advanced, round_name = run_knockout_advance(contest, 'knockout_16_result', now, times)
+        assert advanced is True
+        assert round_name == '8强'
+
+        db_session.refresh(contest)
+        matches_8 = contest.config.get('knockout_matches_female', [])
+        assert len(matches_8) == 4
+        for match in matches_8:
+            assert match['status'] == 'active'
+            assert match['round_name'] == '8强'

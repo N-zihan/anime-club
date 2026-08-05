@@ -25,7 +25,7 @@ from datetime import timedelta
 from sqlalchemy import func as sa_func
 from sqlalchemy.orm.attributes import flag_modified
 
-from .models import db, Candidate, ContestVote
+from .models import db, Candidate, ContestVote, Contest
 
 
 # ============================================================
@@ -287,13 +287,20 @@ def run_qualifying_promotion(contest):
 # 小组赛晋级 → 淘汰赛
 # ============================================================
 
-def run_group_promotion(contest):
+def run_group_promotion(contest, session=None):
     """小组赛第3轮公示结束后，每组前2晋级淘汰赛，生成16强对阵"""
+    if session is None:
+        session = db.session
+
     if contest.config is None:
         contest.config = {}
 
     def get_group_stage_results(gender):
-        candidates = contest.candidates.filter_by(gender=gender, stage='group_stage').all()
+        candidates = session.query(Candidate).filter_by(
+            contest_id=contest.id,
+            gender=gender,
+            stage='group_stage'
+        ).all()
         if not candidates:
             return [], {}
 
@@ -336,14 +343,23 @@ def run_group_promotion(contest):
                              (group_candidates[1], group_candidates[2])]
 
                 for cid1, cid2 in pairs:
-                    votes1 = ContestVote.query.filter_by(
-                        contest_id=contest.id, candidate_id=cid1,
-                        round_number=round_num, gender=gender
-                    ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
-                    votes2 = ContestVote.query.filter_by(
-                        contest_id=contest.id, candidate_id=cid2,
-                        round_number=round_num, gender=gender
-                    ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+                    votes1 = session.query(
+                        sa_func.sum(ContestVote.weight)
+                    ).filter(
+                        ContestVote.contest_id == contest.id,
+                        ContestVote.candidate_id == cid1,
+                        ContestVote.round_number == round_num,
+                        ContestVote.gender == gender
+                    ).scalar() or 0
+
+                    votes2 = session.query(
+                        sa_func.sum(ContestVote.weight)
+                    ).filter(
+                        ContestVote.contest_id == contest.id,
+                        ContestVote.candidate_id == cid2,
+                        ContestVote.round_number == round_num,
+                        ContestVote.gender == gender
+                    ).scalar() or 0
 
                     result[cid1]['total_votes'] += votes1
                     result[cid2]['total_votes'] += votes2
@@ -409,16 +425,31 @@ def run_group_promotion(contest):
     contest.config['male_top16'] = male_top16
 
     for cid in female_top16:
-        candidate = db.session.get(Candidate, cid)
+        candidate = session.get(Candidate, cid)
         if candidate:
             candidate.stage = 'knockout'
     for cid in male_top16:
-        candidate = db.session.get(Candidate, cid)
+        candidate = session.get(Candidate, cid)
         if candidate:
             candidate.stage = 'knockout'
 
+    # ====== 生产环境防护：防止空数据推进 ======
+    # 如果配置中有女子分组，但晋级人数不足16人，说明数据异常，拒绝推进
+    if contest.config.get('female_groups') and len(female_top16) < 16:
+        raise ValueError(
+            f"女子组晋级人数异常: 需要16人，实际 {len(female_top16)} 人。"
+            f"请检查小组赛投票数据是否完整。"
+        )
+    # 如果配置中有男子分组，但晋级人数不足16人，同样拒绝推进
+    if contest.config.get('male_groups') and len(male_top16) < 16:
+        raise ValueError(
+            f"男子组晋级人数异常: 需要16人，实际 {len(male_top16)} 人。"
+            f"请检查小组赛投票数据是否完整。"
+        )
+
     contest.status = 'knockout'
-    db.session.commit()
+    session.commit()
+    # ==========================================
 
 
 # ============================================================
@@ -508,6 +539,7 @@ def run_knockout_advance(contest, phase, now, times):
             contest.config['knockout_matches_female'] = generate_next_round(contest, female_matches, 'female', 1, '8强')
         if male_matches:
             contest.config['knockout_matches_male'] = generate_next_round(contest, male_matches, 'male', 1, '8强')
+        flag_modified(contest, 'config')
         db.session.commit()
         return True, '8强'
 
@@ -518,6 +550,7 @@ def run_knockout_advance(contest, phase, now, times):
             contest.config['knockout_matches_female'] = generate_next_round(contest, female_matches, 'female', 2, '4强')
         if male_matches:
             contest.config['knockout_matches_male'] = generate_next_round(contest, male_matches, 'male', 2, '4强')
+        flag_modified(contest, 'config')
         db.session.commit()
         return True, '4强'
 
@@ -529,6 +562,7 @@ def run_knockout_advance(contest, phase, now, times):
                                                                             '决赛')
         if male_matches:
             contest.config['knockout_matches_male'] = generate_next_round(contest, male_matches, 'male', 3, '决赛')
+        flag_modified(contest, 'config')
         db.session.commit()
         return True, '决赛'
 
@@ -737,7 +771,11 @@ def prepare_group_round_data(contest, phase):
         return result
 
     def get_overall_ranking(gender, groups):
-        candidates = contest.candidates.filter_by(gender=gender, stage='group_stage').all()
+        candidates = db.session.query(Candidate).filter_by(
+            contest_id=contest.id,
+            gender=gender,
+            stage='group_stage'
+        ).all()
         if not candidates:
             return []
 
