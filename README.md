@@ -37,7 +37,7 @@ Python 3.14 + Flask 3.0 / PostgreSQL (Supabase) / Supabase Storage / Vercel / HT
 │ ├── init.py # Flask 应用工厂
 │ ├── admin.py # 管理后台路由（站长/运营）
 │ ├── auth.py # 用户认证（注册/登录/密码重置）
-│ ├── contest\_engine.py # 萌战引擎核心（海选→小组赛→淘汰赛）
+│ ├── contest_engine.py # 萌战引擎核心（海选→小组赛→淘汰赛）
 │ ├── models.py # 数据库模型（13张表）
 │ ├── public.py # 公共页面路由
 │ ├── user.py # 用户中心（个人设置/头像/主页）
@@ -50,13 +50,13 @@ Python 3.14 + Flask 3.0 / PostgreSQL (Supabase) / Supabase Storage / Vercel / HT
 │
 ├── tests/ # Pytest 测试套件（77个用例）
 │ ├── conftest.py # 测试配置与 fixtures
-│ ├── test\_auth.py # 认证模块测试
-│ ├── test\_admin.py # 管理后台测试
-│ ├── test\_public.py # 公共页面测试
-│ ├── test\_user.py # 用户中心测试
-│ ├── test\_api.py # API 端点测试
-│ ├── test\_models.py # 数据模型测试
-│ └── test\_contest_engine.py # 萌战引擎测试
+│ ├── test_auth.py # 认证模块测试
+│ ├── test_admin.py # 管理后台测试
+│ ├── test_public.py # 公共页面测试
+│ ├── test_user.py # 用户中心测试
+│ ├── test_api.py # API 端点测试
+│ ├── test_models.py # 数据模型测试
+│ └── test_contest_engine.py # 萌战引擎测试
 │
 ├── .venv/ # Python 虚拟环境（不提交）
 ├── .env.example # 环境变量模板
