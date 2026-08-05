@@ -3,12 +3,15 @@
 [![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
 [![Tests](https://img.shields.io/badge/tests-79_passing-brightgreen)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # 南平一中动漫社官网
 
 > 以热爱为名 · 共创二次元家园
 
 南平一中动漫社官方网站，集社团展示、互动交流、资源分享于一体的校内平台。
+
+(这是一个由准高二学生独立开发的社团网站项目，欢迎 star 和交流)
 
 🔗 在线访问：https://www.nanyi-anime-club.top
 
@@ -104,7 +107,7 @@ pytest -v
 
 许可证
 
-本项目仅供学习交流使用，如需引用请注明来源。
+本项目仅供学习交流使用，如需引用请注明来源，使用需自行配置环境变量。
 
 Made with ❤️ by 南平一中动漫社
 
