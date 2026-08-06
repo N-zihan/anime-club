@@ -19,6 +19,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, session, request, redirect, url_for
+from flask_wtf import CSRFProtect  # ← 新增
 
 from .admin import admin_bp
 from .auth import auth_bp
@@ -31,7 +32,6 @@ load_dotenv()
 
 
 def create_app():
-    # 获取项目根目录（run.py 所在目录）
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     app = Flask(
         __name__,
@@ -43,6 +43,14 @@ def create_app():
     if not app.secret_key:
         raise RuntimeError("SECRET_KEY must be set in environment variables")
 
+    # ====== 新增：Session Cookie 安全配置 ======
+    app.config.update(
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE='Lax',
+        SESSION_COOKIE_SECURE=os.getenv('FLASK_ENV') == 'production',  # 生产环境启用 HTTPS
+    )
+    # ==========================================
+
     # 数据库配置
     DATABASE_URL = os.getenv('DATABASE_URL')
     if not DATABASE_URL:
@@ -53,13 +61,21 @@ def create_app():
 
     db.init_app(app)
 
+    # ====== CSRF 保护 ======
+    csrf = CSRFProtect()
+    csrf.init_app(app)
+    # 测试环境禁用 CSRF
+    if app.config.get('TESTING'):
+        app.config['WTF_CSRF_ENABLED'] = False
+    # =============================
+
     # 注册蓝图
     app.register_blueprint(auth_bp)
     app.register_blueprint(public_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(admin_bp)
 
-    # 注册错误处理器（直接从 public 模块导入）
+    # 注册错误处理器
     app.register_error_handler(404, page_not_found)
     app.register_error_handler(500, internal_server_error)
     app.register_error_handler(403, forbidden)
@@ -81,7 +97,7 @@ def create_app():
         if not session.get('user_id') and request.endpoint not in public_routes and request.endpoint != 'static':
             return redirect(url_for('auth.login'))
 
-    # 版本号（直接从环境变量读取）
+    # 版本号
     app.config['APP_VERSION'] = os.getenv('APP_VERSION', 'dev')
 
     @app.context_processor
@@ -93,5 +109,12 @@ def create_app():
         role = session.get('user_role')
         is_admin = role in ('owner', 'staff')
         return dict(is_admin=is_admin)
+
+    # ====== 自动注入 CSRF token 到所有模板 ======
+    @app.context_processor
+    def inject_csrf_token():
+        from flask_wtf.csrf import generate_csrf
+        return {'csrf_token': generate_csrf()}
+    # ==================================================
 
     return app

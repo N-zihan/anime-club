@@ -10,6 +10,9 @@
     <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" type="image/x-icon"/>
 </head>
 <body>
+<!-- ====== CSRF Token（所有表单通过 {{ csrf_token() }} 使用） ====== -->
+<input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+<!-- =============================================================== -->
 <nav>
     <div class="nav-left">
         <a class="logo" href="/">南平一中动漫社</a>
@@ -429,5 +432,21 @@
 </script>
 {% endif %}
 <!-- ==================== 新手引导结束 ==================== -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    var token = document.querySelector('input[name="csrf_token"]');
+    if (token) {
+        document.querySelectorAll('form').forEach(function(form) {
+            if (!form.querySelector('input[name="csrf_token"]')) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'csrf_token';
+                input.value = token.value;
+                form.prepend(input);
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>
