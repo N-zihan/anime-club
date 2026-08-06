@@ -9,7 +9,7 @@
 
 > 以热爱为名 · 共创二次元家园
 
-> 一个由16岁高中生Nzihan开发、学长LLLinV指点的社团网站项目
+> 一个由00后高中生Nzihan开发、学长LLLinV指点的社团网站项目，适合各类动漫社建立网站
 
 南平一中动漫社官方网站，集社团展示、互动交流、资源分享与线上赛事于一体的校内平台
 
@@ -120,6 +120,7 @@
 ├── vercel.json # vercel配置
 └── .gitignore # Git 忽略规则
 ```
+> 注意：`templates/base.html` 和 `templates/splash.html` 中的“南平一中动漫社”字样需替换为你自己的社团名称
 
 ## 本地运行
 ```bash
