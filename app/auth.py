@@ -37,6 +37,7 @@ if 'pytest' in sys.modules and not GROUP_VERIFICATION_CODE:
     GROUP_VERIFICATION_CODE = 'test_group_code'
 
 # ---------- SMTP 配置 ----------
+CLUB_NAME = os.getenv('CLUB_NAME', '动漫社')
 MAIL_USERNAME = os.getenv('MAIL_USERNAME')
 MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
 
@@ -49,7 +50,7 @@ def send_email(to_email, subject, body):
     try:
         msg = MIMEText(body, 'plain', 'utf-8')
         msg['Subject'] = subject
-        msg['From'] = MAIL_USERNAME
+        msg['From'] = f'{CLUB_NAME} <{MAIL_USERNAME}>'
         msg['To'] = to_email
         server = smtplib.SMTP_SSL('smtp.qq.com', 465)
         server.login(MAIL_USERNAME, MAIL_PASSWORD)
@@ -63,15 +64,15 @@ def send_email(to_email, subject, body):
 
 def send_verification_email(to_email, code):
     """发送6位验证码"""
-    subject = '【南平一中动漫社】邮箱验证码'
+    subject = f'【{CLUB_NAME}】邮箱验证码'
     body = f'您的验证码是：{code}\n\n10分钟内有效，请勿告知他人。'
     return send_email(to_email, subject, body)
 
 
 def send_reset_email(to_email, reset_link):
     """发送重置链接"""
-    subject = '【南平一中动漫社】密码修改'
-    body = f'您好，您正在申请修改南平一中动漫社官网的密码。\n\n请点击以下链接修改密码（1小时内有效）：\n{reset_link}\n\n如非本人操作，请忽略此邮件。'
+    subject = f'【{CLUB_NAME}】密码修改'
+    body = f'您好，您正在申请修改{CLUB_NAME}官网的密码。\n\n请点击以下链接修改密码（1小时内有效）：\n{reset_link}\n\n如非本人操作，请忽略此邮件。'
     return send_email(to_email, subject, body)
 
 
