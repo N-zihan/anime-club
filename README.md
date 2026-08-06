@@ -141,6 +141,7 @@ SUPABASE_KEY=Settings → API → service_role secret(仅供后端)
 SECRET_KEY=自创一个密码
 SUPABASE_ANON_KEY=Settings → API → anon public(用于前端)
 CLUB_NAME=社团名字
+APP_VERSION=版本号(默认 dev )
 
 # SMTP 邮件配置(用于发送验证码和重置链接)
 MAIL_USERNAME=你的QQ邮箱(建议额外注册一个)
