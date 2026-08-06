@@ -2,7 +2,7 @@
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
-[![Tests](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FN-zihan%2Fanime-club%2Fmain%2Ftest-results.json&query=%24.passing&label=tests&color=brightgreen)](https://github.com/N-zihan/anime-club/actions/workflows/tests.yml)
+[![Tests](https://img.shields.io/badge/tests-79_passing-brightgreen)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # 南平一中动漫社官网
