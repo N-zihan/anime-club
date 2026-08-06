@@ -172,7 +172,7 @@ pytest -v
 -- 项目启动后会自动创建表，也可以手动执行
 -- 建议先运行 python run.py，让 SQLAlchemy 自动建表
 ```
-获取 SUPABASE_KEY和SUPABASE_ANON_KEY(Settings → API → service_role secret)
+获取 SUPABASE_KEY和SUPABASE_ANON_KEY(Settings → API → service_role secret / anon_key)
 
 ### Vercel 部署
 
