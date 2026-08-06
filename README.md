@@ -58,9 +58,10 @@ Python 3.14 + Flask 3.0 / PostgreSQL (Supabase) / Supabase Storage / Vercel / HT
 │ ├── test_models.py # 数据模型测试
 │ └── test_contest_engine.py # 萌战引擎测试
 │
-├── .venv/ # Python 虚拟环境（不提交）
-├── .env.example # 环境变量模板
+├── .env # 环境变量模板(自行创建)
 ├── requirements.txt # Python 依赖
+├── LICENSE # 许可证
+├── pytest.ini # 测试配置
 ├── run.py # 应用启动入口
 ├── README.md # 项目说明
 ├── vercel.json # vercel配置
