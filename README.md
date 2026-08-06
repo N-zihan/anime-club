@@ -137,9 +137,9 @@ pip install -r requirements.txt
 DATABASE_URL=postgresql://...
 GROUP_VERIFICATION_CODE=社团群号
 SUPABASE_URL=https://...
-SUPABASE_KEY=Supabase service role key
+SUPABASE_KEY=Settings → API → service_role secret(仅供后端)
 SECRET_KEY=自创一个密码
-SUPABASE_ANON_KEY=Supabase的anon_key
+SUPABASE_ANON_KEY=Settings → API → anon public(用于前端)
 CLUB_NAME=社团名字
 
 # SMTP 邮件配置(用于发送验证码和重置链接)
@@ -172,7 +172,7 @@ pytest -v
 -- 项目启动后会自动创建表，也可以手动执行
 -- 建议先运行 python run.py，让 SQLAlchemy 自动建表
 ```
-获取 SUPABASE_KEY(Settings → API → service_role secret)
+获取 SUPABASE_KEY和SUPABASE_ANON_KEY(Settings → API → service_role secret)
 
 ### Vercel 部署
 
