@@ -175,7 +175,7 @@ class ContestVote(db.Model):
     gender = db.Column(db.String(10), nullable=True)
     sub_round = db.Column(db.Integer, default=0)
     match_index = db.Column(db.Integer, default=0)
-    group_index = db.Column(db.Integer, default=0)  # ✅ 新增：记录第几组
+    group_index = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (

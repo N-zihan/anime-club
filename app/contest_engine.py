@@ -25,7 +25,7 @@ from datetime import timedelta
 from sqlalchemy import func as sa_func
 from sqlalchemy.orm.attributes import flag_modified
 
-from .models import db, Candidate, ContestVote, Contest
+from .models import db, Candidate, ContestVote
 
 
 # ============================================================
