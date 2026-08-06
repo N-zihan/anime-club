@@ -3,7 +3,7 @@ Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.3.0
 WTForms==3.2.2
 python-dotenv==1.2.2
-psycopg2==2.9.12
+psycopg2-binary==2.9.12
 supabase==2.31.0
 pillow==12.2.0
 openpyxl==3.1.2
