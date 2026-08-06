@@ -63,6 +63,7 @@ Python 3.14 + Flask 3.0 / PostgreSQL (Supabase) / Supabase Storage / Vercel / HT
 ├── requirements.txt # Python 依赖
 ├── run.py # 应用启动入口
 ├── README.md # 项目说明
+├── vercel.json # vercel配置
 └── .gitignore # Git 忽略规则
 </pre>
 
