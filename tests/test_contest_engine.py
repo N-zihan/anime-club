@@ -204,8 +204,18 @@ class TestRunFinalRanking:
             ],
             'knockout_matches_male': []
         }
+
+        # ====== 将当前对阵复制到历史键 ======
+        female_matches = sample_contest.config['knockout_matches_female']
+        sample_contest.config['knockout_matches_female_final'] = female_matches.copy()
+        sample_contest.config['knockout_matches_female_round16'] = female_matches.copy()
+        sample_contest.config['knockout_matches_female_round8'] = []
+        sample_contest.config['knockout_matches_female_round4'] = []
+        # ======================================
+
         db_session.commit()
 
+        from app.contest_engine import run_final_ranking
         run_final_ranking(sample_contest)
 
         contest = db.session.get(Contest, sample_contest.id)
