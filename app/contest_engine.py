@@ -265,14 +265,22 @@ def run_qualifying_promotion(contest):
     contest.config['male_groups'] = [[c.id for c in group] for group in male_groups]
     contest.config['female_top32'] = [c.id for c in female_top32]
     contest.config['male_top32'] = [c.id for c in male_top32]
+
+    # 保存海选结果时加入 candidate.id，用于平票决胜
     contest.config['female_result'] = [
-        {'name': item['candidate'].name, 'source': item['candidate'].source,
-         'votes': item['total_votes'], 'image_url': item['candidate'].image_url}
+        {'id': item['candidate'].id,
+         'name': item['candidate'].name,
+         'source': item['candidate'].source,
+         'votes': item['total_votes'],
+         'image_url': item['candidate'].image_url}
         for item in female_result[:32]
     ]
     contest.config['male_result'] = [
-        {'name': item['candidate'].name, 'source': item['candidate'].source,
-         'votes': item['total_votes'], 'image_url': item['candidate'].image_url}
+        {'id': item['candidate'].id,
+         'name': item['candidate'].name,
+         'source': item['candidate'].source,
+         'votes': item['total_votes'],
+         'image_url': item['candidate'].image_url}
         for item in male_result[:32]
     ]
 
@@ -380,49 +388,128 @@ def run_group_promotion(contest, session=None):
         return result, groups
 
     def get_top2_from_groups(result, groups):
+        """
+        返回 (top16_ids, top16_info)
+        top16_ids: [id, ...]  -- 便于兼容原调用处
+        top16_info: [{'id': id, 'group_index': gi, 'rank': 1_or_2}, ...]
+        同时会把晋级者的 candidate.stage 标记为 'knockout'
+        """
         top16 = []
+        top16_info = []
         for gi, group in enumerate(groups):
             group_candidates = [cid for cid in group if cid in result]
+            # 对每组按 (points, total_votes) 排序
             group_candidates.sort(key=lambda cid: (result[cid]['points'], result[cid]['total_votes']), reverse=True)
             top2 = group_candidates[:2]
-            top16.extend(top2)
-            for cid in top2:
+            # top2 可能少于 2，按实际情况处理
+            for rank, cid in enumerate(top2, start=1):
+                top16.append(cid)
+                top16_info.append({'id': cid, 'group_index': gi, 'rank': rank})
                 if cid in result:
                     result[cid]['candidate'].stage = 'knockout'
-        return top16
+        return top16, top16_info
 
-    def generate_knockout_matches(candidate_ids):
-        if len(candidate_ids) < 16:
+    def generate_knockout_matches(candidate_inputs):
+        """
+        支持两种格式：
+        - 旧格式: list of ids (int) -> 随机配对（向后兼容）
+        - 新格式: list of dicts [{'id':..., 'group_index':..., 'rank':1|2}, ...]
+        优先规则：小组第一 vs 小组第二，且回避同组（无可用对手时回退）
+        """
+        if not candidate_inputs:
             return []
-        shuffled = candidate_ids[:]
-        random.shuffle(shuffled)
+
+        # 旧格式兼容：纯 ID 列表 -> 随机配对
+        if isinstance(candidate_inputs[0], (int, str)):
+            shuffled = list(candidate_inputs)
+            random.shuffle(shuffled)
+            matches = []
+            for i in range(0, len(shuffled), 2):
+                if i + 1 < len(shuffled):
+                    matches.append({
+                        'round': 'round_1',
+                        'round_name': '16强',
+                        'candidate1': shuffled[i],
+                        'candidate2': shuffled[i + 1],
+                        'status': 'active',
+                        'votes1': 0,
+                        'votes2': 0,
+                        'winner': None
+                    })
+            return matches
+
+        # 新格式：info 列表 -> 第一对第二 + 同组回避
+        infos = list(candidate_inputs)
+        winners = [i for i in infos if i.get('rank') == 1]
+        runners = [i for i in infos if i.get('rank') == 2]
+
+        # 如果数量不对，回退到随机配对
+        if len(winners) + len(runners) < 16:
+            ids = [i.get('id') for i in infos]
+            shuffled = ids[:]
+            random.shuffle(shuffled)
+            matches = []
+            for i in range(0, len(shuffled), 2):
+                if i + 1 < len(shuffled):
+                    matches.append({
+                        'round': 'round_1',
+                        'round_name': '16强',
+                        'candidate1': shuffled[i],
+                        'candidate2': shuffled[i + 1],
+                        'status': 'active',
+                        'votes1': 0,
+                        'votes2': 0,
+                        'winner': None
+                    })
+            return matches
+
+        random.shuffle(winners)
+        random.shuffle(runners)
+
         matches = []
-        for i in range(0, 16, 2):
+        remaining_runners = runners[:]
+        for w in winners:
+            # 找一个不同组的 runner
+            pick_idx = None
+            for idx, r in enumerate(remaining_runners):
+                if r.get('group_index') != w.get('group_index'):
+                    pick_idx = idx
+                    break
+            # 回退：如果没有不同组的，取第一个
+            if pick_idx is None:
+                pick = remaining_runners.pop(0)
+            else:
+                pick = remaining_runners.pop(pick_idx)
+
             matches.append({
                 'round': 'round_1',
                 'round_name': '16强',
-                'candidate1': shuffled[i],
-                'candidate2': shuffled[i + 1],
+                'candidate1': w.get('id'),
+                'candidate2': pick.get('id'),
                 'status': 'active',
                 'votes1': 0,
                 'votes2': 0,
                 'winner': None
             })
+
+        # 剩余未配对的 runner 不会发生（因为 winners == runners == 8）
         return matches
 
     female_result, female_groups = get_group_stage_results('female')
     male_result, male_groups = get_group_stage_results('male')
 
-    female_top16 = get_top2_from_groups(female_result, female_groups)
-    male_top16 = get_top2_from_groups(male_result, male_groups)
+    female_top16, female_top16_info = get_top2_from_groups(female_result, female_groups)
+    male_top16, male_top16_info = get_top2_from_groups(male_result, male_groups)
 
-    female_matches = generate_knockout_matches(female_top16)
-    male_matches = generate_knockout_matches(male_top16)
+    female_matches = generate_knockout_matches(female_top16_info)
+    male_matches = generate_knockout_matches(male_top16_info)
 
     contest.config['knockout_matches_female'] = female_matches
     contest.config['knockout_matches_male'] = male_matches
     contest.config['female_top16'] = female_top16
     contest.config['male_top16'] = male_top16
+    contest.config['female_top16_info'] = female_top16_info
+    contest.config['male_top16_info'] = male_top16_info
 
     for cid in female_top16:
         candidate = session.get(Candidate, cid)
@@ -434,13 +521,11 @@ def run_group_promotion(contest, session=None):
             candidate.stage = 'knockout'
 
     # ====== 生产环境防护：防止空数据推进 ======
-    # 如果配置中有女子分组，但晋级人数不足16人，说明数据异常，拒绝推进
     if contest.config.get('female_groups') and len(female_top16) < 16:
         raise ValueError(
             f"女子组晋级人数异常: 需要16人，实际 {len(female_top16)} 人。"
             f"请检查小组赛投票数据是否完整。"
         )
-    # 如果配置中有男子分组，但晋级人数不足16人，同样拒绝推进
     if contest.config.get('male_groups') and len(male_top16) < 16:
         raise ValueError(
             f"男子组晋级人数异常: 需要16人，实际 {len(male_top16)} 人。"
@@ -468,8 +553,6 @@ def get_knockout_votes(contest, candidate_id, gender, sub_round):
     return total
 
 
-# contest_engine.py 修改 get_match_winner 函数
-
 def get_match_winner(contest, match, gender, sub_round):
     """确定一场比赛的胜者（票数高者，平票则比较海选总票数）"""
     c1_votes = get_knockout_votes(contest, match['candidate1'], gender, sub_round)
@@ -480,19 +563,17 @@ def get_match_winner(contest, match, gender, sub_round):
     elif c2_votes > c1_votes:
         return match['candidate2']
 
-    # 平票，比较海选票数
+    # 平票，比较海选票数（用 candidate.id 匹配，避免重名问题）
     if gender == 'female':
         results = contest.config.get('female_result', [])
     else:
         results = contest.config.get('male_result', [])
 
-    c1 = db.session.get(Candidate, match['candidate1'])
-    c2 = db.session.get(Candidate, match['candidate2'])
-    c1_name = c1.name if c1 else ''
-    c2_name = c2.name if c2 else ''
+    c1_id = match['candidate1']
+    c2_id = match['candidate2']
 
-    c1_qualifying = next((item['votes'] for item in results if item['name'] == c1_name), 0)
-    c2_qualifying = next((item['votes'] for item in results if item['name'] == c2_name), 0)
+    c1_qualifying = next((item['votes'] for item in results if item.get('id') == c1_id), 0)
+    c2_qualifying = next((item['votes'] for item in results if item.get('id') == c2_id), 0)
 
     return match['candidate1'] if c1_qualifying >= c2_qualifying else match['candidate2']
 
@@ -727,7 +808,13 @@ def prepare_group_round_data(contest, phase):
     if phase not in ['group_round_1_result', 'group_round_2_result', 'group_round_3_result']:
         return None, None, None
 
-    round_num = int(phase.split('_')[1])
+    # 修复：正确解析轮次数字（原代码 phase.split('_')[1] 会取到 'round'）
+    parts = phase.split('_')
+    try:
+        round_num = int(parts[2])  # 'group_round_1_result' -> 1
+    except (IndexError, ValueError):
+        raise ValueError(f"无法解析小组轮次: {phase}")
+
     groups_female = contest.config.get('female_groups', [])
     groups_male = contest.config.get('male_groups', [])
     candidates_map = {c.id: c for c in contest.candidates.all()}
