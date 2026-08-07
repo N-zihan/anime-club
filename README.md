@@ -23,13 +23,13 @@
 
 ### 用户系统
 - 注册 / 登录 / 登出 / 账号注销
-- 个人主页（头像、留言、推荐番剧）
-- 头像上传（支持 jpg/png/gif，自动压缩至 200×200）
+- 个人主页(头像、留言、推荐番剧)
+- 头像上传(支持 jpg/png/gif，自动压缩至 200×200)
 - 用户名修改、密码修改
 - 邮箱绑定（用于密码找回）
 
 ### 留言板
-- 社员自由发言，支持嵌套回复（回复主留言 / 回复某条回复）
+- 社员自由发言，支持嵌套回复(回复主留言 / 回复某条回复)
 - 自动关联用户头像
 - 留言与回复时间显示北京时间
 
@@ -77,14 +77,14 @@
 |------|-----------------------------------|
 | 后端框架 | Python 3.14.4 + Flask 3.0         |
 | ORM | SQLAlchemy 2.0                    |
-| 数据库 | PostgreSQL（Supabase）            |
+| 数据库 | PostgreSQL(Supabase)              |
 | 文件存储 | Supabase Storage                  |
 | 图片处理 | Pillow                            |
 | 前端 | HTML + CSS + Jinja2               |
-| 测试 | Pytest（79 个测试用例）           |
+| 测试 | Pytest(79 个测试用例)             |
 | 部署 | Vercel(Python 3.12)               |
 | 认证 | Session-based + Werkzeug 密码哈希 |
-| 安全 | CSRFProtect（Flask-WTF）          |
+| 安全 | CSRFProtect(Flask-WTF)            |
 
 
 ## 项目结构
@@ -115,7 +115,7 @@
 │ ├── test_models.py # 数据模型测试
 │ └── test_contest_engine.py # 萌战引擎测试
 │
-├── .env # 环境变量模板(自行创建)
+├── .env # 环境变量(自行创建)
 ├── requirements.txt # Python 依赖
 ├── LICENSE # 许可证
 ├── pytest.ini # 测试配置
@@ -136,7 +136,7 @@ source .venv/bin/activate      # Linux/Mac
 pip install -r requirements.txt
 ```
 
-创建 .env 文件：
+创建 .env 文件:
 ```env
 DATABASE_URL=postgresql://...
 GROUP_VERIFICATION_CODE=社团群号
