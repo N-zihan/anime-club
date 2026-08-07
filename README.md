@@ -82,7 +82,7 @@
 | 图片处理 | Pillow                            |
 | 前端 | HTML + CSS + Jinja2               |
 | 测试 | Pytest（79 个测试用例）           |
-| 部署 | Vercel                            |
+| 部署 | Vercel(Python 3.12)               |
 | 认证 | Session-based + Werkzeug 密码哈希 |
 | 安全 | CSRFProtect（Flask-WTF）          |
 
