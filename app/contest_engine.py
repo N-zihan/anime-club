@@ -306,6 +306,25 @@ def run_group_promotion(contest, session=None):
         if not groups:
             return [], {}
 
+        # ---- 批量获取该性别所有候选人在小组赛 3 轮中的票数 ----
+        vote_sums = session.query(
+            ContestVote.candidate_id,
+            ContestVote.round_number,
+            sa_func.sum(ContestVote.weight).label('total_votes')
+        ).filter(
+            ContestVote.contest_id == contest.id,
+            ContestVote.gender == gender,
+            ContestVote.round_number.in_([1, 2, 3])
+        ).group_by(
+            ContestVote.candidate_id,
+            ContestVote.round_number
+        ).all()
+
+        vote_map = {}
+        for row in vote_sums:
+            vote_map[(row.candidate_id, row.round_number)] = row.total_votes
+        # ------------------------------------------------
+
         result = {}
         for c in candidates:
             result[c.id] = {
@@ -341,23 +360,9 @@ def run_group_promotion(contest, session=None):
                              (group_candidates[1], group_candidates[2])]
 
                 for cid1, cid2 in pairs:
-                    votes1 = session.query(
-                        sa_func.sum(ContestVote.weight)
-                    ).filter(
-                        ContestVote.contest_id == contest.id,
-                        ContestVote.candidate_id == cid1,
-                        ContestVote.round_number == round_num,
-                        ContestVote.gender == gender
-                    ).scalar() or 0
-
-                    votes2 = session.query(
-                        sa_func.sum(ContestVote.weight)
-                    ).filter(
-                        ContestVote.contest_id == contest.id,
-                        ContestVote.candidate_id == cid2,
-                        ContestVote.round_number == round_num,
-                        ContestVote.gender == gender
-                    ).scalar() or 0
+                    # 从 vote_map 取票数，不再查数据库
+                    votes1 = vote_map.get((cid1, round_num), 0)
+                    votes2 = vote_map.get((cid2, round_num), 0)
 
                     result[cid1]['total_votes'] += votes1
                     result[cid2]['total_votes'] += votes2
