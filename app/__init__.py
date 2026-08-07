@@ -26,7 +26,7 @@ from .auth import auth_bp
 from .models import db
 from .public import public_bp, page_not_found, internal_server_error, forbidden
 from .user import user_bp
-from .utils import supabase
+from .utils import get_supabase
 
 load_dotenv()
 

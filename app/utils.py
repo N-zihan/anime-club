@@ -30,7 +30,17 @@ load_dotenv()
 
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+_supabase_client: Client | None = None
+
+def get_supabase() -> Client:
+    """懒加载获取 Supabase 客户端，仅在首次调用时初始化"""
+    global _supabase_client
+    if _supabase_client is None:
+        if not SUPABASE_URL or not SUPABASE_KEY:
+            raise RuntimeError("Supabase 未配置：请检查 SUPABASE_URL 和 SUPABASE_KEY 环境变量")
+        _supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    return _supabase_client
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 

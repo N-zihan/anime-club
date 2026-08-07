@@ -16,9 +16,10 @@
 """
 
 from app import create_app, db
-from app.utils import supabase
+from app.utils import get_supabase
 
 app = create_app()
+supabase = get_supabase()
 
 with app.app_context():
     # -------- 创建数据库表 --------

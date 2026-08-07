@@ -29,9 +29,10 @@ from openpyxl.styles import Font, Alignment
 
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, Candidate, \
     ContestVote
-from .utils import supabase, allowed_file, compress_image, get_or_404
+from .utils import get_supabase, allowed_file, compress_image, get_or_404
 
 admin_bp = Blueprint('admin', __name__)
+supabase = get_supabase()
 
 
 # ---------- 权限装饰器 ----------

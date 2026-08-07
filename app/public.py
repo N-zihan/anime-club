@@ -32,9 +32,10 @@ from .contest_engine import (
     prepare_group_round_data
 )
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote
-from .utils import supabase, compress_image, get_or_404
+from .utils import get_supabase, compress_image, get_or_404
 
 public_bp = Blueprint('public', __name__)
+supabase = get_supabase()
 
 
 @public_bp.route('/')
