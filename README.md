@@ -1,4 +1,4 @@
-<div style="text-align: center;">
+<center>
 
 # 南平一中动漫社官网
 
@@ -6,18 +6,18 @@
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
-[![Tests](https://img.shields.io/badge/tests-79_passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-79_passing-brightgreen)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > 以热爱为名 · 共创二次元家园
->
-> 南平一中动漫社官方网站，集社团展示、互动交流、资源分享与线上赛事于一体的校内平台
 
-> 由00后高中生 Nzihan 独立开发 · 学长 LLLinV 技术指导 · 适合各类动漫社建立网站
- 
+南平一中动漫社官方网站，集社团展示、互动交流、资源分享与线上赛事于一体的校内平台。
+
+由 00 后高中生 Nzihan 独立开发，学长 LLLinV 指导。适合各类动漫社建立网站。
+
 **在线访问**：https://www.nanyi-anime-club.top
 
-</div>
+</center>
 
 ## 功能亮点
 
