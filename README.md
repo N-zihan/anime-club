@@ -144,6 +144,9 @@ CLUB_NAME=社团名字
 APP_VERSION=版本号(默认 dev )
 
 # SMTP 邮件配置(用于发送验证码和重置链接)
+SMTP_HOST=(默认smtp.qq.com)
+SMTP_PORT=(默认465)
+SMTP_USE_SSL=true(默认true开启)
 MAIL_USERNAME=你的QQ邮箱(建议额外注册一个)
 MAIL_PASSWORD=SMTP邮箱验证码
 ```

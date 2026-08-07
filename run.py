@@ -47,6 +47,8 @@ with app.app_context():
                 print(f"存储桶已存在: {bucket}")
     except Exception as e:
         print(f"存储桶初始化跳过: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)

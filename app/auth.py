@@ -40,6 +40,9 @@ if 'pytest' in sys.modules and not GROUP_VERIFICATION_CODE:
 CLUB_NAME = os.getenv('CLUB_NAME', '动漫社')
 MAIL_USERNAME = os.getenv('MAIL_USERNAME')
 MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+SMTP_HOST = os.getenv('SMTP_HOST', 'smtp.qq.com')
+SMTP_PORT = int(os.getenv('SMTP_PORT', 465))
+SMTP_USE_SSL = os.getenv('SMTP_USE_SSL', 'true').lower() == 'true'
 
 
 def send_email(to_email, subject, body):
@@ -52,7 +55,11 @@ def send_email(to_email, subject, body):
         msg['Subject'] = subject
         msg['From'] = f'{CLUB_NAME} <{MAIL_USERNAME}>'
         msg['To'] = to_email
-        server = smtplib.SMTP_SSL('smtp.qq.com', 465)
+        if SMTP_USE_SSL:
+            server = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT)
+        else:
+            server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
+            server.starttls()
         server.login(MAIL_USERNAME, MAIL_PASSWORD)
         server.sendmail(MAIL_USERNAME, [to_email], msg.as_string())
         server.quit()
