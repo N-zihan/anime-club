@@ -69,18 +69,18 @@
 
 ## 技术栈
 
-| 类别 | 技术 |
-|------|------|
-| 后端框架 | Python 3.12 + Flask 3.0 |
-| ORM | SQLAlchemy 2.0 |
-| 数据库 | PostgreSQL（Supabase） |
-| 文件存储 | Supabase Storage |
-| 图片处理 | Pillow |
-| 前端 | HTML + CSS + Jinja2 |
-| 测试 | Pytest（79 个测试用例） |
-| 部署 | Vercel |
+| 类别 | 技术                              |
+|------|-----------------------------------|
+| 后端框架 | Python 3.14.4 + Flask 3.0         |
+| ORM | SQLAlchemy 2.0                    |
+| 数据库 | PostgreSQL（Supabase）            |
+| 文件存储 | Supabase Storage                  |
+| 图片处理 | Pillow                            |
+| 前端 | HTML + CSS + Jinja2               |
+| 测试 | Pytest（79 个测试用例）           |
+| 部署 | Vercel                            |
 | 认证 | Session-based + Werkzeug 密码哈希 |
-| 安全 | CSRFProtect（Flask-WTF） |
+| 安全 | CSRFProtect（Flask-WTF）          |
 
 
 ## 项目结构
