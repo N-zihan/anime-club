@@ -1,19 +1,23 @@
+<div style="text-align: center;">
+
+# 南平一中动漫社官网
+
 [![Vercel](https://img.shields.io/badge/部署-Vercel-000000?logo=vercel)](https://www.nanyi-anime-club.top)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
-[![Tests](https://img.shields.io/badge/tests-79_passing-brightgreen)](#)
+[![Tests](https://img.shields.io/badge/tests-79_passing-brightgreen)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-# 南平一中动漫社官网
-
 > 以热爱为名 · 共创二次元家园
+>
+> 南平一中动漫社官方网站，集社团展示、互动交流、资源分享与线上赛事于一体的校内平台
 
-> 一个由00后高中生Nzihan开发、学长LLLinV指点的社团网站项目，适合各类动漫社建立网站
+> 由00后高中生 Nzihan 独立开发 · 学长 LLLinV 技术指导 · 适合各类动漫社建立网站
+ 
+**在线访问**：https://www.nanyi-anime-club.top
 
-南平一中动漫社官方网站，集社团展示、互动交流、资源分享与线上赛事于一体的校内平台
-
-🔗 在线访问：https://www.nanyi-anime-club.top
+</div>
 
 ## 功能亮点
 
@@ -180,7 +184,7 @@ pytest -v
 
 ### Vercel 部署
 
-在 Vercel 点击 Add New → Project
+在 [Vercel](https://vercel.com) 点击 Add New → Project
 
 导入你的 GitHub 仓库
 
