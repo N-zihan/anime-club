@@ -137,7 +137,11 @@ def register():
                 return redirect(url_for('auth.register'))
 
         # 创建用户
+        is_first_user = User.query.count() == 0
         new_user = User(username=username, qq=qq, email=email)
+        if is_first_user:
+            new_user.is_owner = True
+            new_user.is_staff = True
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
