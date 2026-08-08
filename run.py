@@ -19,9 +19,9 @@ from app import create_app, db
 from app.utils import get_supabase
 
 app = create_app()
-supabase = get_supabase()
 
 with app.app_context():
+    supabase = get_supabase()
     # -------- 创建数据库表 --------
     db.create_all()
     print("数据库表检查完成")

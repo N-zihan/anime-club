@@ -35,7 +35,6 @@ from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Co
 from .utils import get_supabase, compress_image, get_or_404
 
 public_bp = Blueprint('public', __name__)
-supabase = get_supabase()
 
 
 @public_bp.route('/')
@@ -64,6 +63,7 @@ def activities():
 
 @public_bp.route('/gallery')
 def gallery():
+    supabase = get_supabase()
     activities = Activity.query.options(joinedload(Activity.photos)).order_by(Activity.date.desc()).all()
     uncategorized_photos = Photo.query.filter_by(activity_id=None).all()
 
@@ -301,6 +301,7 @@ def contest_detail(contest_id):
 
 @public_bp.route('/contest/<int:contest_id>/nominate', methods=['POST'])
 def submit_nomination(contest_id):
+    supabase = get_supabase()
     if not session.get('user_id'):
         flash('请先登录', 'warning')
         return redirect(url_for('auth.login'))

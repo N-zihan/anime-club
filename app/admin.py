@@ -32,7 +32,6 @@ from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Co
 from .utils import get_supabase, allowed_file, compress_image, get_or_404
 
 admin_bp = Blueprint('admin', __name__)
-supabase = get_supabase()
 
 
 # ---------- 权限装饰器 ----------
@@ -130,6 +129,7 @@ def admin_activity_edit(id):
 @admin_bp.route('/admin/activities/delete/<int:id>')
 @admin_required
 def admin_activity_delete(id):
+    supabase = get_supabase()
     activity = get_or_404(Activity, id)
 
     # 先删除该活动关联的所有照片（文件 + 数据库记录）
@@ -150,6 +150,7 @@ def admin_activity_delete(id):
 @admin_bp.route('/admin/gallery')
 @admin_required
 def admin_gallery():
+    supabase = get_supabase()
     activities = Activity.query.order_by(Activity.date.desc()).all()
     photos = Photo.query.order_by(Photo.upload_time.desc()).all()
     for photo in photos:
@@ -160,6 +161,7 @@ def admin_gallery():
 @admin_bp.route('/admin/gallery/upload', methods=['POST'])
 @admin_required
 def admin_gallery_upload():
+    supabase = get_supabase()
     if not session.get('user_id'):
         flash('请先登录再上传照片', 'warning')
         return redirect(url_for('auth.login'))
@@ -210,6 +212,7 @@ def admin_gallery_upload():
 @admin_required
 def admin_gallery_delete(photo_id):
     """删除单张照片（文件 + 数据库记录）"""
+    supabase = get_supabase()
     photo = get_or_404(Photo, photo_id)
 
     # 从 Supabase Storage 删除文件
