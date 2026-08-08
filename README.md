@@ -8,6 +8,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
 [![Python application](https://github.com/N-zihan/anime-club/actions/workflows/python-app.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/python-app.yml)
 [![Pylint](https://github.com/N-zihan/anime-club/actions/workflows/pylint.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/pylint.yml)
+[![CodeQL Advanced](https://github.com/N-zihan/anime-club/actions/workflows/codeql.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > 以热爱为名 · 共创二次元家园
