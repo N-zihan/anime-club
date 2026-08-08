@@ -19,7 +19,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, session, request, redirect, url_for
-from flask_wtf import CSRFProtect  # ← 新增
+from flask_wtf import CSRFProtect
 
 from .admin import admin_bp
 from .auth import auth_bp

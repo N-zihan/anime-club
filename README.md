@@ -3,7 +3,7 @@
 # 南平一中动漫社官网
 
 [![Vercel](https://img.shields.io/badge/部署-Vercel-000000?logo=vercel)](https://www.nanyi-anime-club.top)
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
 [![Tests](https://img.shields.io/badge/tests-79_passing-brightgreen)](#)
@@ -82,7 +82,7 @@
 | 图片处理 | Pillow                            |
 | 前端 | HTML + CSS + Jinja2               |
 | 测试 | Pytest(79 个测试用例)             |
-| 部署 | Vercel(Python 3.12)               |
+| 部署 | Vercel                            |
 | 认证 | Session-based + Werkzeug 密码哈希 |
 | 安全 | CSRFProtect(Flask-WTF)            |
 

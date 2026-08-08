@@ -8,6 +8,7 @@
       "src": "run.py",
       "use": "@vercel/python",
       "config": {
+        "pythonVersion": "3.14",
         "installCommand": "pip install -r requirements.txt"
       }
     }
