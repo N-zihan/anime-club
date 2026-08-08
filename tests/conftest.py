@@ -23,6 +23,11 @@ from app.models import db, User, Contest, Candidate, Nomination, ContestVote, Ac
 @pytest.fixture
 def app():
     """创建测试用 Flask 应用"""
+    # 设置测试所需的环境变量
+    os.environ['SECRET_KEY'] = 'test-secret-key-for-ci'
+    os.environ['SUPABASE_URL'] = 'https://fake.supabase.co'
+    os.environ['SUPABASE_KEY'] = 'fake-key'
+
     app = create_app()
     app.config['TESTING'] = True
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
