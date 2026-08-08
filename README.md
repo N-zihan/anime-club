@@ -10,12 +10,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > 以热爱为名 · 共创二次元家园
-
->南平一中动漫社官方网站，集社团展示、互动交流、资源分享与线上赛事于一体的校内平台。
-
->由 00 后高中生 Nzihan 独立开发，学长 LLLinV 指导。适合各类动漫社建立网站。
-
-**在线访问**：https://www.nanyi-anime-club.top
+>
+>南平一中动漫社官方网站，集社团展示、互动交流、资源分享与线上赛事于一体的校内平台
+>
+>由 00 后高中生 Nzihan 独立开发，学长 LLLinV 指导。适合各类动漫社建立网站
+>
+>**在线访问**：https://www.nanyi-anime-club.top
 
 </div>
 
