@@ -15,7 +15,7 @@
 >
 >由 00 后高中生 Nzihan 独立开发，学长 LLLinV 指导。适合各类动漫社建立网站
 >
->**在线访问**：https://www.nanyi-anime-club.top
+>***在线访问***：https://www.nanyi-anime-club.top
 
 </div>
 
