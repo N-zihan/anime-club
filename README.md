@@ -124,7 +124,6 @@
 ├── vercel.json # vercel配置
 └── .gitignore # Git 忽略规则
 ```
-> 注意：`templates/base.html` 和 `templates/splash.html` 中的“南平一中动漫社”字样需替换为你自己的社团名称
 
 ## 本地运行
 ```bash

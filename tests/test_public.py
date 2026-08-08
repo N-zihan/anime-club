@@ -2,6 +2,7 @@ from datetime import timedelta, datetime
 
 import pytest
 
+from app.auth import CLUB_NAME
 from app.models import ContestVote, Contest
 
 
@@ -12,7 +13,7 @@ class TestPublic:
         # splash 是公开的，不需要登录
         response = client.get('/')
         assert response.status_code == 200
-        assert '南平一中动漫社' in response.text
+        assert CLUB_NAME in response.text
 
     def test_home_page(self, logged_in_client):
         response = logged_in_client.get('/home')

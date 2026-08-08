@@ -80,6 +80,12 @@ def create_app():
     app.register_error_handler(500, internal_server_error)
     app.register_error_handler(403, forbidden)
 
+    CLUB_NAME = os.getenv('CLUB_NAME', '动漫社')
+
+    @app.context_processor
+    def inject_club_name():
+        return {'club_name': CLUB_NAME}
+
     # 登录拦截器
     @app.before_request
     def require_login():

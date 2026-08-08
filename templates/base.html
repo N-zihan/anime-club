@@ -6,7 +6,7 @@
     <meta content="Sv5yDeDt3X" name="sogou_site_verification"/>
     <meta content="codeva-mVPCgddV5r" name="baidu-site-verification"/>
     <link href="{{ url_for('static', filename='css/style.css') }}?v=4" rel="stylesheet">
-    <title>南平一中动漫社 - {% block title %}{% endblock %}</title>
+    <title>{{ club_name }} - {% block title %}{% endblock %}</title>
     <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" type="image/x-icon"/>
 </head>
 <body>
@@ -15,7 +15,7 @@
 <!-- =============================================================== -->
 <nav>
     <div class="nav-left">
-        <a class="logo" href="/">南平一中动漫社</a>
+        <a class="logo" href="/">{{ club_name }}</a>
     </div>
     <div class="nav-links">
         <a href="/home">首页</a>
@@ -46,7 +46,7 @@
 </main>
 
 <footer>
-    <p>© 南平一中动漫社 | 为爱发电</p>
+    <p>© {{ club_name }} | 为爱发电</p>
     <p style="font-size:0.7rem; color:#aaa; margin-top:4px;">{{ app_version }}</p>
 </footer>
 <!-- ==================== 新手引导（首次登录自动弹出） ==================== -->
@@ -197,7 +197,7 @@
     <div id="onboarding-popup">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
             <div>
-                <div class="step-title" id="onboarding-title">欢迎来到南平一中动漫社</div>
+                <div class="step-title" id="onboarding-title">欢迎来到{{ club_name }}</div>
                 <div class="step-counter" id="onboarding-counter">1 / 6</div>
             </div>
         </div>
@@ -227,7 +227,7 @@
         const steps = [
             {
                 title: '欢迎回来！',
-                desc: '这里是南平一中动漫社官网。<br>接下来 30 秒，带你熟悉咱们的二次元据点。',
+                desc: '这里是{{ club_name }}官网。<br>接下来 30 秒，带你熟悉咱们的二次元据点。',
                 target: null,
             },
             {
