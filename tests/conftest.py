@@ -4,11 +4,15 @@ from datetime import datetime, timedelta
 
 import pytest
 
+# ====== 设置测试环境变量（必须在导入 app 之前） ======
 os.environ['GROUP_VERIFICATION_CODE'] = 'test_group_code'
 os.environ['TESTING'] = '1'
+os.environ['SECRET_KEY'] = 'test-secret-key-for-ci'
+os.environ['SUPABASE_URL'] = 'https://fake.supabase.co'
+os.environ['SUPABASE_KEY'] = 'fake-key'
+# =====================================================
 
-# 获取项目根目录（假设项目根目录是当前目录的父目录）
-# 如果测试失败，可以手动设置路径
+# 获取项目根目录
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 
@@ -23,11 +27,6 @@ from app.models import db, User, Contest, Candidate, Nomination, ContestVote, Ac
 @pytest.fixture
 def app():
     """创建测试用 Flask 应用"""
-    # 设置测试所需的环境变量
-    os.environ['SECRET_KEY'] = 'test-secret-key-for-ci'
-    os.environ['SUPABASE_URL'] = 'https://fake.supabase.co'
-    os.environ['SUPABASE_KEY'] = 'fake-key'
-
     app = create_app()
     app.config['TESTING'] = True
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
