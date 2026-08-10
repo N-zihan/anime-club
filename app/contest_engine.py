@@ -512,6 +512,7 @@ def run_group_promotion(contest, session=None):
             f"请检查小组赛投票数据是否完整。"
         )
 
+    flag_modified(contest, 'config')
     contest.status = 'knockout'
     session.commit()
 
@@ -739,6 +740,7 @@ def run_final_ranking(contest):
         result = []
         for item in ranking:
             result.append({
+                'id': item['candidate'].id,
                 'name': item['candidate'].name,
                 'source': item['candidate'].source,
                 'votes': item['votes'],
@@ -752,24 +754,24 @@ def run_final_ranking(contest):
     flag_modified(contest, 'config')
 
     if contest.config['female_ranking']:
-        champion_name = contest.config['female_ranking'][0]['name']
-        champion = Candidate.query.filter_by(contest_id=contest.id, name=champion_name).first()
+        champion_id = contest.config['female_ranking'][0]['id']
+        champion = db.session.get(Candidate, champion_id)
         if champion:
             champion.stage = 'champion'
         if len(contest.config['female_ranking']) >= 2:
-            runner_name = contest.config['female_ranking'][1]['name']
-            runner = Candidate.query.filter_by(contest_id=contest.id, name=runner_name).first()
+            runner_id = contest.config['female_ranking'][1]['id']
+            runner = db.session.get(Candidate, runner_id)
             if runner:
                 runner.stage = 'finalist'
 
     if contest.config['male_ranking']:
-        champion_name = contest.config['male_ranking'][0]['name']
-        champion = Candidate.query.filter_by(contest_id=contest.id, name=champion_name).first()
+        champion_id = contest.config['male_ranking'][0]['id']
+        champion = db.session.get(Candidate, champion_id)
         if champion:
             champion.stage = 'champion'
         if len(contest.config['male_ranking']) >= 2:
-            runner_name = contest.config['male_ranking'][1]['name']
-            runner = Candidate.query.filter_by(contest_id=contest.id, name=runner_name).first()
+            runner_id = contest.config['male_ranking'][1]['id']
+            runner = db.session.get(Candidate, runner_id)
             if runner:
                 runner.stage = 'finalist'
 
@@ -901,7 +903,7 @@ def prepare_group_round_data(contest, phase):
         for cid, data in stats.items():
             data['points'] = data['wins'] * 3 + data['draws'] * 1
 
-        return sorted(stats.values(), key=lambda x: x['points'], reverse=True)
+        return sorted(stats.values(), key=lambda x: (x['points'], x['total_votes']), reverse=True)
 
     group_round_results = {
         'female': get_group_matches('female', groups_female),
