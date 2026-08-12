@@ -4,100 +4,100 @@
 
 <!-- ========== 阶段提示横幅 ========== -->
 {% if phase == 'nomination' %}
-<div style="background:#e3f2fd; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>提名期</strong>，截止 {{ nomination_end.strftime('%Y年%m月%d日 %H:%M') if nomination_end else '未设置'
     }}
 </div>
 {% elif phase == 'review' %}
-<div style="background:#fff3e0; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #ff9800;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>审核期</strong>，管理员正在审核提名，请稍候
 </div>
 {% elif phase == 'qualifying' %}
-<div style="background:#e8f5e9; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #4caf50;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>海选投票</strong>，截止 {{ qualifying_vote_end.strftime('%Y年%m月%d日 %H:%M') if qualifying_vote_end
     else '未设置' }}
 </div>
 {% elif phase == 'qualifying_result' %}
-<div style="background:#fff8e1; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #ffc107;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>海选公示日</strong>，结果将于 {{ qualifying_end.strftime('%Y年%m月%d日 %H:%M') if qualifying_end else
     '未设置' }} 公布
 </div>
 {% elif phase == 'group_round_1' %}
-<div style="background:#e8f5e9; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #4caf50;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>小组赛第1轮投票</strong>，截止 {{ group_round_1_end.strftime('%Y年%m月%d日 %H:%M') if
     group_round_1_end else '未设置' }}
 </div>
 {% elif phase == 'group_round_1_result' %}
-<div style="background:#fff8e1; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #ffc107;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>小组赛第1轮公示</strong>，结果将于 {{ group_round_1_result_end.strftime('%Y年%m月%d日 %H:%M') if
     group_round_1_result_end else '未设置' }} 公布
 </div>
 {% elif phase == 'group_round_2' %}
-<div style="background:#e8f5e9; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #4caf50;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>小组赛第2轮投票</strong>，截止 {{ group_round_2_end.strftime('%Y年%m月%d日 %H:%M') if
     group_round_2_end else '未设置' }}
 </div>
 {% elif phase == 'group_round_2_result' %}
-<div style="background:#fff8e1; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #ffc107;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>小组赛第2轮公示</strong>，结果将于 {{ group_round_2_result_end.strftime('%Y年%m月%d日 %H:%M') if
     group_round_2_result_end else '未设置' }} 公布
 </div>
 {% elif phase == 'group_round_3' %}
-<div style="background:#e8f5e9; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #4caf50;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>小组赛第3轮投票</strong>，截止 {{ group_round_3_end.strftime('%Y年%m月%d日 %H:%M') if
     group_round_3_end else '未设置' }}
 </div>
 {% elif phase == 'group_round_3_result' %}
-<div style="background:#fff8e1; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #ffc107;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>小组赛第3轮公示</strong>，结果将于 {{ group_round_3_result_end.strftime('%Y年%m月%d日 %H:%M') if
     group_round_3_result_end else '未设置' }} 公布
 </div>
 {% elif phase == 'knockout_16' %}
-<div style="background:#e8f5e9; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #4caf50;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>淘汰赛16强投票</strong>，截止 {{ knockout_16_end.strftime('%Y年%m月%d日 %H:%M') if knockout_16_end
     else '未设置' }}
 </div>
 {% elif phase == 'knockout_16_result' %}
-<div style="background:#fff8e1; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #ffc107;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>淘汰赛16强公示</strong>，结果将于 {{ knockout_16_result_end.strftime('%Y年%m月%d日 %H:%M') if
     knockout_16_result_end else '未设置' }} 公布
 </div>
 {% elif phase == 'knockout_8' %}
-<div style="background:#e8f5e9; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #4caf50;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>淘汰赛8强投票</strong>，截止 {{ knockout_8_end.strftime('%Y年%m月%d日 %H:%M') if knockout_8_end else
     '未设置' }}
 </div>
 {% elif phase == 'knockout_8_result' %}
-<div style="background:#fff8e1; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #ffc107;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>淘汰赛8强公示</strong>，结果将于 {{ knockout_8_result_end.strftime('%Y年%m月%d日 %H:%M') if
     knockout_8_result_end else '未设置' }} 公布
 </div>
 {% elif phase == 'knockout_4' %}
-<div style="background:#e8f5e9; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #4caf50;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>淘汰赛4强投票</strong>，截止 {{ knockout_4_end.strftime('%Y年%m月%d日 %H:%M') if knockout_4_end else
     '未设置' }}
 </div>
 {% elif phase == 'knockout_4_result' %}
-<div style="background:#fff8e1; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #ffc107;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>淘汰赛4强公示</strong>，结果将于 {{ knockout_4_result_end.strftime('%Y年%m月%d日 %H:%M') if
     knockout_4_result_end else '未设置' }} 公布
 </div>
 {% elif phase == 'final_vote' %}
-<div style="background:#e8f5e9; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #4caf50;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>决赛投票</strong>，截止 {{ final_vote_end.strftime('%Y年%m月%d日 %H:%M') if final_vote_end else '未设置'
     }}
 </div>
 {% elif phase == 'final_result' %}
-<div style="background:#fff8e1; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #ffc107;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     当前为 <strong>最终结果公示</strong>，结果将于 {{ final_result_end.strftime('%Y年%m月%d日 %H:%M') if final_result_end
     else '未设置' }} 公布
 </div>
 {% elif phase == 'closed' %}
-<div style="background:#f5f5f5; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #9e9e9e;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     赛事已结束
 </div>
 {% elif phase == 'not_started' %}
-<div style="background:#f5f5f5; padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #9e9e9e;">
+<div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
     赛事尚未开始（{{ contest.open_at.strftime('%Y年%m月%d日 %H:%M') if contest.open_at else '未设置' }} 开放）
 </div>
 {% endif %}
@@ -105,7 +105,7 @@
 <h2>{{ contest.title }}</h2>
 <p>{{ contest.description }}</p>
 
-<div style="display:flex; gap:20px; flex-wrap:wrap; background:#f8fafc; padding:12px 16px; border-radius:12px; margin-bottom:20px;">
+<div style="display:flex; gap:20px; flex-wrap:wrap; background: var(--bg-card); padding:12px 16px; border-radius:12px; margin-bottom:20px;">
     <span><strong>状态：</strong>{{ contest.status }}</span>
     <span><strong>开始：</strong>{{ contest.open_at.strftime('%Y-%m-%d %H:%M:%S') if contest.open_at else '未设置' }}</span>
     <span><strong>结束：</strong>{{ contest.close_at.strftime('%Y-%m-%d %H:%M:%S') if contest.close_at else '未设置' }}</span>
@@ -161,15 +161,14 @@
 <!-- ============================================================ -->
 <h3 style="margin-top:30px;">候选角色</h3>
 {% if candidates %}
-<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px; margin-top:10px;">
     {% for c in candidates %}
-    <div style="background:#f8fafc; border-radius:8px; padding:12px; text-align:center;" data-candidate-id="{{ c.id }}">
+    <div style="background: var(--bg-card); border-radius:8px; padding:12px; text-align:center;" data-candidate-id="{{ c.id }}">
         {% if c.image_url %}<img alt="{{ c.name }}" src="{{ c.image_url }}"
                                  style="width:80px; height:80px; object-fit:cover; border-radius:50%;">{% endif %}
         <div><strong>{{ c.name }}</strong></div>
-        <div style="font-size:0.85rem; color:#64748b;">{{ c.source }}</div>
-        <div style="font-size:0.8rem; color:#94a3b8;">{{ '女' if c.gender == 'female' else '男' }}</div>
-        <div style="font-size:0.7rem; color:#94a3b8; margin-top:4px;">
+        <div style="font-size:0.85rem; color: var(--text-secondary);">{{ c.source }}</div>
+        <div style="font-size:0.8rem; color: var(--text-muted);">{{ '女' if c.gender == 'female' else '男' }}</div>
+        <div style="font-size:0.7rem; color: var(--text-muted); margin-top:4px;">
             状态：
             {% if c.stage == 'champion' %}
             🏆 冠军
@@ -197,7 +196,6 @@
         </div>
     </div>
     {% endfor %}
-</div>
 {% else %}
 <p style="color:#94a3b8;">暂无候选人</p>
 {% endif %}
@@ -205,7 +203,7 @@
 <!-- ============================================================ -->
 <!-- 阶段入口导航 -->
 <!-- ============================================================ -->
-<div style="margin:30px 0; padding:20px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">
+<div style="margin:30px 0; padding:20px; background: var(--bg-card); border-radius:12px; border:1px solid var(--border-color);">
     <h3 style="margin-top:0;">赛事入口</h3>
     <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
 
@@ -252,9 +250,9 @@
 {% if contest.config and contest.config.female_ranking %}
 <h3 style="margin-top:30px;">最终排名</h3>
 <h4>女组</h4>
-<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px;">
+<div style="background: var(--bg-card); border-radius:10px; padding:10px; text-align:center; border:1px solid var(--border-color); {% if loop.index == 1 %}border-color:gold; border-width:2px;{% endif %}">
     {% for item in contest.config.female_ranking[:8] %}
-    <div style="background:#f8fafc; border-radius:10px; padding:10px; text-align:center; border:1px solid #e2e8f0; {% if loop.index == 1 %}border-color:gold; border-width:2px;{% endif %}">
+    <div style="background: var(--bg-card); border-radius:10px; padding:10px; text-align:center; border:1px solid var(--border-color); {% if loop.index == 1 %}border-color:gold; border-width:2px;{% endif %}">
         <div style="font-weight:700;">{% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{%
             endif %} {{ loop.index }}. {{ item.name }}
         </div>
@@ -285,10 +283,10 @@
 <!-- 底部时间提示 -->
 <!-- ============================================================ -->
 {% if phase not in ['closed', 'not_started'] %}
-<div style="margin-top:40px; padding:12px 16px; background:#f8fafc; border-radius:8px; text-align:center; border:1px solid #e2e8f0;">
-        <span style="color:#475569;">
+<div style="margin-top:40px; padding:12px 16px; background: var(--bg-card); border-radius:8px; text-align:center; border:1px solid var(--border-color);">
+        <span style="color: var(--text-secondary);">
             当前阶段截止时间：
-            <strong style="color:#1e2a3a;">
+            <strong style="color: var(--text-primary);">
                 {% if phase == 'nomination' %}
                     {{ nomination_end.strftime('%Y年%m月%d日 %H:%M') if nomination_end else '未设置' }}
                 {% elif phase == 'qualifying' %}
