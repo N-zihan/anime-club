@@ -9,7 +9,7 @@
     <div style="display:grid; gap:16px;">
 
         <!-- 头像 -->
-        <div style="background:#f8fafc; padding:20px 24px; border-radius:12px; border:1px solid #e2e8f0;">
+        <div style="padding:20px 24px; border-radius:12px;">
             <h4 style="margin-top:0; margin-bottom:12px;">头像</h4>
             <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
                 <img src="{{ url_for('user.get_avatar', user_id=user.id) }}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0;">

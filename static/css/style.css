@@ -1135,14 +1135,20 @@ a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not
     color: var(--text-primary);
 }
 
-/* ====== 强制覆盖所有白底黑字（内联样式也压住） ====== */
+/* 1. 所有块级容器强制深色背景 + 浅色文字 */
 [data-theme="dark"] div,
 [data-theme="dark"] section,
 [data-theme="dark"] main,
 [data-theme="dark"] article,
 [data-theme="dark"] aside,
 [data-theme="dark"] header,
-[data-theme="dark"] footer:not(nav footer) {
+[data-theme="dark"] footer:not(nav footer),
+[data-theme="dark"] form,
+[data-theme="dark"] fieldset,
+[data-theme="dark"] table,
+[data-theme="dark"] ul,
+[data-theme="dark"] ol,
+[data-theme="dark"] li {
     background-color: var(--bg-card) !important;
     border-color: var(--border-color) !important;
     color: var(--text-primary) !important;
@@ -1153,62 +1159,120 @@ a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not
     color: var(--text-primary) !important;
 }
 
+/* 2. 所有文本元素强制浅色文字 */
 [data-theme="dark"] h1,
 [data-theme="dark"] h2,
 [data-theme="dark"] h3,
 [data-theme="dark"] h4,
 [data-theme="dark"] h5,
+[data-theme="dark"] h6,
 [data-theme="dark"] p,
-[data-theme="dark"] span:not(.activity-date):not(.msg-time):not(.member-time),
-[data-theme="dark"] li,
+[data-theme="dark"] span:not(.activity-date):not(.msg-time):not(.member-time):not(.vote-count):not(.badge):not(.label),
 [data-theme="dark"] label,
-[data-theme="dark"] a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not(.member-link):not(.contest-card) {
+[data-theme="dark"] li,
+[data-theme="dark"] td,
+[data-theme="dark"] th,
+[data-theme="dark"] blockquote,
+[data-theme="dark"] pre,
+[data-theme="dark"] code {
     color: var(--text-primary) !important;
 }
 
+/* 3. 特殊卡片类（如果已有类，这里加固） */
+[data-theme="dark"] .card,
 [data-theme="dark"] .member-card,
 [data-theme="dark"] .message-card,
-[data-theme="dark"] .card-form,
+[data-theme="dark"] .activity-card,
+[data-theme="dark"] .anime-card,
 [data-theme="dark"] .admin-card,
 [data-theme="dark"] .contest-card,
-[data-theme="dark"] .profile-section {
+[data-theme="dark"] .card-form,
+[data-theme="dark"] .profile-section,
+[data-theme="dark"] .user-card-block {
     background: var(--bg-card) !important;
     border-color: var(--border-color) !important;
     color: var(--text-primary) !important;
 }
 
+/* 4. 卡片内的标题和正文 */
+[data-theme="dark"] .card h3,
 [data-theme="dark"] .member-card h3,
-[data-theme="dark"] .message-card .msg-meta strong,
-[data-theme="dark"] .message-card .message-body,
-[data-theme="dark"] .reply-content p,
-[data-theme="dark"] .reply-meta strong {
+[data-theme="dark"] .message-card h3,
+[data-theme="dark"] .activity-card h3,
+[data-theme="dark"] .anime-card h3,
+[data-theme="dark"] .admin-card h3,
+[data-theme="dark"] .contest-card h4,
+[data-theme="dark"] .profile-section h4 {
     color: var(--text-primary) !important;
 }
 
-[data-theme="dark"] .contest-card a {
+[data-theme="dark"] .card p,
+[data-theme="dark"] .member-card p,
+[data-theme="dark"] .message-card p,
+[data-theme="dark"] .activity-card p,
+[data-theme="dark"] .anime-card p,
+[data-theme="dark"] .admin-card p,
+[data-theme="dark"] .contest-card p,
+[data-theme="dark"] .profile-section p {
+    color: var(--text-secondary) !important;
+}
+
+/* 5. 留言板特殊元素 */
+[data-theme="dark"] .message-body,
+[data-theme="dark"] .reply-content p,
+[data-theme="dark"] .reply-meta strong,
+[data-theme="dark"] .msg-meta strong,
+[data-theme="dark"] .message-header strong {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .msg-time,
+[data-theme="dark"] .member-time,
+[data-theme="dark"] .reply-target {
+    color: var(--text-muted) !important;
+}
+
+/* 6. 链接（排除导航栏、按钮等） */
+[data-theme="dark"] a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not(.member-link):not(.contest-card) {
     color: #93bbfc !important;
 }
-[data-theme="dark"] .contest-card a:hover {
+[data-theme="dark"] a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not(.member-link):not(.contest-card):hover {
     color: #6ea8fe !important;
 }
 
-[data-theme="dark"] .btn-primary,
-[data-theme="dark"] .btn-add {
-    background: #1e2a3a !important;
-    color: white !important;
-}
-[data-theme="dark"] .btn-primary:hover,
-[data-theme="dark"] .btn-add:hover {
-    background: #2c3e50 !important;
-}
-
-[data-theme="dark"] .delete-btn {
-    color: #ffb3b3 !important;
-}
-[data-theme="dark"] .delete-btn:hover {
-    background: #4a2a2a !important;
+/* 7. 输入框、文本域、下拉框 */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
 }
 
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus {
+    border-color: #4a90d9 !important;
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.2) !important;
+}
+
+/* 8. 表格 */
+[data-theme="dark"] table {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+[data-theme="dark"] th,
+[data-theme="dark"] td {
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+[data-theme="dark"] thead {
+    background: var(--bg-code) !important;
+}
+[data-theme="dark"] tbody tr:hover {
+    background: var(--bg-code) !important;
+}
+
+/* 9. 错误/警告框 */
 [data-theme="dark"] .alert-danger {
     background: var(--alert-bg-danger) !important;
     color: var(--alert-text-danger) !important;
@@ -1218,4 +1282,10 @@ a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not
     background: var(--alert-bg-warning) !important;
     color: var(--alert-text-warning) !important;
     border-color: var(--alert-border-warning) !important;
+}
+
+/* 10. 最后防线：强制所有未覆盖的文本元素 */
+[data-theme="dark"] * {
+    /* 不直接覆盖所有，因为会破坏按钮、图标等，但保留以备不时之需 */
+    /* 如需开启，请谨慎测试 */
 }

@@ -3,8 +3,7 @@
 {% block content %}
 <div style="max-width: 800px; margin: 0 auto;">
     <!-- 个人信息卡片 -->
-    <div style="text-align: center; background: white; border-radius: 24px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; margin-bottom: 30px;">
-        <img alt="{{ user.username }}" src="{{ url_for('user.get_avatar', user_id=user.id) }}"
+    <div style="text-align: center; border-radius: 24px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 30px;">        <img alt="{{ user.username }}" src="{{ url_for('user.get_avatar', user_id=user.id) }}"
              style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid {% if user.is_owner %}gold{% elif user.is_staff %}#2c3e50{% else %}#e2e8f0{% endif %};">
         <h2 style="margin: 15px 0 5px 0;">
             {{ user.username }}
@@ -23,8 +22,7 @@
     </div>
 
     <!-- 该用户的留言 -->
-    <div style="background: white; border-radius: 24px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; margin-bottom: 30px;">
-        <h3>最近留言</h3>
+    <div style="border-radius: 24px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid var(--border-color); margin-bottom: 30px;">        <h3>最近留言</h3>
         {% if messages %}
         <ul style="list-style: none; padding: 0;">
             {% for msg in messages %}
@@ -41,7 +39,7 @@
     </div>
 
     <!-- 该用户推荐的番剧 -->
-    <div style="background: white; border-radius: 24px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+    <div style="border-radius: 24px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid var(--border-color);">
         <h3>推荐的番剧</h3>
         {% if anime %}
         <ul style="list-style: none; padding: 0;">

@@ -51,8 +51,9 @@
 
 <!-- ===== 关于本站 ===== -->
 <h2 style="margin-top:50px;">关于本站</h2>
-<div style="background:#f8fafc; border-radius:16px; padding:24px; border:1px solid #e2e8f0;">
-    <p><strong>{{ club_name }}官网</strong> 由 <strong>{{ owner.username if owner else '管理员' }}</strong> 独立开发并维护。
+<div style="border-radius:16px; padding:24px;">
+    <p>
+        <strong>{{ club_name }}官网</strong> 由 <strong>{{ owner.username if owner else '管理员' }}</strong> 独立开发并维护。
     </p>
     <p style="margin-top:12px; color:#4a6a7a; font-size:0.95rem; line-height:1.8;">
         <strong>技术栈</strong>：Python + Flask + SQLAlchemy + Supabase (PostgreSQL) + Vercel<br>
