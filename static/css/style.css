@@ -1096,3 +1096,41 @@ a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not
 a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not(.member-link):not(.contest-card):hover {
     color: #6ea8fe;
 }
+
+/* -------- 修复：留言板用户名和回复内容 -------- */
+.reply-meta strong {
+    color: var(--text-primary);
+}
+
+.reply-item .reply-content p {
+    color: var(--text-secondary);
+}
+
+/* -------- 修复：社员名单用户名 -------- */
+.member-info h3 {
+    color: var(--text-primary);
+}
+
+/* -------- 修复：赛事中心卡片内的链接（白底黑字） -------- */
+.contest-card a {
+    color: #93bbfc;
+}
+
+.contest-card a:hover {
+    color: #6ea8fe;
+}
+
+/* -------- 修复：赛事中心卡片描述文字 -------- */
+.contest-card p {
+    color: var(--text-secondary);
+}
+
+/* -------- 修复：留言板卡片内用户名（顶部） -------- */
+.message-card .msg-meta strong {
+    color: var(--text-primary);
+}
+
+/* -------- 修复：回复区域用户名（嵌套回复） -------- */
+.reply-item .reply-meta strong {
+    color: var(--text-primary);
+}
