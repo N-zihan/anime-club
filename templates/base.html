@@ -29,8 +29,7 @@
     </div>
     <div class="nav-right">
         {% if session.user_id %}
-        <a class="user-name" href="{{ url_for('user.user_profile', name=session.username) }}">{{ session.username
-            }}</a>
+        <a class="user-name" href="{{ url_for('user.user_profile', name=session.username) }}">{{ session.username }}</a>
         {% else %}
         <a href="{{ url_for('auth.login') }}">登录</a>
         <a href="{{ url_for('auth.register') }}">注册</a>
@@ -38,6 +37,12 @@
         {% if is_admin %}
         <a href="{{ url_for('admin.admin_entry') }}">管理</a>
         {% endif %}
+
+        <!-- ====== 深夜模式切换按钮 ====== -->
+        <button id="theme-toggle" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 1.1rem; color: white; transition: background 0.2s; display: flex; align-items: center; justify-content: center;" title="切换深夜模式">
+            🌙
+        </button>
+        <!-- ================================== -->
     </div>
 </nav>
 
@@ -448,5 +453,66 @@
         }
     });
 </script>
+
+<!-- ====== 深夜模式 ====== -->
+<script>
+    (function() {
+        const THEME_KEY = 'anime_club_theme';
+
+        function getPreferredTheme() {
+            const saved = localStorage.getItem(THEME_KEY);
+            if (saved === 'dark' || saved === 'light') {
+                return saved;
+            }
+            // 浏览器系统偏好
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'dark';
+            }
+            return 'light';
+        }
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+            // 更新按钮图标
+            const btn = document.getElementById('theme-toggle');
+            if (btn) {
+                btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+            }
+            localStorage.setItem(THEME_KEY, theme);
+        }
+
+        // 初始化
+        const theme = getPreferredTheme();
+        applyTheme(theme);
+
+        // 按钮切换
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('theme-toggle');
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    const current = document.documentElement.getAttribute('data-theme');
+                    const next = current === 'dark' ? 'light' : 'dark';
+                    applyTheme(next);
+                });
+            }
+        });
+
+        // 监听系统主题变化
+        if (window.matchMedia) {
+            const mq = window.matchMedia('(prefers-color-scheme: dark)');
+            mq.addEventListener('change', function(e) {
+                // 只有用户没有手动保存偏好时才跟随系统
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(e.matches ? 'dark' : 'light');
+                }
+            });
+        }
+    })();
+</script>
+<!-- ===================== -->
 </body>
 </html>

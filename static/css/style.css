@@ -834,3 +834,192 @@ footer {
 .admin-table .btn-delete:hover {
     text-decoration: underline;
 }
+
+/* ============================================================
+   深夜模式（通过 data-theme="dark" 切换）
+   ============================================================ */
+
+:root {
+    --bg-body: #f0f8ff;
+    --bg-main: #ffffff;
+    --bg-card: #ffffff;
+    --bg-nav: #1e2a3a;
+    --bg-input: #ffffff;
+    --bg-code: #f1f5f9;
+    --text-primary: #1e2a3a;
+    --text-secondary: #4a6a7a;
+    --text-muted: #94a3b8;
+    --text-nav: #ffffff;
+    --border-color: #e2e8f0;
+    --shadow-color: rgba(0, 0, 0, 0.05);
+    --shadow-hover: rgba(0, 0, 0, 0.1);
+    --alert-bg-danger: #fef2f2;
+    --alert-text-danger: #b91c1c;
+    --alert-border-danger: #fecaca;
+    --alert-bg-warning: #fffbeb;
+    --alert-text-warning: #92400e;
+    --alert-border-warning: #fed7aa;
+}
+
+[data-theme="dark"] {
+    --bg-body: #0f172a;
+    --bg-main: #1e293b;
+    --bg-card: #1e293b;
+    --bg-nav: #0f172a;
+    --bg-input: #334155;
+    --bg-code: #2d3748;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-nav: #e2e8f0;
+    --border-color: #334155;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --shadow-hover: rgba(0, 0, 0, 0.5);
+    --alert-bg-danger: #2d1a1a;
+    --alert-text-danger: #fca5a5;
+    --alert-border-danger: #7f1d1d;
+    --alert-bg-warning: #2d241a;
+    --alert-text-warning: #fbbf24;
+    --alert-border-warning: #78350f;
+}
+
+body {
+    background: var(--bg-body);
+    color: var(--text-primary);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+nav {
+    background: var(--bg-nav) !important;
+}
+
+nav a, nav span, nav button {
+    color: var(--text-nav) !important;
+}
+
+nav a:hover, nav button:hover {
+    background: #2a3a4a !important;
+}
+
+main {
+    background: var(--bg-main);
+    color: var(--text-primary);
+    box-shadow: 0 8px 24px var(--shadow-color);
+    transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card, .activity-card, .anime-card, .member-card, .message-card,
+.admin-card, .card-form, .contest-card {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.card:hover, .activity-card:hover, .anime-card:hover {
+    box-shadow: 0 8px 20px var(--shadow-hover);
+}
+
+input, textarea, select {
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+input:focus, textarea:focus {
+    border-color: #4a90d9;
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.2);
+}
+
+/* 留言板暗色适配 */
+.reply-input-row textarea {
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.replies-section {
+    background: var(--bg-code);
+    border-left-color: var(--border-color);
+}
+
+.new-message-section {
+    background: var(--bg-code);
+    border-color: var(--border-color);
+}
+
+/* 表格暗色适配 */
+.admin-table {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.admin-table thead {
+    background: var(--bg-code);
+}
+
+.admin-table th {
+    color: var(--text-primary);
+    border-bottom-color: var(--border-color);
+}
+
+.admin-table td {
+    border-bottom-color: var(--border-color);
+}
+
+.admin-table tbody tr:hover {
+    background: var(--bg-code);
+}
+
+.admin-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* 错误/警告框暗色 */
+.alert-danger {
+    background: var(--alert-bg-danger);
+    color: var(--alert-text-danger);
+    border-color: var(--alert-border-danger);
+}
+
+.alert-warning {
+    background: var(--alert-bg-warning);
+    color: var(--alert-text-warning);
+    border-color: var(--alert-border-warning);
+}
+
+/* Hero 暗色 */
+.hero p {
+    color: var(--text-secondary);
+}
+
+/* 投票相关暗色 */
+.candidate-card {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+.vote-btn[data-action="decrease"] {
+    background: var(--bg-code);
+    color: var(--text-primary);
+}
+
+/* 底部 footer */
+footer {
+    color: var(--text-muted);
+}
+
+footer p {
+    color: var(--text-muted);
+}
+
+/* 图片框暗色 */
+.gallery-item {
+    background: var(--bg-code);
+}
+
+/* 闪白屏保护 */
+html {
+    transition: background 0.3s ease;
+}
