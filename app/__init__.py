@@ -20,6 +20,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, session, request, redirect, url_for, flash
 from flask_wtf import CSRFProtect
+from flask_wtf.csrf import CSRFError
 
 from .admin import admin_bp
 from .auth import auth_bp
@@ -86,10 +87,9 @@ def create_app():
     def inject_club_name():
         return {'club_name': CLUB_NAME}
 
-    @csrf.error_handler
-    def handle_csrf_error(reason):
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(e):
         flash('页面已过期，请重新登录', 'warning')
-        # 清除可能已失效的 session 数据
         session.clear()
         return redirect(url_for('auth.login'))
 
