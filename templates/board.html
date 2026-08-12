@@ -19,11 +19,11 @@
                 <img alt="{{ msg.user.username if msg.user else msg.nickname }}" class="msg-avatar"
                      src="{% if msg.user_id %}{{ url_for('user.get_avatar', user_id=msg.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}">
                 <div class="msg-meta">
-                    <strong>{{ msg.user.username if msg.user else msg.nickname }}</strong>
+                    <strong style="color: var(--text-primary);">{{ msg.user.username if msg.user else msg.nickname }}</strong>
                     <span class="msg-time">{{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
                 </div>
             </div>
-            <p class="message-body">{{ msg.content }}</p>
+            <p class="message-body" style="color: var(--text-primary);">{{ msg.content }}</p>
 
             <!-- 回复列表 -->
             {% if msg._replies %}
@@ -34,7 +34,7 @@
                          src="{% if reply.user_id %}{{ url_for('user.get_avatar', user_id=reply.user_id) }}{% else %}{{ url_for('static', filename='avatars/default.png') }}{% endif %}">
                     <div class="reply-content">
                         <div class="reply-meta">
-                            <strong>{{ reply.user.username if reply.user else reply.nickname }}</strong>
+                            <strong style="color: var(--text-primary);">{{ reply.user.username if reply.user else reply.nickname }}</strong>
                             {% if reply.parent_reply_id %}
                             {% set parent = reply.parent_reply %}
                             <span style="color:#4a90d9; font-size:0.8rem;">
@@ -43,7 +43,7 @@
                             {% endif %}
                             <span class="msg-time">{{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
                         </div>
-                        <p>{{ reply.content }}</p>
+                        <p style="color: var(--text-primary);">{{ reply.content }}</p>
                         <!-- 针对本条回复的回复按钮 -->
                         <button class="reply-toggle" data-target="reply-form-{{ reply.id }}" onclick="toggleReply(this)"
                                 title="回复">

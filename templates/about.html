@@ -18,7 +18,7 @@
                  style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid gold;">
         </div>
         <div class="member-info">
-            <h3>{{ owner.username }}</h3>
+            <h3 style="color: var(--text-primary);">{{ owner.username }}</h3>
             <p class="member-time">加入时间：{{ owner.registered_at.strftime('%Y-%m-%d') }}</p>
         </div>
     </div>
@@ -37,7 +37,7 @@
                  style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid {% if member.is_owner %}gold{% else %}#e2e8f0{% endif %};">
         </div>
         <div class="member-info">
-            <h3>
+            <h3 style="color: var(--text-primary);">
                 {{ member.username }}
                 {% if member.is_owner %}{% endif %}
             </h3>
