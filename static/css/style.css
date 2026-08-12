@@ -1023,3 +1023,76 @@ footer p {
 html {
     transition: background 0.3s ease;
 }
+
+/* -------- 新增：留言板正文 -------- */
+.message-body {
+    color: var(--text-primary);
+}
+
+.reply-content p {
+    color: var(--text-secondary);
+}
+
+.msg-meta strong {
+    color: var(--text-primary);
+}
+
+/* -------- 新增：番剧链接（非导航链接） -------- */
+.anime-card a:not(nav a) {
+    color: #93bbfc;
+}
+
+.anime-card a:not(nav a):hover {
+    color: #6ea8fe;
+}
+
+.anime-card small {
+    color: var(--text-muted);
+}
+
+/* -------- 新增：赛事中心卡片 -------- */
+.contest-card {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.contest-card h4 {
+    color: var(--text-primary);
+}
+
+.contest-card p {
+    color: var(--text-secondary);
+}
+
+.contest-card:hover {
+    border-color: #4a90d9;
+}
+
+/* -------- 新增：规则页框内（配合 contest_rules.html 修改） -------- */
+.rules-container {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.rules-container h3 {
+    color: var(--text-primary) !important;
+}
+
+.rules-container ul li {
+    color: var(--text-secondary) !important;
+}
+
+.rules-container p {
+    color: var(--text-muted) !important;
+}
+
+/* -------- 新增：普通链接（番剧链接、社员名单等，排除导航栏） -------- */
+a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not(.member-link):not(.contest-card) {
+    color: #93bbfc;
+}
+
+a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not(.member-link):not(.contest-card):hover {
+    color: #6ea8fe;
+}
