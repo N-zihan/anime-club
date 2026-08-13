@@ -161,6 +161,7 @@
 <!-- ============================================================ -->
 <h3 style="margin-top:30px;">候选角色</h3>
 {% if candidates %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px; margin-top:10px;">
     {% for c in candidates %}
     <div style="background: var(--bg-card); border-radius:8px; padding:12px; text-align:center;" data-candidate-id="{{ c.id }}">
         {% if c.image_url %}<img alt="{{ c.name }}" src="{{ c.image_url }}"
@@ -196,6 +197,7 @@
         </div>
     </div>
     {% endfor %}
+</div>
 {% else %}
 <p style="color:#94a3b8;">暂无候选人</p>
 {% endif %}
@@ -278,6 +280,120 @@
 </div>
 {% endif %}
 {% endif %}
+
+<!-- ============================================================ -->
+<!-- AI 解说与预测 -->
+<!-- ============================================================ -->
+<div style="margin:30px 0; padding:20px; background: var(--bg-code); border-radius:12px; border:1px solid var(--border-color);">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <span style="font-size:1.3rem;">🎙️</span>
+        <h3 style="margin:0; color: var(--text-primary);">AI 赛事中心</h3>
+        <span style="color: var(--text-muted); font-size:0.7rem; background: var(--bg-card); padding:2px 10px; border-radius:20px; border:1px solid var(--border-color);">Powered by AI</span>
+    </div>
+
+    <!-- 实时战报 -->
+    <div id="ai-commentary" style="background: var(--bg-card); border-radius:10px; padding:16px; margin-bottom:12px; border-left:3px solid #4a90d9; min-height:60px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:600; color: var(--text-primary); font-size:0.9rem;">实时战报</span>
+            <span id="commentary-time" style="color: var(--text-muted); font-size:0.7rem;"></span>
+        </div>
+        <div id="commentary-content" style="color: var(--text-secondary); line-height:1.8; font-size:0.95rem;">
+            <span style="color: var(--text-muted);">加载中...</span>
+        </div>
+    </div>
+
+    <!-- 预测区域 -->
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+        <button id="predict-btn" style="padding:8px 20px; background:#1e2a3a; color:white; border:none; border-radius:40px; cursor:pointer; font-size:0.9rem;">
+            AI 预测
+        </button>
+        <button id="refresh-commentary-btn" style="background:transparent; border:1px solid var(--border-color); padding:6px 16px; border-radius:40px; cursor:pointer; color: var(--text-secondary); font-size:0.8rem;">
+            刷新战报
+        </button>
+        <span id="predict-status" style="color: var(--text-muted); font-size:0.8rem;"></span>
+    </div>
+
+    <div id="prediction-result" style="margin-top:12px; display:none; background: var(--bg-card); border-radius:10px; padding:16px; border:1px solid var(--border-color);">
+        <div style="font-weight:600; color: var(--text-primary); font-size:0.9rem; margin-bottom:6px;">🔮 AI 预测结果</div>
+        <div id="prediction-content" style="color: var(--text-secondary); line-height:1.8; font-size:0.9rem; white-space:pre-wrap;"></div>
+    </div>
+</div>
+
+<script>
+    // ====== AI 解说与预测 ======
+    (function() {
+        const contestId = {{ contest.id }};
+        const currentPhase = '{{ phase }}';
+
+        const commentaryContent = document.getElementById('commentary-content');
+        const commentaryTime = document.getElementById('commentary-time');
+        const predictBtn = document.getElementById('predict-btn');
+        const refreshBtn = document.getElementById('refresh-commentary-btn');
+        const predictStatus = document.getElementById('predict-status');
+        const predictionResult = document.getElementById('prediction-result');
+        const predictionContent = document.getElementById('prediction-content');
+
+        let isLoading = false;
+
+        function loadCommentary(force) {
+            if (isLoading) return;
+            isLoading = true;
+            let url = `/contest/${contestId}/commentary?phase=${currentPhase}`;
+            if (force) url += '&force=true';
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        commentaryContent.innerHTML = data.commentary.replace(/\n/g, '<br>');
+                        commentaryTime.textContent = '更新于 ' + new Date().toLocaleTimeString();
+                    } else {
+                        commentaryContent.innerHTML = '解说员暂时休息中，请稍后再试。';
+                    }
+                })
+                .catch(() => {
+                    commentaryContent.innerHTML = '解说员暂时离线，请稍后再试。';
+                })
+                .finally(() => { isLoading = false; });
+        }
+
+        function loadPrediction() {
+            if (predictBtn.disabled) return;
+            predictBtn.disabled = true;
+            predictBtn.textContent = '生成中...';
+            predictStatus.textContent = 'AI 正在分析数据...';
+
+            fetch(`/contest/${contestId}/predict`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        predictionContent.textContent = data.prediction;
+                        predictionResult.style.display = 'block';
+                        predictStatus.textContent = '预测已完成';
+                    } else {
+                        predictStatus.textContent = '预测失败，请稍后再试';
+                    }
+                })
+                .catch(() => {
+                    predictStatus.textContent = '网络错误，请稍后再试';
+                })
+                .finally(() => {
+                    predictBtn.disabled = false;
+                    predictBtn.textContent = 'AI 预测';
+                });
+        }
+
+        // 页面加载时自动加载解说
+        loadCommentary(false);
+
+        predictBtn.addEventListener('click', loadPrediction);
+        refreshBtn.addEventListener('click', function() {
+            loadCommentary(true);
+            predictStatus.textContent = '正在刷新战报...';
+            setTimeout(() => { predictStatus.textContent = ''; }, 2000);
+        });
+    })();
+</script>
 
 <!-- ============================================================ -->
 <!-- 底部时间提示 -->
