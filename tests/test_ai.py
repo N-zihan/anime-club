@@ -1,6 +1,5 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from datetime import datetime, timedelta  # 确保已导入
 from app.ai import generate_commentary, generate_prediction, _get_cached, _set_cache, _cache
 from app.models import Contest, Candidate
 
@@ -25,11 +24,13 @@ class TestAICommentary:
         Candidate.query.filter_by(contest_id=sample_contest.id).delete()
         db_session.commit()
 
-        with patch('app.ai.client.chat.completions') as mock_completions:
-            mock_completions.create.return_value.choices = [
-                MagicMock(message=MagicMock(content="暂无候选角色参与本届赛事。"))
-            ]
+        # Mock get_client 返回一个模拟客户端
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value.choices = [
+            MagicMock(message=MagicMock(content="暂无候选角色参与本届赛事。"))
+        ]
 
+        with patch('app.ai.get_client', return_value=mock_client):
             success, content, error = generate_commentary(sample_contest.id, 'qualifying')
 
             assert success is True
@@ -40,28 +41,32 @@ class TestAICommentary:
         """缓存生效，第二次调用不请求 API"""
         _cache.clear()
 
-        with patch('app.ai.client.chat.completions') as mock_completions:
-            mock_completions.create.return_value.choices = [
-                MagicMock(message=MagicMock(content="这是缓存的战报内容。"))
-            ]
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value.choices = [
+            MagicMock(message=MagicMock(content="这是缓存的战报内容。"))
+        ]
 
+        with patch('app.ai.get_client', return_value=mock_client):
             success1, content1, error1 = generate_commentary(sample_contest.id, 'qualifying')
             assert success1 is True
             assert content1 == "这是缓存的战报内容。"
-            assert mock_completions.create.call_count == 1
+            assert mock_client.chat.completions.create.call_count == 1
 
+            # 第二次调用，应该从缓存读取，不调用 API
             success2, content2, error2 = generate_commentary(sample_contest.id, 'qualifying')
             assert success2 is True
             assert content2 == "这是缓存的战报内容。"
-            assert mock_completions.create.call_count == 1
+            # 确保 API 未被再次调用
+            assert mock_client.chat.completions.create.call_count == 1
 
     def test_commentary_api_error(self, db_session, sample_contest):
         """API 报错时返回错误信息"""
         _cache.clear()
 
-        with patch('app.ai.client.chat.completions') as mock_completions:
-            mock_completions.create.side_effect = Exception("API 服务暂时不可用")
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = Exception("API 服务暂时不可用")
 
+        with patch('app.ai.get_client', return_value=mock_client):
             success, content, error = generate_commentary(sample_contest.id, 'qualifying')
 
             assert success is False
@@ -99,20 +104,22 @@ class TestAIPrediction:
         sample_contest.status = 'open'
         db_session.commit()
 
-        with patch('app.ai.client.chat.completions') as mock_completions:
-            mock_completions.create.return_value.choices = [
-                MagicMock(message=MagicMock(content="这是缓存的预测内容。"))
-            ]
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value.choices = [
+            MagicMock(message=MagicMock(content="这是缓存的预测内容。"))
+        ]
 
+        with patch('app.ai.get_client', return_value=mock_client):
             success1, content1, error1 = generate_prediction(sample_contest.id)
             assert success1 is True
             assert content1 == "这是缓存的预测内容。"
-            assert mock_completions.create.call_count == 1
+            assert mock_client.chat.completions.create.call_count == 1
 
+            # 第二次调用，从缓存读取
             success2, content2, error2 = generate_prediction(sample_contest.id)
             assert success2 is True
             assert content2 == "这是缓存的预测内容。"
-            assert mock_completions.create.call_count == 1
+            assert mock_client.chat.completions.create.call_count == 1
 
     def test_prediction_api_error(self, db_session, sample_contest):
         """API 报错时返回错误信息"""
@@ -121,9 +128,10 @@ class TestAIPrediction:
         sample_contest.status = 'open'
         db_session.commit()
 
-        with patch('app.ai.client.chat.completions') as mock_completions:
-            mock_completions.create.side_effect = Exception("API 服务暂时不可用")
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.side_effect = Exception("API 服务暂时不可用")
 
+        with patch('app.ai.get_client', return_value=mock_client):
             success, content, error = generate_prediction(sample_contest.id)
 
             assert success is False
@@ -158,6 +166,7 @@ class TestAICache:
         """测试缓存过期"""
         _cache.clear()
 
+        from datetime import datetime, timedelta
         key = "test_expire_key"
         _cache[key] = {
             'data': "过期数据",
@@ -171,6 +180,7 @@ class TestAICache:
         """缓存禁用时，不读取缓存"""
         _cache.clear()
 
+        from datetime import datetime, timedelta
         key = "test_disabled"
         _cache[key] = {
             'data': "数据",
@@ -187,24 +197,24 @@ class TestAIIntegration:
 
     def test_commentary_with_real_contest(self, db_session, sample_contest):
         """用真实赛事数据测试 AI 战报"""
-        with patch('app.ai.client.chat.completions') as mock_completions:
-            mock_completions.create.return_value.choices = [
-                MagicMock(message=MagicMock(content="这是一段模拟的 AI 战报，描述了当前赛事情况。"))
-            ]
+        mock_client = MagicMock()
+        mock_client.chat.completions.create.return_value.choices = [
+            MagicMock(message=MagicMock(content="这是一段模拟的 AI 战报，描述了当前赛事情况。"))
+        ]
 
+        with patch('app.ai.get_client', return_value=mock_client):
             success, content, error = generate_commentary(sample_contest.id, 'qualifying')
 
             assert success is True
             assert "模拟的 AI 战报" in content
             assert error is None
 
-            assert mock_completions.create.call_count == 1
+            # 验证 API 被调用了一次
+            assert mock_client.chat.completions.create.call_count == 1
 
             # 验证传入的 prompt 包含赛事信息
-            call_args = mock_completions.create.call_args[1]
+            call_args = mock_client.chat.completions.create.call_args[1]
             messages = call_args['messages']
             user_message = messages[1]['content']
-            # 检查是否包含赛事标题
             assert "测试萌战" in user_message
-            # 检查是否包含候选角色数
-            assert "候选角色数：" in user_message
+            assert "测试角色" in user_message
