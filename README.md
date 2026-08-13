@@ -11,82 +11,57 @@
 [![CodeQL Advanced](https://github.com/N-zihan/anime-club/actions/workflows/codeql.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> 以热爱为名 · 共创二次元家园
->
->南平一中动漫社官方网站，集社团展示、互动交流、资源分享与线上赛事于一体的校内平台
->
->由 00 后高中生 Nzihan 开发，学长 LLLinV 指导。适合各类动漫社建立网站
->
->***在线访问***：https://www.nanyi-anime-club.top
+> 动漫社官网 + 线上萌战赛事系统
+
+南平一中动漫社官方网站，集社团展示、互动交流、资源分享于一体。  
+核心特色是一套完整的线上赛事系统，支持**海选 → 小组赛 → 淘汰赛 → 最终排名**全流程。
+
+***在线访问***：[www.nanyi-anime-club.top](https://www.nanyi-anime-club.top)
 
 </div>
 
-## 功能亮点
+## 功能概览
 
-### 用户系统
-- 注册 / 登录 / 登出 / 账号注销
-- 个人主页(头像、留言、推荐番剧)
-- 头像上传(支持 jpg/png/gif，自动压缩至 200×200)
-- 用户名修改、密码修改
-- 邮箱绑定（用于密码找回）
+| 功能         | 说明                                               |
+|--------------|----------------------------------------------------|
+| 用户系统     | 注册、登录、邮箱绑定、密码重置、头像上传           |
+| 留言板       | 支持嵌套回复，关联用户头像                         |
+| 番剧资源     | 社员推荐 → 管理员审核 → 公开显示                   |
+| 照片墙       | 活动照片分类展示，存储于 Supabase Storage          |
+| **萌战系统** | 线上赛事引擎：提名 → 海选 → 小组赛 → 淘汰赛 → 冠军 |
+| 管理后台     | 站长 / 运营双角色权限分离                          |
 
-### 留言板
-- 社员自由发言，支持嵌套回复(回复主留言 / 回复某条回复)
-- 自动关联用户头像
-- 留言与回复时间显示北京时间
+## 萌战系统
 
-### 活动展示
-- 按时间排序展示社团活动
-- 管理员可在后台增删改活动
+> 社团内部赛事引擎，支持男女分组独立比赛
 
-### 照片墙
-- 活动照片分类展示
-- 支持“往期活动照片”独立展示
-- 图片自动压缩（1200×1200，品质85）
-- 存储于 Supabase Storage
+| 阶段                | 赛制                                   | 晋级                  |
+|---------------------|----------------------------------------|-----------------------|
+| **提名期**（5天）   | 每人提名 5 个角色                      | 进入海选池            |
+| **海选**（4+1天）   | 每人 15 票，最多投 5 人，单角色 ≤ 3 票 | 男女各前 32 名        |
+| **小组赛**（3×5天） | 8 组 × 4 人，单循环积分制              | 每组前 2 名，共 16 人 |
+| **淘汰赛**（4×5天） | 16 强 → 8 强 → 4 强 → 决赛             | 冠军 + 最终排名       |
 
-### 番剧资源
-- 社员推荐番剧链接 + 提取码
-- 管理员审核 → 公开显示
-- 支持管理员手动添加
-
-### 社员名单
-- 展示所有注册社员
-- 点击头像进入个人主页
-
-### 萌战系统
-社团内部线上赛事引擎，支持完整的“海选 → 小组赛 → 淘汰赛 → 最终排名”流程。
-
-| 阶段                        | 赛制 | 晋级规则 |
-|-----------------------------|------|----------|
-| **提名期**(5天)             | 每人最多提名 5 个角色，管理员审核 | 进入海选池 |
-| **海选**(4天投票 + 1天公示) | 每人每组 15 票，最多投 5 个角色，单角色 ≤ 3 票 | 男女各取前 32 名 |
-| **小组赛**(3轮 × (4+1)天)   | 8 组 × 4 人，单循环积分制（胜+3 / 平+1 / 负+0） | 每组前 2 名，共 16 人 |
-| **淘汰赛**(4轮 × (4+1)天)   | 16 强 → 8 强 → 4 强 → 决赛，1v1 单败淘汰 | 小组第一 vs 小组第二 + 同组回避 |
-| **最终排名**                | 按淘汰轮次排序生成完整排名 | 冠军 / 亚军 / 四强 / 八强 / 十六强 |
-
-> 平票处理：淘汰赛平票时比较海选阶段总票数(按 candidate.id 匹配，避免重名误判)
->
-> 自动推进：所有阶段按预设时间自动切换，无需人工干预。
-
-### 管理后台
-- **站长**：全部管理权限(活动/照片/番剧/用户/留言/赛事)
-- **运营**：内容管理权限(活动/照片/番剧/赛事)
+> 平票处理：淘汰赛平票时比较海选总票数
+> 自动推进：所有阶段按预设时间自动切换
 
 ## 技术栈
 
-| 类别 | 技术                              |
-|------|-----------------------------------|
-| 后端框架 | Python 3.14.4 + Flask 3.0         |
-| ORM | SQLAlchemy 2.0                    |
-| 数据库 | PostgreSQL(Supabase)              |
-| 文件存储 | Supabase Storage                  |
-| 图片处理 | Pillow                            |
-| 前端 | HTML + CSS + Jinja2               |
-| 测试 | Pytest(79 个测试用例)             |
-| 部署 | Vercel                            |
-| 认证 | Session-based + Werkzeug 密码哈希 |
-| 安全 | CSRFProtect(Flask-WTF)            |
+| 类别       | 技术                              |
+|------------|-----------------------------------|
+| 后端框架   | Python 3.14.4 + Flask 3.0         |
+| ORM        | SQLAlchemy 2.0                    |
+| 数据库     | PostgreSQL(Supabase)              |
+| 文件存储   | Supabase Storage                  |
+| 图片处理   | Pillow                            |
+| 前端       | HTML + CSS + Jinja2               |
+| 测试       | Pytest(92 个测试用例)             |
+| 部署       | Vercel                            |
+| 认证       | Session-based + Werkzeug 密码哈希 |
+| 安全       | CSRFProtect(Flask-WTF)            |
+| AI 解说    | SiliconFlow API(DeepSeek-V3)      |
+
+> AI 解说功能依赖 SiliconFlow API，需自行申请 API Key(免费额度足够支撑赛事)
 
 
 ## 项目结构
@@ -107,7 +82,7 @@
 │ ├── avatars/ # 默认头像
 │ └── css/ # 全局样式
 │
-├── tests/ # Pytest测试套件(79个用例)
+├── tests/ # Pytest测试套件(92个用例)
 │ ├── conftest.py # 测试配置与 fixtures
 │ ├── test_auth.py # 认证模块测试
 │ ├── test_admin.py # 管理后台测试
@@ -127,13 +102,14 @@
 └── .gitignore # Git 忽略规则
 ```
 
-## 本地运行
+## 快速开始
+
 ```bash
 git clone https://github.com/N-zihan/anime-club.git
 cd anime-club
 python -m venv .venv
 source .venv/bin/activate      # Linux/Mac
-.venv/Scripts/activate         # Windows
+# .venv\Scripts\activate       # Windows
 pip install -r requirements.txt
 ```
 
@@ -142,19 +118,27 @@ pip install -r requirements.txt
 DATABASE_URL=postgresql://...
 GROUP_VERIFICATION_CODE=社团群号
 SUPABASE_URL=https://...
-SUPABASE_KEY=Settings → API → service_role secret(仅供后端)
+SUPABASE_KEY=Settings → API → service_role secret # 仅供后端
 SECRET_KEY=自创一个密码
-SUPABASE_ANON_KEY=Settings → API → anon public(用于前端)
-CLUB_NAME=社团名字
-APP_VERSION=版本号(默认 dev )
+SUPABASE_ANON_KEY=Settings → API → anon public # 用于前端
+CLUB_NAME=社团名字 # 默认 动漫社
+APP_VERSION=版本号 # 默认 dev
+
+# AI模型配置
+OPENAI_API_KEY=sk-...
+OPENAI_BASE_URL=https://api.siliconflow.cn/v1 
+AI_MODEL=deepseek-ai/DeepSeek-V3
+AI_CACHE_ENABLED=true
+AI_CACHE_TTL=3600     
 
 # SMTP 邮件配置(用于发送验证码和重置链接)
-SMTP_HOST=(默认smtp.qq.com)
-SMTP_PORT=(默认465)
-SMTP_USE_SSL=true(默认true开启)
-MAIL_USERNAME=你的QQ邮箱(建议额外注册一个)
-MAIL_PASSWORD=SMTP邮箱验证码
+SMTP_HOST= # 默认smtp.qq.com
+SMTP_PORT= # 默认465
+SMTP_USE_SSL=true # 默认true开启
+MAIL_USERNAME=你的QQ邮箱 # 建议额外注册一个
+MAIL_PASSWORD=SMTP邮箱授权码
 ```
+> API_key从[siliconflow](https://cloud.siliconflow.cn)获取，需付费
 
 运行：
 ```bash
@@ -169,43 +153,63 @@ pytest -v
 
 ## 部署准备
 
-### Supabase 数据库
+准备好把网站部署到公网了？只需要两个免费服务：Supabase（数据库）和 Vercel（网站托管）
 
-1. 在 [Supabase](https://supabase.com) 创建一个新项目
-2. 获取以下信息：
-   - **Project URL** → 填写到 `SUPABASE_URL`
-   - **Database Password** → 数据库密码
-   - **SQL Editor** 中执行以下语句创建表（或直接使用项目中的 `models.py` 通过 SQLAlchemy 自动创建）：
+### Supabase：创建数据库
 
-```sql
--- 项目启动后会自动创建表，也可以手动执行
--- 建议先运行 python run.py，让 SQLAlchemy 自动建表
-```
-获取 SUPABASE_KEY和SUPABASE_ANON_KEY(Settings → API → service_role secret / anon_key)
+1. 访问 [Supabase](https://supabase.com) 注册账号，点击 **New project**
+2. 填写项目名称、设置数据库密码，区域推荐选择 **Mumbai** 或 **Singapore**（国内访问更快）
+3. 等待项目创建完成（约 2-3 分钟）
 
-### Vercel 部署
+### 获取连接信息
 
-在 [Vercel](https://vercel.com) 点击 Add New → Project
+项目创建完成后，在 Dashboard 页面顶部点击 **Connect** 按钮，会弹出一个连接面板，先选择 **Direct Connection string** ,里面包含了所有你需要的信息：
 
-导入你的 GitHub 仓库
+- **Session pooler（推荐）**：端口 `6543`，适用于 Vercel 等 Serverless 环境，支持最多 200 个并发连接
+- **Direct connection**：端口 `5432`，直连数据库，限额 60 个连接（免费计划）
 
-在 Environment Variables 中填入所有.env变量(见上方.env模板)
+在 **Connection string** 区域找到 `URI` 格式的连接串，复制后替换密码即可得到 `DATABASE_URL`。
 
-点击 Deploy
+> 推荐使用 Transaction pooler（端口 6543），避免 Vercel 函数并发时占用过多数据库连接。
 
-项目已包含 vercel.json 配置文件，Vercel 会自动识别 Python Flask 应用。
+### 获取 Project URL 和 API Keys
 
-部署完成后，Vercel 会自动生成一个域名(可绑定自定义域名)
+1. 进入项目 Dashboard
+2. 左侧菜单点击 **Integrations**
+3. 选择 **Data API**
+4. 在 Overview 页面即可看到 **API URL**（这就是 Project URL）
+
+格式为：`https://xxxxxxxxxxxxx.supabase.co`
+
+API Keys 在同一页面的 **Project API keys** 区域获取：
+
+- **`anon` public**（或新版项目的 `Publishable key`）→ 填到 `SUPABASE_ANON_KEY`
+- **`service_role` secret**（或新版项目的 `Secret key`）→ 填到 `SUPABASE_KEY`
+
+> `service_role` 密钥权限极高，仅供后端使用，切勿泄露或提交到代码仓库。
+
+### Vercel：部署网站
+
+1. 创建仓库，推送代码至你的仓库
+2. 访问 [Vercel](https://vercel.com)，用 GitHub 登录
+3. 点击 **Add New → Project**，选择你的仓库导入
+4. 在 **Environment Variables** 中添加环境变量（参考上面的 `.env` 模板）
+5. 点击 **Deploy**，等待 1-2 分钟即可
+
+> Vercel 会自动识别 Flask 应用，无需额外配置。部署后可以在侧边菜单栏 Environment Variables 中随时增删改环境变量
+
+> 如果暂时不打算部署到公网，也可以只在本地运行，跳过这一步。run.py 启动后访问 http://127.0.0.1:5000 即可
+
+> Supabase 和 Vercel 的免费计划足够支撑小型社团网站，赛事期间不会产生额外费用
 
 ## 项目状态
 - 核心功能完整
 - 92个测试用例全部通过
 - 已部署至生产环境
-- 已开源（MIT License）
 
 ## 许可证
-本项目采用 MIT License 开源。
+本项目采用 MIT License 开源
 
-你可以自由地使用、修改、分发本项目的代码，但需保留原始版权声明。详情请见 LICENSE 文件。
+你可以自由地使用、修改、分发本项目的代码，但需保留原始版权声明。详情请见 LICENSE 文件
 
 *Made with ❤️ by 南平一中动漫社*
