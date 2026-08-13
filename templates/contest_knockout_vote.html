@@ -29,7 +29,9 @@
             <img alt="{{ c1.name }}" src="{{ c1.image_url }}" style="width:60px; height:60px; object-fit:cover; border-radius:50%;">
             {% endif %}
             <div><strong style="color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</strong></div>
-            <div style="font-size:0.8rem; color: var(--text-secondary);">票数：{{ match.votes1 or 0 }}</div>
+            <div style="font-size:0.8rem; color: var(--text-secondary);">
+                票数：<span class="vote-count" data-candidate-id="{{ match.candidate1 }}">{{ match.votes1 or 0 }}</span>
+            </div>
         </div>
         <div style="font-size:1.2rem; font-weight:600; color: var(--text-muted);">VS</div>
         <div style="text-align:center;" data-candidate-id="{{ match.candidate2 }}">
@@ -38,7 +40,9 @@
             <img alt="{{ c2.name }}" src="{{ c2.image_url }}" style="width:60px; height:60px; object-fit:cover; border-radius:50%;">
             {% endif %}
             <div><strong style="color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</strong></div>
-            <div style="font-size:0.8rem; color: var(--text-secondary);">票数：{{ match.votes2 or 0 }}</div>
+            <div style="font-size:0.8rem; color: var(--text-secondary);">
+                票数：<span class="vote-count" data-candidate-id="{{ match.candidate2 }}">{{ match.votes2 or 0 }}</span>
+            </div>
         </div>
     </div>
     {% if match.status == 'active' and not match.voted %}
@@ -232,6 +236,37 @@
                 });
             });
         });
+    })();
+</script>
+
+<!-- ====== Supabase Realtime 实时投票更新 ====== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    (function () {
+        const contestId = {{ contest.id }};
+        {% if session.user_id %}
+        const supabase = window.supabase.createClient(
+            '{{ supabase_url }}',
+            '{{ supabase_anon_key }}'
+        );
+        const channel = supabase
+            .channel('votes-channel')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'contest_votes',
+                filter: `contest_id=eq.${contestId}`
+            }, (payload) => {
+                fetch(`/api/votes/${payload.new.candidate_id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.querySelectorAll(`.vote-count[data-candidate-id="${payload.new.candidate_id}"]`).forEach(el => {
+                            el.textContent = data.total_votes;
+                        });
+                    });
+            })
+            .subscribe();
+        {% endif %}
     })();
 </script>
 

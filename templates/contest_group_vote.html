@@ -32,6 +32,10 @@
                 {% endif %}
                 <div><strong style="color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</strong></div>
                 <div style="font-size:0.75rem; color: var(--text-muted);">{{ c1.source if c1 else '' }}</div>
+                <!-- 票数显示 -->
+                <div style="font-size:0.8rem; color: var(--text-secondary); margin-top:2px;">
+                    票数：<span class="vote-count" data-candidate-id="{{ pair[0] }}">0</span>
+                </div>
                 <button class="vote-btn" data-candidate="{{ pair[0] }}"
                         style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
                     投票
@@ -45,6 +49,10 @@
                 {% endif %}
                 <div><strong style="color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</strong></div>
                 <div style="font-size:0.75rem; color: var(--text-muted);">{{ c2.source if c2 else '' }}</div>
+                <!-- 票数显示 -->
+                <div style="font-size:0.8rem; color: var(--text-secondary); margin-top:2px;">
+                    票数：<span class="vote-count" data-candidate-id="{{ pair[1] }}">0</span>
+                </div>
                 <button class="vote-btn" data-candidate="{{ pair[1] }}"
                         style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
                     投票
@@ -256,5 +264,36 @@
 {% endif %}
 
 <p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
+
+<!-- ====== Supabase Realtime 实时投票更新 ====== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    (function () {
+        const contestId = {{ contest.id }};
+        {% if session.user_id %}
+        const supabase = window.supabase.createClient(
+            '{{ supabase_url }}',
+            '{{ supabase_anon_key }}'
+        );
+        const channel = supabase
+            .channel('votes-channel')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'contest_votes',
+                filter: `contest_id=eq.${contestId}`
+            }, (payload) => {
+                fetch(`/api/votes/${payload.new.candidate_id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.querySelectorAll(`.vote-count[data-candidate-id="${payload.new.candidate_id}"]`).forEach(el => {
+                            el.textContent = data.total_votes;
+                        });
+                    });
+            })
+            .subscribe();
+        {% endif %}
+    })();
+</script>
 
 {% endblock %}
