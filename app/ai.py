@@ -14,11 +14,20 @@ from openai import OpenAI
 
 from .models import Contest, Candidate, ContestVote, db
 
-# 初始化客户端
-client = OpenAI(
-    api_key=os.getenv('OPENAI_API_KEY'),
-    base_url=os.getenv('OPENAI_BASE_URL', 'https://api.siliconflow.cn/v1')
-)
+# 延迟初始化客户端
+_client = None
+
+def get_client():
+    global _client
+    if _client is None:
+        api_key = os.getenv('OPENAI_API_KEY')
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY 未配置，无法使用 AI 功能")
+        _client = OpenAI(
+            api_key=api_key,
+            base_url=os.getenv('OPENAI_BASE_URL', 'https://api.siliconflow.cn/v1')
+        )
+    return _client
 
 # 内存缓存
 _cache: Dict[str, Dict[str, Any]] = {}
@@ -140,6 +149,8 @@ def generate_commentary(contest_id: int, phase: str) -> tuple:
 
         prompt = _build_prompt(contest, phase, phase_name, 'commentary')
 
+        # ====== 获取客户端并调用 API ======
+        client = get_client()
         response = client.chat.completions.create(
             model=os.getenv('AI_MODEL', 'deepseek-ai/DeepSeek-V3'),
             messages=[
@@ -184,6 +195,8 @@ def generate_prediction(contest_id: int) -> tuple:
 
         prompt = _build_prompt(contest, contest.status, phase_name, 'prediction')
 
+        # ====== 获取客户端并调用 API ======
+        client = get_client()
         response = client.chat.completions.create(
             model=os.getenv('AI_MODEL', 'deepseek-ai/DeepSeek-V3'),
             messages=[
