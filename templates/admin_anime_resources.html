@@ -48,7 +48,7 @@
             </div>
         </div>
         <p>{{ res.description or '无描述' }}</p>
-        <p>🔗 链接：<a href="{{ res.link }}" target="_blank">{{ res.link[:50] }}{% if res.link|length > 50 %}...{% endif
+        <p>链接：<a href="{{ res.link }}" target="_blank">{{ res.link[:50] }}{% if res.link|length > 50 %}...{% endif
             %}</a></p>
         {% if res.extract_code %}
         <p>提取码：<strong>{{ res.extract_code }}</strong></p>
