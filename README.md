@@ -61,7 +61,7 @@
 | 安全       | CSRFProtect(Flask-WTF)            |
 | AI 解说    | SiliconFlow API(DeepSeek-V3)      |
 
-> AI 解说功能依赖 SiliconFlow API，需自行申请 API Key(免费额度足够支撑赛事)
+> AI 解说功能依赖 SiliconFlow API，需自行申请 API Key
 
 
 ## 项目结构
