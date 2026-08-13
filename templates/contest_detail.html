@@ -323,6 +323,7 @@
     (function() {
         const contestId = {{ contest.id }};
         const currentPhase = '{{ phase }}';
+        const extraData = {{ extra_data|tojson|safe }};
 
         const commentaryContent = document.getElementById('commentary-content');
         const commentaryTime = document.getElementById('commentary-time');
@@ -340,7 +341,11 @@
             let url = `/contest/${contestId}/commentary?phase=${currentPhase}`;
             if (force) url += '&force=true';
 
-            fetch(url)
+            fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(extraData)
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -362,7 +367,11 @@
             predictBtn.textContent = '生成中...';
             predictStatus.textContent = 'AI 正在分析数据...';
 
-            fetch(`/contest/${contestId}/predict`)
+            fetch(`/contest/${contestId}/predict`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(extraData)
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {

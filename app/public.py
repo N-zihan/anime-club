@@ -269,6 +269,71 @@ def contest_detail(contest_id):
         user_id=session.get('user_id')
     ).count() if session.get('user_id') else 0
 
+    # ============================================================
+    # 7. 构建 AI 额外数据（用于结构化解说）
+    # ============================================================
+    extra_data = {}
+    candidates_map = {c.id: c for c in candidates}
+
+    if phase in ['group_round_1', 'group_round_2', 'group_round_3']:
+        # 小组赛：传入分组数据和票数
+        if group_round_results:
+            female_groups = group_round_results.get('female', [])
+            male_groups = group_round_results.get('male', [])
+            female_ranking = overall_ranking_female if overall_ranking_female else []
+            male_ranking = overall_ranking_male if overall_ranking_male else []
+
+            # 构建女组数据
+            female_group_data = []
+            for gi, group in enumerate(female_groups):
+                matches = group.get('matches', [])
+                formatted_matches = []
+                for m in matches:
+                    formatted_matches.append({
+                        'candidate1': m.get('candidate1'),
+                        'candidate2': m.get('candidate2'),
+                        'votes1': m.get('votes1', 0),
+                        'votes2': m.get('votes2', 0),
+                        'winner': m.get('winner'),
+                    })
+                female_group_data.append({
+                    'group_name': group.get('group_name', f'{chr(65 + gi)}组'),
+                    'matches': formatted_matches,
+                })
+
+            extra_data = {
+                'gender': 'female',
+                'groups': contest.config.get('female_groups', []) if contest.config else [],
+                'group_results': female_group_data,
+                'ranking': female_ranking,
+                'round_info': phase
+            }
+
+    elif phase in ['knockout_16', 'knockout_8', 'knockout_4', 'final_vote']:
+        # 淘汰赛：传入对阵数据
+        matches_female = contest.config.get('knockout_matches_female', []) if contest.config else []
+
+        formatted_matches = []
+        for m in matches_female:
+            c1 = candidates_map.get(m.get('candidate1'))
+            c2 = candidates_map.get(m.get('candidate2'))
+            winner = candidates_map.get(m.get('winner'))
+            formatted_matches.append({
+                'candidate1_name': c1.name if c1 else '已移除',
+                'candidate2_name': c2.name if c2 else '已移除',
+                'votes1': m.get('votes1', 0),
+                'votes2': m.get('votes2', 0),
+                'status': m.get('status', 'active'),
+                'winner': m.get('winner'),
+                'winner_name': winner.name if winner else None,
+            })
+
+        extra_data = {
+            'gender': 'female',
+            'matches': formatted_matches,
+            'round_info': phase
+        }
+
     return render_template('contest_detail.html',
                            contest=contest,
                            candidates=candidates,
@@ -297,7 +362,8 @@ def contest_detail(contest_id):
                            current_time=now,
                            group_round_results=group_round_results,
                            overall_ranking_female=overall_ranking_female,
-                           overall_ranking_male=overall_ranking_male)
+                           overall_ranking_male=overall_ranking_male,
+                           extra_data=extra_data)
 
 
 @public_bp.route('/contest/<int:contest_id>/nominate', methods=['POST'])
