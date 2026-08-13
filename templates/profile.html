@@ -4,80 +4,80 @@
 
 <div style="max-width:600px; margin:0 auto; padding:20px 0;">
 
-    <h2 style="text-align:center; margin-bottom:24px;">个人设置</h2>
+    <h2 style="text-align:center; margin-bottom:24px; color: var(--text-primary);">个人设置</h2>
 
     <div style="display:grid; gap:16px;">
 
         <!-- 头像 -->
-        <div style="padding:20px 24px; border-radius:12px;">
-            <h4 style="margin-top:0; margin-bottom:12px;">头像</h4>
+        <div style="background: var(--bg-card); padding:20px 24px; border-radius:12px; border:1px solid var(--border-color);">
+            <h4 style="margin-top:0; margin-bottom:12px; color: var(--text-primary);">头像</h4>
             <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                <img src="{{ url_for('user.get_avatar', user_id=user.id) }}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid #e2e8f0;">
+                <img src="{{ url_for('user.get_avatar', user_id=user.id) }}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid var(--border-color);">
                 <form method="POST" enctype="multipart/form-data" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                     <input type="hidden" name="action" value="change_avatar">
-                    <input type="file" name="avatar" accept="image/*" required style="font-size:14px;">
+                    <input type="file" name="avatar" accept="image/*" required style="font-size:14px; background: var(--bg-input); color: var(--text-primary); border:1px solid var(--border-color); border-radius:4px; padding:4px;">
                     <button type="submit" style="padding:6px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">上传</button>
                 </form>
             </div>
-            <small style="color:#94a3b8; display:block; margin-top:8px;">支持 png, jpg, jpeg, gif，不超过2MB</small>
+            <small style="color: var(--text-muted); display:block; margin-top:8px;">支持 png, jpg, jpeg, gif，不超过2MB</small>
         </div>
 
         <!-- 用户名 -->
-        <div style="background:#f8fafc; padding:20px 24px; border-radius:12px; border:1px solid #e2e8f0;">
-            <h4 style="margin-top:0; margin-bottom:8px;">用户名</h4>
-            <p style="margin:0 0 10px 0; color:#64748b;">当前：<strong>{{ user.username }}</strong></p>
+        <div style="background: var(--bg-card); padding:20px 24px; border-radius:12px; border:1px solid var(--border-color);">
+            <h4 style="margin-top:0; margin-bottom:8px; color: var(--text-primary);">用户名</h4>
+            <p style="margin:0 0 10px 0; color: var(--text-secondary);">当前：<strong style="color: var(--text-primary);">{{ user.username }}</strong></p>
             <form method="POST" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                 <input type="hidden" name="action" value="change_username">
-                <input type="text" name="new_username" placeholder="新用户名" required style="padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
+                <input type="text" name="new_username" placeholder="新用户名" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; background: var(--bg-input); color: var(--text-primary);">
                 <button type="submit" style="padding:8px 18px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">修改</button>
             </form>
         </div>
 
         <!-- 修改密码 -->
-        <div style="background:#f8fafc; padding:20px 24px; border-radius:12px; border:1px solid #e2e8f0;">
-            <h4 style="margin-top:0; margin-bottom:12px;">修改密码</h4>
+        <div style="background: var(--bg-card); padding:20px 24px; border-radius:12px; border:1px solid var(--border-color);">
+            <h4 style="margin-top:0; margin-bottom:12px; color: var(--text-primary);">修改密码</h4>
             <form method="POST">
                 <input type="hidden" name="action" value="change_password">
                 <div style="display:flex; flex-direction:column; gap:8px; max-width:300px;">
-                    <input type="password" name="old_password" placeholder="原密码" required style="padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
-                    <input type="password" name="new_password" placeholder="新密码（至少6位）" required style="padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
-                    <input type="password" name="confirm_password" placeholder="确认新密码" required style="padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
+                    <input type="password" name="old_password" placeholder="原密码" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; background: var(--bg-input); color: var(--text-primary);">
+                    <input type="password" name="new_password" placeholder="新密码（至少6位）" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; background: var(--bg-input); color: var(--text-primary);">
+                    <input type="password" name="confirm_password" placeholder="确认新密码" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; background: var(--bg-input); color: var(--text-primary);">
                     <button type="submit" style="padding:8px 18px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer; align-self:flex-start;">修改密码</button>
                 </div>
             </form>
         </div>
 
         <!-- 绑定邮箱 -->
-        <div style="background:#f8fafc; padding:20px 24px; border-radius:12px; border:1px solid #e2e8f0;">
-            <h4 style="margin-top:0; margin-bottom:4px;">绑定邮箱</h4>
-            <p style="color:#64748b; font-size:0.9rem; margin-bottom:16px;">用于修改密码，请填写常用QQ邮箱</p>
+        <div style="background: var(--bg-card); padding:20px 24px; border-radius:12px; border:1px solid var(--border-color);">
+            <h4 style="margin-top:0; margin-bottom:4px; color: var(--text-primary);">绑定邮箱</h4>
+            <p style="color: var(--text-secondary); font-size:0.9rem; margin-bottom:16px;">用于修改密码，请填写常用QQ邮箱</p>
 
             <div id="emailBindStatus">
                 {% if user.email %}
-                    <p style="margin-bottom:12px;">当前已绑定：<strong>{{ user.email }}</strong></p>
-                    <hr style="margin:12px 0;">
-                    <p style="font-size:0.9rem; color:#64748b; margin-bottom:8px;">更换邮箱：</p>
+                    <p style="margin-bottom:12px; color: var(--text-primary);">当前已绑定：<strong>{{ user.email }}</strong></p>
+                    <hr style="margin:12px 0; border-color: var(--border-color);">
+                    <p style="font-size:0.9rem; color: var(--text-secondary); margin-bottom:8px;">更换邮箱：</p>
                 {% endif %}
             </div>
 
             <div id="emailBindForm">
                 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
                     <input type="email" id="bindEmailInput" placeholder="请输入你的QQ邮箱" required
-                           style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; min-width:200px;">
+                           style="flex:1; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; min-width:200px; background: var(--bg-input); color: var(--text-primary);">
                     <button id="sendEmailCodeBtn" style="padding:8px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">发送验证码</button>
                 </div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                     <input type="text" id="bindEmailCode" placeholder="6位验证码" required
-                           style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px; min-width:120px; font-size:14px;">
+                           style="flex:1; padding:10px; border:1px solid var(--border-color); border-radius:6px; min-width:120px; font-size:14px; background: var(--bg-input); color: var(--text-primary);">
                     <button id="verifyEmailCodeBtn" style="padding:8px 16px; background:#f39c12; color:white; border:none; border-radius:6px; cursor:pointer;">确认绑定</button>
                 </div>
-                <div id="emailBindMessage" style="margin-top:10px; font-size:0.9rem;"></div>
+                <div id="emailBindMessage" style="margin-top:10px; font-size:0.9rem; color: var(--text-primary);"></div>
             </div>
         </div>
 
         <!-- 退出登录 / 注销账号 -->
-        <div style="background:#fef2f2; padding:20px 24px; border-radius:12px; border:1px solid #fca5a5;">
-            <h4 style="color:#991b1b; margin-top:0; margin-bottom:12px;">账号操作</h4>
+        <div style="background: var(--alert-bg-danger); padding:20px 24px; border-radius:12px; border:1px solid var(--alert-border-danger);">
+            <h4 style="color: var(--alert-text-danger); margin-top:0; margin-bottom:12px;">账号操作</h4>
             <div style="display:flex; gap:12px; flex-wrap:wrap;">
                 <a href="{{ url_for('auth.logout') }}" style="padding:10px 24px; background:#64748b; color:white; border:none; border-radius:40px; text-decoration:none; font-weight:600;">退出登录</a>
                 <form method="POST" action="{{ url_for('auth.delete_account') }}" style="display:inline;" onsubmit="return confirm('确定要注销账号吗？此操作不可恢复！');">
@@ -179,7 +179,7 @@
             }
             showMsg(data.message, 'success');
             // 更新页面：显示已绑定的邮箱
-            document.getElementById('emailBindStatus').innerHTML = '<p style="margin-bottom:12px;">当前已绑定：<strong>' + data.email + '</strong></p><hr style="margin:12px 0;"><p style="font-size:0.9rem; color:#64748b; margin-bottom:8px;">更换邮箱：</p>';
+            document.getElementById('emailBindStatus').innerHTML = '<p style="margin-bottom:12px; color: var(--text-primary);">当前已绑定：<strong>' + data.email + '</strong></p><hr style="margin:12px 0; border-color: var(--border-color);"><p style="font-size:0.9rem; color: var(--text-secondary); margin-bottom:8px;">更换邮箱：</p>';
             emailInput.value = '';
             codeInput.value = '';
             // 移除绑定横幅

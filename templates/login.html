@@ -12,24 +12,24 @@
         {% endif %}
     {% endwith %}
 
-    <div style="background:#fff; padding:32px 28px; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border:1px solid #e2e8f0;">
-        <h2 style="margin-top:0; margin-bottom:24px; text-align:center;">社员登录</h2>
+    <div style="background: var(--bg-card); padding:32px 28px; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border:1px solid var(--border-color);">
+        <h2 style="margin-top:0; margin-bottom:24px; text-align:center; color: var(--text-primary);">社员登录</h2>
 
         <form method="POST">
             <input name="username" placeholder="用户名" required
-                   style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:12px; box-sizing:border-box; font-size:16px;"
+                   style="width:100%; padding:12px; border:1px solid var(--border-color); border-radius:8px; margin-bottom:12px; box-sizing:border-box; font-size:16px; background: var(--bg-input); color: var(--text-primary);"
                    type="text" value="{{ username }}">
             <input name="password" placeholder="密码" required
-                   style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:16px; box-sizing:border-box; font-size:16px;"
+                   style="width:100%; padding:12px; border:1px solid var(--border-color); border-radius:8px; margin-bottom:16px; box-sizing:border-box; font-size:16px; background: var(--bg-input); color: var(--text-primary);"
                    type="password">
             <button class="btn-primary" style="width:100%; padding:12px; font-size:16px; border:none; border-radius:8px; cursor:pointer;" type="submit">登录</button>
         </form>
 
-        <p style="margin-top:16px; text-align:center; font-size:14px; color:#64748b;">
-            还没有账号？<a href="{{ url_for('auth.register') }}" style="color:#1e2a3a; font-weight:600;">注册</a>
+        <p style="margin-top:16px; text-align:center; font-size:14px; color: var(--text-secondary);">
+            还没有账号？<a href="{{ url_for('auth.register') }}" style="color: var(--text-primary); font-weight:600;">注册</a>
         </p>
         <p style="margin-top:6px; text-align:center; font-size:14px;">
-            <a href="{{ url_for('auth.forgot_password') }}" style="color:#94a3b8;">忘记密码？</a>
+            <a href="{{ url_for('auth.forgot_password') }}" style="color: var(--text-muted);">忘记密码？</a>
         </p>
     </div>
 

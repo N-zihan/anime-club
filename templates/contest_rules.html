@@ -3,52 +3,52 @@
 {% block content %}
 
 <div style="max-width:800px; margin:0 auto;">
-    <h2 style="text-align:center;">{{ contest.title }}</h2>
-    <p style="text-align:center; color:#64748b;">请仔细阅读以下规则与赛程，确认同意后方可进入赛事</p>
-    <hr>
+    <h2 style="text-align:center; color: var(--text-primary);">{{ contest.title }}</h2>
+    <p style="text-align:center; color: var(--text-secondary);">请仔细阅读以下规则与赛程，确认同意后方可进入赛事</p>
+    <hr style="border-color: var(--border-color);">
 
-    <div class="rules-container" style="padding:24px 28px; border-radius:16px; border:1px solid var(--border-color); margin:20px 0; max-height:500px; overflow-y:auto;">
-        <h3>一、提名规则</h3>
-        <ul style="padding-left:20px; line-height:1.8;">
-            <li>每人最多提名 <strong>5个</strong> 角色</li>
-            <li><strong>角色名唯一</strong>，先到先得，同名不可重复提名</li>
-            <li>必填：角色名、作品名、性别（男/女）、<strong>角色图片</strong></li>
+    <div class="rules-container" style="padding:24px 28px; border-radius:16px; border:1px solid var(--border-color); margin:20px 0; max-height:500px; overflow-y:auto; background: var(--bg-card);">
+        <h3 style="color: var(--text-primary);">一、提名规则</h3>
+        <ul style="padding-left:20px; line-height:1.8; color: var(--text-secondary);">
+            <li>每人最多提名 <strong style="color: var(--text-primary);">5个</strong> 角色</li>
+            <li><strong style="color: var(--text-primary);">角色名唯一</strong>，先到先得，同名不可重复提名</li>
+            <li>必填：角色名、作品名、性别（男/女）、<strong style="color: var(--text-primary);">角色图片</strong></li>
             <li>选填：角色简介</li>
         </ul>
 
-        <h3 style="margin-top:24px;">二、投票规则</h3>
-        <ul style="padding-left:20px; line-height:1.8;">
-            <li><strong>海选</strong>：每人 <strong>每组别15票</strong>，每组最多投给 <strong>5个</strong> 角色，每个角色最多<strong>3票</strong></li>
-            <li><strong>小组赛</strong>：每人每轮 <strong>1票</strong>，组内单循环，共3轮(积分制，胜者+3，平局+1，败者+0；公示期公示积分排名)</li>
-            <li><strong>淘汰赛</strong>：每人每轮 <strong>1票</strong>，1v1单败淘汰，共4轮</li>
+        <h3 style="margin-top:24px; color: var(--text-primary);">二、投票规则</h3>
+        <ul style="padding-left:20px; line-height:1.8; color: var(--text-secondary);">
+            <li><strong style="color: var(--text-primary);">海选</strong>：每人 <strong style="color: var(--text-primary);">每组别15票</strong>，每组最多投给 <strong style="color: var(--text-primary);">5个</strong> 角色，每个角色最多<strong style="color: var(--text-primary);">3票</strong></li>
+            <li><strong style="color: var(--text-primary);">小组赛</strong>：每人每轮 <strong style="color: var(--text-primary);">1票</strong>，组内单循环，共3轮(积分制，胜者+3，平局+1，败者+0；公示期公示积分排名)</li>
+            <li><strong style="color: var(--text-primary);">淘汰赛</strong>：每人每轮 <strong style="color: var(--text-primary);">1票</strong>，1v1单败淘汰，共4轮</li>
         </ul>
 
-        <h3 style="margin-top:24px;">三、赛程安排</h3>
-        <ul style="padding-left:20px; line-height:1.8;">
-            <li><strong>提名期：</strong>5天</li>
-            <li><strong>审核期：</strong>3天</li>
-            <li><strong>海选：</strong>5天（投票4天 + 公示1天）</li>
-            <li><strong>小组赛：</strong>15天（3轮 × (4+1)天）</li>
-            <li><strong>淘汰赛：</strong>20天（4轮 × (4+1)天）</li>
-            <li><strong>总时长：</strong>约48天</li>
+        <h3 style="margin-top:24px; color: var(--text-primary);">三、赛程安排</h3>
+        <ul style="padding-left:20px; line-height:1.8; color: var(--text-secondary);">
+            <li><strong style="color: var(--text-primary);">提名期：</strong>5天</li>
+            <li><strong style="color: var(--text-primary);">审核期：</strong>3天</li>
+            <li><strong style="color: var(--text-primary);">海选：</strong>5天（投票4天 + 公示1天）</li>
+            <li><strong style="color: var(--text-primary);">小组赛：</strong>15天（3轮 × (4+1)天）</li>
+            <li><strong style="color: var(--text-primary);">淘汰赛：</strong>20天（4轮 × (4+1)天）</li>
+            <li><strong style="color: var(--text-primary);">总时长：</strong>约48天</li>
         </ul>
 
-        <h3 style="margin-top:24px;">四、公平竞技守则</h3>
-        <ul style="padding-left:20px; line-height:1.8;">
-            <li>每人每轮对同一角色 <strong>限投1票</strong>(除海选)，系统自动防重复</li>
-            <li><strong>匿名投票</strong>，不公开投票人</li>
-            <li>只设 <strong>支持票</strong>，不设反对票</li>
+        <h3 style="margin-top:24px; color: var(--text-primary);">四、公平竞技守则</h3>
+        <ul style="padding-left:20px; line-height:1.8; color: var(--text-secondary);">
+            <li>每人每轮对同一角色 <strong style="color: var(--text-primary);">限投1票</strong>(除海选)，系统自动防重复</li>
+            <li><strong style="color: var(--text-primary);">匿名投票</strong>，不公开投票人</li>
+            <li>只设 <strong style="color: var(--text-primary);">支持票</strong>，不设反对票</li>
             <li>禁止拉票、刷票、拉踩，违者取消参与资格</li>
-            <li>各阶段有明确起止时间，<strong>过期自动关闭</strong></li>
+            <li>各阶段有明确起止时间，<strong style="color: var(--text-primary);">过期自动关闭</strong></li>
         </ul>
 
-        <p style="margin-top:20px; color:#94a3b8; font-size:0.9rem; text-align:center;">—— 最终解释权归社团管理层所有
+        <p style="margin-top:20px; color: var(--text-muted); font-size:0.9rem; text-align:center;">—— 最终解释权归社团管理层所有
             ——</p>
     </div>
 
     <div style="display:flex; align-items:center; gap:12px; justify-content:center; margin:20px 0;">
         <input id="agreeCheckbox" onchange="toggleEnterButton()" type="checkbox">
-        <label for="agreeCheckbox" style="font-weight:500;">我已阅读并同意上述规则与赛程</label>
+        <label for="agreeCheckbox" style="font-weight:500; color: var(--text-primary);">我已阅读并同意上述规则与赛程</label>
     </div>
 
     <div style="text-align:center;">
@@ -56,10 +56,10 @@
            style="display:inline-block; padding:12px 48px; background:#94a3b8; color:white; border-radius:40px; text-decoration:none; font-weight:600; pointer-events:none; opacity:0.6; transition:0.2s;">
             进入赛事 →
         </a>
-        <p style="color:#94a3b8; font-size:0.85rem; margin-top:8px;">请先勾选同意后进入</p>
+        <p style="color: var(--text-muted); font-size:0.85rem; margin-top:8px;">请先勾选同意后进入</p>
     </div>
 
-    <p style="text-align:center; margin-top:24px;"><a href="{{ url_for('public.contest_center') }}">← 返回赛事中心</a>
+    <p style="text-align:center; margin-top:24px;"><a href="{{ url_for('public.contest_center') }}" style="color: var(--text-secondary);">← 返回赛事中心</a>
     </p>
 </div>
 

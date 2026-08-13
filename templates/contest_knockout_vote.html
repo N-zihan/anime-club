@@ -3,12 +3,12 @@
 {% block content %}
 
 <h2>淘汰赛：{{ contest.title }}</h2>
-<p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
+<p style="color: var(--text-secondary);">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
 
 {% if matches %}
 {% for match in matches %}
-<div style="background:#f8fafc; border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid #e2e8f0;">
-    <div style="font-weight:600; margin-bottom:10px;">
+<div style="background: var(--bg-card); border-radius:12px; padding:16px; margin-bottom:16px; border:1px solid var(--border-color);">
+    <div style="font-weight:600; margin-bottom:10px; color: var(--text-primary);">
         {% if match.round == 'final' %}
         决赛
         {% else %}
@@ -19,7 +19,7 @@
         {% elif match.status == 'active' %}
         <span style="color:#2196f3;">进行中</span>
         {% else %}
-        <span style="color:#94a3b8;">待开始</span>
+        <span style="color: var(--text-muted);">待开始</span>
         {% endif %}
     </div>
     <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:16px; align-items:center;">
@@ -28,23 +28,23 @@
             {% if c1 and c1.image_url %}
             <img alt="{{ c1.name }}" src="{{ c1.image_url }}" style="width:60px; height:60px; object-fit:cover; border-radius:50%;">
             {% endif %}
-            <div><strong>{{ c1.name if c1 else '已移除' }}</strong></div>
-            <div style="font-size:0.8rem; color:#64748b;">票数：{{ match.votes1 or 0 }}</div>
+            <div><strong style="color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</strong></div>
+            <div style="font-size:0.8rem; color: var(--text-secondary);">票数：{{ match.votes1 or 0 }}</div>
         </div>
-        <div style="font-size:1.2rem; font-weight:600; color:#94a3b8;">VS</div>
+        <div style="font-size:1.2rem; font-weight:600; color: var(--text-muted);">VS</div>
         <div style="text-align:center;" data-candidate-id="{{ match.candidate2 }}">
             {% set c2 = candidates.get(match.candidate2) %}
             {% if c2 and c2.image_url %}
             <img alt="{{ c2.name }}" src="{{ c2.image_url }}" style="width:60px; height:60px; object-fit:cover; border-radius:50%;">
             {% endif %}
-            <div><strong>{{ c2.name if c2 else '已移除' }}</strong></div>
-            <div style="font-size:0.8rem; color:#64748b;">票数：{{ match.votes2 or 0 }}</div>
+            <div><strong style="color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</strong></div>
+            <div style="font-size:0.8rem; color: var(--text-secondary);">票数：{{ match.votes2 or 0 }}</div>
         </div>
     </div>
     {% if match.status == 'active' and not match.voted %}
     <div style="text-align:center; margin-top:12px;">
         <button class="btn-primary vote-btn" data-candidate="{{ match.candidate1 }}" data-name="{{ c1.name if c1 else '' }}" style="padding:6px 24px; background:#e91e63; border:none; border-radius:30px; cursor:pointer; color:white;">投给 {{ c1.name if c1 else '' }}</button>
-        <span style="margin:0 16px; color:#94a3b8;">或</span>
+        <span style="margin:0 16px; color: var(--text-muted);">或</span>
         <button class="btn-primary vote-btn" data-candidate="{{ match.candidate2 }}" data-name="{{ c2.name if c2 else '' }}" style="padding:6px 24px; background:#2196f3; border:none; border-radius:30px; cursor:pointer; color:white;">投给 {{ c2.name if c2 else '' }}</button>
     </div>
     {% elif match.status == 'finished' %}
@@ -58,82 +58,82 @@
 <!-- ====== 公示期显示下一轮分组 ====== -->
 
 {% if phase == 'knockout_16_result' %}
-<hr style="margin:30px 0;">
+<hr style="border-color: var(--border-color); margin:30px 0;">
 <h3>8强分组（已生成）</h3>
 {% set next_matches = contest.config.get('knockout_matches_female', []) if gender == 'female' else contest.config.get('knockout_matches_male', []) %}
 {% if next_matches %}
 <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:12px;">
     {% for match in next_matches %}
-    <div style="background:#f8fafc; border-radius:10px; padding:12px; border:1px solid #e2e8f0; text-align:center;">
-        <strong style="color:#1e2a3a;">{{ ['A','B','C','D'][loop.index0] }}组</strong>
+    <div style="background: var(--bg-card); border-radius:10px; padding:12px; border:1px solid var(--border-color); text-align:center;">
+        <strong style="color: var(--text-primary);">{{ ['A','B','C','D'][loop.index0] }}组</strong>
         <div style="margin-top:4px;">
             {% set c1 = candidates.get(match.candidate1) %}
             {% set c2 = candidates.get(match.candidate2) %}
-            <span>{{ c1.name if c1 else '已移除' }}</span>
-            <span style="color:#94a3b8; font-weight:600;"> VS </span>
-            <span>{{ c2.name if c2 else '已移除' }}</span>
+            <span style="color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</span>
+            <span style="color: var(--text-muted); font-weight:600;"> VS </span>
+            <span style="color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</span>
         </div>
     </div>
     {% endfor %}
 </div>
 {% else %}
-<p style="color:#94a3b8;">8强对阵尚未生成</p>
+<p style="color: var(--text-muted);">8强对阵尚未生成</p>
 {% endif %}
 {% endif %}
 
 {% if phase == 'knockout_8_result' %}
-<hr style="margin:30px 0;">
+<hr style="border-color: var(--border-color); margin:30px 0;">
 <h3>4强分组（已生成）</h3>
 {% set next_matches = contest.config.get('knockout_matches_female', []) if gender == 'female' else contest.config.get('knockout_matches_male', []) %}
 {% if next_matches %}
 <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:12px;">
     {% for match in next_matches %}
-    <div style="background:#f8fafc; border-radius:10px; padding:12px; border:1px solid #e2e8f0; text-align:center;">
-        <strong style="color:#1e2a3a;">{{ ['A','B'][loop.index0] }}组</strong>
+    <div style="background: var(--bg-card); border-radius:10px; padding:12px; border:1px solid var(--border-color); text-align:center;">
+        <strong style="color: var(--text-primary);">{{ ['A','B'][loop.index0] }}组</strong>
         <div style="margin-top:4px;">
             {% set c1 = candidates.get(match.candidate1) %}
             {% set c2 = candidates.get(match.candidate2) %}
-            <span>{{ c1.name if c1 else '已移除' }}</span>
-            <span style="color:#94a3b8; font-weight:600;"> VS </span>
-            <span>{{ c2.name if c2 else '已移除' }}</span>
+            <span style="color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</span>
+            <span style="color: var(--text-muted); font-weight:600;"> VS </span>
+            <span style="color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</span>
         </div>
     </div>
     {% endfor %}
 </div>
 {% else %}
-<p style="color:#94a3b8;">4强对阵尚未生成</p>
+<p style="color: var(--text-muted);">4强对阵尚未生成</p>
 {% endif %}
 {% endif %}
 
 {% if phase == 'knockout_4_result' %}
-<hr style="margin:30px 0;">
+<hr style="border-color: var(--border-color); margin:30px 0;">
 <h3>决赛选手</h3>
 {% set matches = contest.config.get('knockout_matches_female', []) if gender == 'female' else contest.config.get('knockout_matches_male', []) %}
 {% if matches and matches|length >= 2 %}
-<div style="background:#f8fafc; border-radius:12px; padding:16px; text-align:center; border:1px solid #e2e8f0;">
+<div style="background: var(--bg-card); border-radius:12px; padding:16px; text-align:center; border:1px solid var(--border-color);">
     <div style="display:flex; justify-content:center; align-items:center; gap:30px; font-size:1.2rem;">
         {% set c1 = candidates.get(matches[0].winner) %}
         {% set c2 = candidates.get(matches[1].winner) %}
-        <span style="font-weight:700;">{{ c1.name if c1 else '已移除' }}</span>
-        <span style="color:#94a3b8; font-size:1.5rem;">VS</span>
-        <span style="font-weight:700;">{{ c2.name if c2 else '已移除' }}</span>
+        <span style="font-weight:700; color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</span>
+        <span style="color: var(--text-muted); font-size:1.5rem;">VS</span>
+        <span style="font-weight:700; color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</span>
     </div>
-    <div style="margin-top:6px; color:#64748b; font-size:0.85rem;">
+    <div style="margin-top:6px; color: var(--text-secondary); font-size:0.85rem;">
         {% if gender == 'female' %}女组决赛{% else %}男组决赛{% endif %}
     </div>
 </div>
 {% else %}
-<p style="color:#94a3b8;">决赛选手尚未确定</p>
+<p style="color: var(--text-muted);">决赛选手尚未确定</p>
 {% endif %}
 {% endif %}
 
 {% if phase == 'final_result' %}
-<hr style="margin:30px 0;">
+<hr style="border-color: var(--border-color); margin:30px 0;">
 <h3>决赛结果</h3>
 {% set matches = contest.config.get('knockout_matches_female', []) if gender == 'female' else contest.config.get('knockout_matches_male', []) %}
 {% if matches %}
 {% set final_match = matches|last %}
-<div style="background:gold; border-radius:12px; padding:16px; text-align:center; border:2px solid #f39c12;">
+<div style="background: var(--bg-card); border-radius:12px; padding:16px; text-align:center; border:2px solid #f39c12;">
     <div style="display:flex; justify-content:center; align-items:center; gap:30px; font-size:1.2rem;">
         {% set c1 = candidates.get(final_match.candidate1) %}
         {% set c2 = candidates.get(final_match.candidate2) %}
@@ -142,22 +142,22 @@
             <img src="{{ c1.image_url }}"
                  style="width:60px; height:60px; border-radius:50%; object-fit:cover; display:block; margin:0 auto 4px;">
             {% endif %}
-            <span style="font-weight:500;">{{ c1.name if c1 else '已移除' }}</span>
+            <span style="font-weight:500; color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</span>
             <span style="color:#4caf50; font-weight:700;">（{{ final_match.votes1 or 0 }}票）</span>
             {% if final_match.winner == final_match.candidate1 %}🏆{% endif %}
         </div>
-        <span style="color:#94a3b8; font-size:1.5rem;">VS</span>
+        <span style="color: var(--text-muted); font-size:1.5rem;">VS</span>
         <div>
             {% if c2 and c2.image_url %}
             <img src="{{ c2.image_url }}"
                  style="width:60px; height:60px; border-radius:50%; object-fit:cover; display:block; margin:0 auto 4px;">
             {% endif %}
-            <span style="font-weight:500;">{{ c2.name if c2 else '已移除' }}</span>
+            <span style="font-weight:500; color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</span>
             <span style="color:#4caf50; font-weight:700;">（{{ final_match.votes2 or 0 }}票）</span>
             {% if final_match.winner == final_match.candidate2 %}🏆{% endif %}
         </div>
     </div>
-    <div style="margin-top:10px; font-size:1.3rem; color:#1e2a3a;">
+    <div style="margin-top:10px; font-size:1.3rem; color: var(--text-primary);">
         👑 冠军：
         {% set winner = candidates.get(final_match.winner) %}
         <strong style="color:#f39c12;">{{ winner.name if winner else '未知' }}</strong>
@@ -167,7 +167,7 @@
 {% endif %}
 
 {% else %}
-<p style="color:#94a3b8;">淘汰赛尚未开始</p>
+<p style="color: var(--text-muted);">淘汰赛尚未开始</p>
 {% endif %}
 
 <p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>

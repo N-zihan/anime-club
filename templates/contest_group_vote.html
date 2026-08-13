@@ -4,14 +4,14 @@
 
 {% if phase in ['group_round_1', 'group_round_2', 'group_round_3'] %}
 <h2>小组赛：{{ contest.title }}</h2>
-<p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
-<p style="color:#64748b;">当前轮次：第 <strong>{{ phase.split('_')[1]|int }}</strong> 轮（共3轮）</p>
-<p style="color:#64748b;">每轮每组有 <strong>2场</strong> 对决，每场可投 <strong>1票</strong>，共可投 <strong>16票</strong></p>
+<p style="color: var(--text-secondary);">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
+<p style="color: var(--text-secondary);">当前轮次：第 <strong>{{ phase.split('_')[1]|int }}</strong> 轮（共3轮）</p>
+<p style="color: var(--text-secondary);">每轮每组有 <strong>2场</strong> 对决，每场可投 <strong>1票</strong>，共可投 <strong>16票</strong></p>
 
 {% if groups %}
 {% for group in groups %}
-<div style="background:#f8fafc; border-radius:12px; padding:16px; margin-bottom:20px; border:1px solid #e2e8f0;">
-    <h4 style="margin:0 0 12px 0;">{{ ['A','B','C','D','E','F','G','H'][loop.index0] }}组</h4>
+<div style="background: var(--bg-card); border-radius:12px; padding:16px; margin-bottom:20px; border:1px solid var(--border-color);">
+    <h4 style="margin:0 0 12px 0; color: var(--text-primary);">{{ ['A','B','C','D','E','F','G','H'][loop.index0] }}组</h4>
 
     {% set round_num = phase.split('_')[1]|int %}
     {% if round_num == 1 %}
@@ -23,28 +23,28 @@
     {% endif %}
 
     {% for pair in pairs %}
-    <div style="background:white; border-radius:10px; padding:12px; margin-bottom:10px; border:1px solid #e2e8f0; {% if loop.last %}margin-bottom:0;{% endif %}">
+    <div style="background: var(--bg-card); border-radius:10px; padding:12px; margin-bottom:10px; border:1px solid var(--border-color); {% if loop.last %}margin-bottom:0;{% endif %}">
         <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center;">
             <div style="text-align:center;" data-candidate-id="{{ pair[0] }}">
                 {% set c1 = candidates.get(pair[0]) %}
                 {% if c1 and c1.image_url %}
                 <img src="{{ c1.image_url }}" style="width:50px; height:50px; object-fit:cover; border-radius:50%; display:block; margin:0 auto 4px;">
                 {% endif %}
-                <div><strong>{{ c1.name if c1 else '已移除' }}</strong></div>
-                <div style="font-size:0.75rem; color:#94a3b8;">{{ c1.source if c1 else '' }}</div>
+                <div><strong style="color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</strong></div>
+                <div style="font-size:0.75rem; color: var(--text-muted);">{{ c1.source if c1 else '' }}</div>
                 <button class="vote-btn" data-candidate="{{ pair[0] }}"
                         style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
                     投票
                 </button>
             </div>
-            <div style="font-size:1.2rem; font-weight:700; color:#94a3b8;">VS</div>
+            <div style="font-size:1.2rem; font-weight:700; color: var(--text-muted);">VS</div>
             <div style="text-align:center;" data-candidate-id="{{ pair[1] }}">
                 {% set c2 = candidates.get(pair[1]) %}
                 {% if c2 and c2.image_url %}
                 <img src="{{ c2.image_url }}" style="width:50px; height:50px; object-fit:cover; border-radius:50%; display:block; margin:0 auto 4px;">
                 {% endif %}
-                <div><strong>{{ c2.name if c2 else '已移除' }}</strong></div>
-                <div style="font-size:0.75rem; color:#94a3b8;">{{ c2.source if c2 else '' }}</div>
+                <div><strong style="color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</strong></div>
+                <div style="font-size:0.75rem; color: var(--text-muted);">{{ c2.source if c2 else '' }}</div>
                 <button class="vote-btn" data-candidate="{{ pair[1] }}"
                         style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
                     投票
@@ -56,7 +56,7 @@
 </div>
 {% endfor %}
 {% else %}
-<p style="color:#94a3b8;">暂无分组数据</p>
+<p style="color: var(--text-muted);">暂无分组数据</p>
 {% endif %}
 
 <form action="{{ url_for('public.group_vote_submit', contest_id=contest.id) }}" id="voteForm" method="POST" style="display:none;">
@@ -122,7 +122,7 @@
 <!-- ========== 公示期 ========== -->
 {% set round_num = phase.split('_')[1]|int %}
 <h3>小组赛第{{ round_num }}轮公示</h3>
-<p style="color:#64748b;">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
+<p style="color: var(--text-secondary);">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
 
 <!-- 对决结果 -->
 {% if gender == 'female' %}
@@ -134,16 +134,16 @@
 {% if group_results %}
 <h4>对决结果</h4>
 {% for group in group_results %}
-<div style="background:#f8fafc; border-radius:12px; padding:14px 16px; margin-bottom:14px; border:1px solid #e2e8f0;">
-    <strong style="color:#1e2a3a; font-size:1.05rem;">{{ group.group_name }}</strong>
+<div style="background: var(--bg-card); border-radius:12px; padding:14px 16px; margin-bottom:14px; border:1px solid var(--border-color);">
+    <strong style="color: var(--text-primary); font-size:1.05rem;">{{ group.group_name }}</strong>
     {% for match in group.matches %}
-    <div style="display:flex; align-items:center; gap:12px; padding:4px 0; border-bottom:1px solid #edf2f7; {% if loop.last %}border-bottom:none;{% endif %}">
-        <span style="font-weight:500;">
+    <div style="display:flex; align-items:center; gap:12px; padding:4px 0; border-bottom:1px solid var(--border-color); {% if loop.last %}border-bottom:none;{% endif %}">
+        <span style="font-weight:500; color: var(--text-primary);">
             {{ match.candidate1.name }}（{{ match.votes1 }}票）
             {% if match.winner == match.candidate1.id %}🏆{% endif %}
         </span>
-        <span style="color:#94a3b8;">VS</span>
-        <span style="font-weight:500;">
+        <span style="color: var(--text-muted);">VS</span>
+        <span style="font-weight:500; color: var(--text-primary);">
             {{ match.candidate2.name }}（{{ match.votes2 }}票）
             {% if match.winner == match.candidate2.id %}🏆{% endif %}
         </span>
@@ -152,10 +152,10 @@
 </div>
 {% endfor %}
 {% else %}
-<p style="color:#94a3b8;">暂无对决数据</p>
+<p style="color: var(--text-muted);">暂无对决数据</p>
 {% endif %}
 
-<hr style="margin:30px 0;">
+<hr style="border-color: var(--border-color); margin:30px 0;">
 
 <!-- 总积分排名 -->
 <h3>总积分排名（第{{ round_num }}轮后）</h3>
@@ -166,44 +166,44 @@
 {% endif %}
 
 {% if ranking %}
-<table style="width:100%; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
-    <thead style="background:#f1f4f9;">
+<table style="width:100%; border-collapse:collapse; background: var(--bg-card); border-radius:10px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+    <thead style="background: var(--bg-code);">
     <tr>
-        <th style="padding:8px 10px; text-align:left; font-size:0.85rem;">排名</th>
-        <th style="padding:8px 10px; text-align:left; font-size:0.85rem;">角色</th>
-        <th style="padding:8px 10px; text-align:left; font-size:0.85rem;">组别</th>
-        <th style="padding:8px 10px; text-align:center; font-size:0.85rem;">胜</th>
-        <th style="padding:8px 10px; text-align:center; font-size:0.85rem;">平</th>
-        <th style="padding:8px 10px; text-align:center; font-size:0.85rem;">负</th>
-        <th style="padding:8px 10px; text-align:center; font-size:0.85rem; font-weight:700;">积分</th>
+        <th style="padding:8px 10px; text-align:left; font-size:0.85rem; color: var(--text-primary);">排名</th>
+        <th style="padding:8px 10px; text-align:left; font-size:0.85rem; color: var(--text-primary);">角色</th>
+        <th style="padding:8px 10px; text-align:left; font-size:0.85rem; color: var(--text-primary);">组别</th>
+        <th style="padding:8px 10px; text-align:center; font-size:0.85rem; color: var(--text-primary);">胜</th>
+        <th style="padding:8px 10px; text-align:center; font-size:0.85rem; color: var(--text-primary);">平</th>
+        <th style="padding:8px 10px; text-align:center; font-size:0.85rem; color: var(--text-primary);">负</th>
+        <th style="padding:8px 10px; text-align:center; font-size:0.85rem; font-weight:700; color: var(--text-primary);">积分</th>
     </tr>
     </thead>
     <tbody>
     {% for item in ranking %}
-    <tr style="border-bottom:1px solid #edf2f7;">
-        <td style="padding:6px 10px;">{{ loop.index }}</td>
-        <td style="padding:6px 10px; display:flex; align-items:center; gap:6px;">
+    <tr style="border-bottom:1px solid var(--border-color);">
+        <td style="padding:6px 10px; color: var(--text-primary);">{{ loop.index }}</td>
+        <td style="padding:6px 10px; display:flex; align-items:center; gap:6px; color: var(--text-primary);">
             {% if item.image_url %}
             <img src="{{ item.image_url }}" style="width:28px; height:28px; border-radius:50%; object-fit:cover;">
             {% endif %}
             {{ item.name }}
         </td>
-        <td style="padding:6px 10px;">{{ item.group }}</td>
-        <td style="padding:6px 10px; text-align:center;">{{ item.wins }}</td>
-        <td style="padding:6px 10px; text-align:center;">{{ item.draws }}</td>
-        <td style="padding:6px 10px; text-align:center;">{{ item.losses }}</td>
-        <td style="padding:6px 10px; text-align:center; font-weight:700; color:#1e2a3a;">{{ item.points }}</td>
+        <td style="padding:6px 10px; color: var(--text-secondary);">{{ item.group }}</td>
+        <td style="padding:6px 10px; text-align:center; color: var(--text-primary);">{{ item.wins }}</td>
+        <td style="padding:6px 10px; text-align:center; color: var(--text-primary);">{{ item.draws }}</td>
+        <td style="padding:6px 10px; text-align:center; color: var(--text-primary);">{{ item.losses }}</td>
+        <td style="padding:6px 10px; text-align:center; font-weight:700; color: var(--text-primary);">{{ item.points }}</td>
     </tr>
     {% endfor %}
     </tbody>
 </table>
 {% else %}
-<p style="color:#94a3b8;">暂无积分数据</p>
+<p style="color: var(--text-muted);">暂无积分数据</p>
 {% endif %}
 
 <!-- 第3轮公示额外显示：晋级名单 + 16强分组 -->
 {% if phase == 'group_round_3_result' %}
-<hr style="margin:30px 0;">
+<hr style="border-color: var(--border-color); margin:30px 0;">
 
 <h3>晋级名单（16强）</h3>
 {% if gender == 'female' %}
@@ -213,15 +213,15 @@
 {% endif %}
 
 {% if top16 %}
-<div style="background:#e8f5e9; border-radius:12px; padding:16px; border-left:4px solid #4caf50;">
-    <strong>晋级：</strong>
+<div style="background: var(--bg-card); border-radius:12px; padding:16px; border-left:4px solid #4caf50;">
+    <strong style="color: var(--text-primary);">晋级：</strong>
     {% for cid in top16 %}
     {% set c = candidates|selectattr('id', 'equalto', cid)|first %}
-    <span style="display:inline-block; background:white; padding:2px 12px; border-radius:20px; margin:2px 4px;">{{ c.name if c else '已移除' }}</span>
+    <span style="display:inline-block; background: var(--bg-code); padding:2px 12px; border-radius:20px; margin:2px 4px; color: var(--text-primary);">{{ c.name if c else '已移除' }}</span>
     {% endfor %}
 </div>
 {% else %}
-<p style="color:#94a3b8;">晋级名单尚未生成</p>
+<p style="color: var(--text-muted);">晋级名单尚未生成</p>
 {% endif %}
 
 <h3 style="margin-top:24px;">16强分组（已生成）</h3>
@@ -234,25 +234,25 @@
 {% if matches %}
 <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:12px;">
     {% for match in matches %}
-    <div style="background:#f8fafc; border-radius:10px; padding:12px; border:1px solid #e2e8f0; text-align:center;">
-        <strong style="color:#1e2a3a;">{{ ['A','B','C','D','E','F','G','H'][loop.index0] }}组</strong>
+    <div style="background: var(--bg-card); border-radius:10px; padding:12px; border:1px solid var(--border-color); text-align:center;">
+        <strong style="color: var(--text-primary);">{{ ['A','B','C','D','E','F','G','H'][loop.index0] }}组</strong>
         <div style="margin-top:4px;">
             {% set c1 = candidates|selectattr('id', 'equalto', match.candidate1)|first %}
             {% set c2 = candidates|selectattr('id', 'equalto', match.candidate2)|first %}
-            <span>{{ c1.name if c1 else '已移除' }}</span>
-            <span style="color:#94a3b8; font-weight:600;"> VS </span>
-            <span>{{ c2.name if c2 else '已移除' }}</span>
+            <span style="color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</span>
+            <span style="color: var(--text-muted); font-weight:600;"> VS </span>
+            <span style="color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</span>
         </div>
     </div>
     {% endfor %}
 </div>
 {% else %}
-<p style="color:#94a3b8;">16强对阵尚未生成</p>
+<p style="color: var(--text-muted);">16强对阵尚未生成</p>
 {% endif %}
 {% endif %}
 
 {% else %}
-<p style="color:#e74c3c;">当前不可操作</p>
+<p style="color: #e74c3c;">当前不可操作</p>
 {% endif %}
 
 <p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
