@@ -7,12 +7,15 @@ AI 解说与预测模块
 
 import os
 import hashlib
+import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 
 from openai import OpenAI
 
 from .models import Contest, Candidate, ContestVote, db
+
+logger = logging.getLogger(__name__)
 
 # 延迟初始化客户端
 _client = None
@@ -359,6 +362,7 @@ def generate_commentary(contest_id: int, phase: str, extra_data: dict = None) ->
         return True, content, None
 
     except Exception as e:
+        logger.error(f"AI 解说生成失败: {e}", exc_info=True)
         return False, None, str(e)
 
 
@@ -416,4 +420,5 @@ def generate_prediction(contest_id: int, extra_data: dict = None) -> tuple:
         return True, content, None
 
     except Exception as e:
+        logger.error(f"AI 预测生成失败: {e}", exc_info=True)
         return False, None, str(e)

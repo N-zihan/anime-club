@@ -935,22 +935,33 @@ def api_votes(candidate_id):
 @public_bp.route('/contest/<int:contest_id>/commentary', methods=['POST'])
 def ai_commentary(contest_id):
     """获取 AI 实时战报"""
-    phase = request.args.get('phase', '')
-    extra_data = request.get_json() or {}
-    success, content, error = generate_commentary(contest_id, phase, extra_data)
-    if success:
-        return jsonify({'success': True, 'commentary': content})
-    return jsonify({'success': False, 'error': error}), 500
+    try:
+        phase = request.args.get('phase', '')
+        extra_data = request.get_json() or {}
+        success, content, error = generate_commentary(contest_id, phase, extra_data)
+        if success:
+            return jsonify({'success': True, 'commentary': content})
+        # 将具体错误信息返回给前端
+        return jsonify({'success': False, 'error': error or 'AI 服务暂时不可用'}), 500
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"AI 解说路由异常: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @public_bp.route('/contest/<int:contest_id>/predict', methods=['POST'])
 def ai_predict(contest_id):
     """获取 AI 赛事预测"""
-    extra_data = request.get_json() or {}
-    success, content, error = generate_prediction(contest_id, extra_data)
-    if success:
-        return jsonify({'success': True, 'prediction': content})
-    return jsonify({'success': False, 'error': error}), 500
+    try:
+        extra_data = request.get_json() or {}
+        success, content, error = generate_prediction(contest_id, extra_data)
+        if success:
+            return jsonify({'success': True, 'prediction': content})
+        return jsonify({'success': False, 'error': error or '预测服务暂时不可用'}), 500
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"AI 预测路由异常: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 # 错误处理器
