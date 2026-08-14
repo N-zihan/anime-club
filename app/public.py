@@ -932,20 +932,22 @@ def api_votes(candidate_id):
 
 # ========== AI 功能 ==========
 
-@public_bp.route('/contest/<int:contest_id>/commentary')
+@public_bp.route('/contest/<int:contest_id>/commentary', methods=['POST'])
 def ai_commentary(contest_id):
     """获取 AI 实时战报"""
     phase = request.args.get('phase', '')
-    success, content, error = generate_commentary(contest_id, phase)
+    extra_data = request.get_json() or {}
+    success, content, error = generate_commentary(contest_id, phase, extra_data)
     if success:
         return jsonify({'success': True, 'commentary': content})
     return jsonify({'success': False, 'error': error}), 500
 
 
-@public_bp.route('/contest/<int:contest_id>/predict')
+@public_bp.route('/contest/<int:contest_id>/predict', methods=['POST'])
 def ai_predict(contest_id):
     """获取 AI 赛事预测"""
-    success, content, error = generate_prediction(contest_id)
+    extra_data = request.get_json() or {}
+    success, content, error = generate_prediction(contest_id, extra_data)
     if success:
         return jsonify({'success': True, 'prediction': content})
     return jsonify({'success': False, 'error': error}), 500
