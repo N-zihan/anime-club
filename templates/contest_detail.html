@@ -354,11 +354,11 @@
                     commentaryTime.textContent = '更新于 ' + new Date().toLocaleTimeString();
                 } else {
                     // 显示具体错误信息
-                    commentaryContent.innerHTML = '⚠️ ' + (data.error || '解说员暂时休息中，请稍后再试。');
+                    commentaryContent.innerHTML = (data.error || '解说员暂时休息中，请稍后再试');
                 }
             })
             .catch(err => {
-                commentaryContent.innerHTML = '⚠️ 网络请求失败，请检查网络连接后重试。';
+                commentaryContent.innerHTML = '网络请求失败，请检查网络连接后重试';
                 console.error('AI 请求失败:', err);
             })
             .finally(() => { isLoading = false; });
@@ -385,8 +385,8 @@
                 } else {
                     // 显示具体错误
                     predictStatus.textContent = '预测失败：' + (data.error || '请稍后再试');
-                    // 可选：在预测区域显示错误
-                    predictionContent.textContent = '⚠️ ' + (data.error || '预测服务暂时不可用');
+                    // 在预测区域显示错误
+                    predictionContent.textContent = (data.error || '预测服务暂时不可用');
                     predictionResult.style.display = 'block';
                 }
             })
