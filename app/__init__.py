@@ -105,7 +105,9 @@ def create_app():
             'auth.forgot_password_bind',
             'auth.reset_password',
             'auth.forgot_bind_send_code',
-            'auth.forgot_bind_verify'
+            'auth.forgot_bind_verify',
+            'public.ai_commentary'
+            'public.ai_predict'
         ]
         if not session.get('user_id') and request.endpoint not in public_routes and request.endpoint != 'static':
             return redirect(url_for('auth.login'))
