@@ -96,8 +96,6 @@ def create_app():
     # 登录拦截器
     @app.before_request
     def require_login():
-        if '/commentary' in request.path or '/predict' in request.path:
-            return None
 
         public_routes = [
             'auth.login',
