@@ -341,27 +341,20 @@
             let url = `/contest/${contestId}/commentary?phase=${currentPhase}`;
             if (force) url += '&force=true';
 
-            fetch(url, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                credentials: 'include',
-                body: JSON.stringify(extraData)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    commentaryContent.innerHTML = data.commentary.replace(/\n/g, '<br>');
-                    commentaryTime.textContent = '更新于 ' + new Date().toLocaleTimeString();
-                } else {
-                    // 显示具体错误信息
-                    commentaryContent.innerHTML = (data.error || '解说员暂时休息中，请稍后再试');
-                }
-            })
-            .catch(err => {
-                commentaryContent.innerHTML = '网络请求失败，请检查网络连接后重试';
-                console.error('AI 请求失败:', err);
-            })
-            .finally(() => { isLoading = false; });
+            fetch(url)  // ← 默认 GET，不加任何参数
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        commentaryContent.innerHTML = data.commentary.replace(/\n/g, '<br>');
+                        commentaryTime.textContent = '更新于 ' + new Date().toLocaleTimeString();
+                    } else {
+                        commentaryContent.innerHTML = '解说员暂时休息中，请稍后再试。';
+                    }
+                })
+                .catch(() => {
+                    commentaryContent.innerHTML = '解说员暂时离线，请稍后再试。';
+                })
+                .finally(() => { isLoading = false; });
         }
 
         function loadPrediction() {
@@ -370,33 +363,24 @@
             predictBtn.textContent = '生成中...';
             predictStatus.textContent = 'AI 正在分析数据...';
 
-            fetch(`/contest/${contestId}/predict`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                credentials: 'include',
-                body: JSON.stringify(extraData)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    predictionContent.textContent = data.prediction;
-                    predictionResult.style.display = 'block';
-                    predictStatus.textContent = '预测已完成';
-                } else {
-                    // 显示具体错误
-                    predictStatus.textContent = '预测失败：' + (data.error || '请稍后再试');
-                    // 在预测区域显示错误
-                    predictionContent.textContent = (data.error || '预测服务暂时不可用');
-                    predictionResult.style.display = 'block';
-                }
-            })
-            .catch(() => {
-                predictStatus.textContent = '网络错误，请检查连接';
-            })
-            .finally(() => {
-                predictBtn.disabled = false;
-                predictBtn.textContent = 'AI 预测';
-            });
+            fetch(`/contest/${contestId}/predict`)  // ← 默认 GET
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        predictionContent.textContent = data.prediction;
+                        predictionResult.style.display = 'block';
+                        predictStatus.textContent = '预测已完成';
+                    } else {
+                        predictStatus.textContent = '预测失败，请稍后再试';
+                    }
+                })
+                .catch(() => {
+                    predictStatus.textContent = '网络错误，请稍后再试';
+                })
+                .finally(() => {
+                    predictBtn.disabled = false;
+                    predictBtn.textContent = 'AI 预测';
+                });
         }
 
         // 页面加载时自动加载解说
