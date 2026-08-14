@@ -448,15 +448,17 @@
 <script>
     function updateCurrentTime() {
         var now = new Date();
-        var beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-        var year = beijingTime.getUTCFullYear();
-        var month = String(beijingTime.getUTCMonth() + 1).padStart(2, '0');
-        var day = String(beijingTime.getUTCDate()).padStart(2, '0');
-        var hours = String(beijingTime.getUTCHours()).padStart(2, '0');
-        var minutes = String(beijingTime.getUTCMinutes()).padStart(2, '0');
-        var seconds = String(beijingTime.getUTCSeconds()).padStart(2, '0');
-        document.getElementById('current-time').textContent =
-            year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+        var beijingTime = now.toLocaleString('zh-CN', {
+            timeZone: 'Asia/Shanghai',
+            hour12: false,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        document.getElementById('current-time').textContent = beijingTime.replace(/\//g, '-');
     }
 
     updateCurrentTime();
