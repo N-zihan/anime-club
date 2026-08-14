@@ -344,6 +344,7 @@
             fetch(url, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
+                credentials: 'include',
                 body: JSON.stringify(extraData)
             })
                 .then(res => res.json())
@@ -370,6 +371,7 @@
             fetch(`/contest/${contestId}/predict`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
+                credentials: 'include',
                 body: JSON.stringify(extraData)
             })
                 .then(res => res.json())
