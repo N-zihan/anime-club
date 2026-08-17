@@ -267,7 +267,7 @@ def _build_final_prompt(contest: Contest) -> str:
 
     lines = []
     lines.append(f"赛事：{contest.title}")
-    lines.append("🏆 最终排名：")
+    lines.append("最终排名：")
 
     if ranking_female:
         lines.append("\n女组冠军：")
