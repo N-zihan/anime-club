@@ -28,10 +28,16 @@ body {
     background: #f0f8ff;
     font-family: 'Segoe UI', system-ui, sans-serif;
     color: #1e2a3a;
+    padding-top: 80px;
 }
 
 /* 导航栏 - 纯黑色背景，所有文字纯白 */
 nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     background: #1e2a3a;
     display: flex;
     justify-content: space-between;
@@ -662,6 +668,10 @@ main {
 
 /* 响应式 */
 @media (max-width: 700px) {
+    body {
+        padding-top: 120px;
+    }
+
     .card-grid {
         grid-template-columns: 1fr;
     }
