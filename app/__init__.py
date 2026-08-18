@@ -99,7 +99,15 @@ def create_app():
 
         # 放行搜索引擎爬虫
         ua = request.headers.get('User-Agent', '')
-        bot_agents = ['Googlebot', 'Bingbot', 'Baiduspider', '360Spider', 'Sogou', 'YisouSpider']
+        bot_agents = [
+            'bingbot',  # Bing
+            'Baiduspider',  # 百度
+            'Googlebot',  # Google
+            '360Spider',  # 360搜索
+            'Sogou web spider',  # 搜狗（注意有空格）
+            'YisouSpider',  # 神马搜索
+            'yisouspider'  # 神马搜索（小写变体）
+        ]
         if any(bot in ua for bot in bot_agents):
             return None
 
