@@ -1294,8 +1294,12 @@ a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not
     border-color: var(--alert-border-warning) !important;
 }
 
-/* 10. 最后防线：强制所有未覆盖的文本元素 */
-[data-theme="dark"] * {
-    /* 不直接覆盖所有，因为会破坏按钮、图标等，但保留以备不时之需 */
-    /* 如需开启，请谨慎测试 */
+.anime-warning {
+    color: #e74c3c;
+    font-size: 0.8rem;
+    margin-left: 12px;
+}
+
+[data-theme="dark"] .anime-warning {
+    color: #e74c3c !important;
 }
