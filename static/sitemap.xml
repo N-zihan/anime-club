@@ -1,23 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
+    <!-- 核心页面（高优先级，每天更新） -->
     <url>
         <loc>https://www.nanyi-anime-club.top/</loc>
-        <lastmod>2026-08-01</lastmod>
+        <lastmod>2026-08-18</lastmod>
         <changefreq>daily</changefreq>
         <priority>1.0000</priority>
     </url>
     <url>
-        <loc>https://www.nanyi-anime-club.top/login</loc>
-        <lastmod>2026-08-01</lastmod>
+        <loc>https://www.nanyi-anime-club.top/home</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0000</priority>
+    </url>
+
+    <!-- 社务信息（每周更新） -->
+    <url>
+        <loc>https://www.nanyi-anime-club.top/about</loc>
+        <lastmod>2026-08-18</lastmod>
         <changefreq>weekly</changefreq>
-        <priority>0.6000</priority>
+        <priority>0.8000</priority>
+    </url>
+    <url>
+        <loc>https://www.nanyi-anime-club.top/members</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7000</priority>
+    </url>
+
+    <!-- 内容页面（每周更新） -->
+    <url>
+        <loc>https://www.nanyi-anime-club.top/activities</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8000</priority>
+    </url>
+    <url>
+        <loc>https://www.nanyi-anime-club.top/gallery</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7000</priority>
+    </url>
+    <url>
+        <loc>https://www.nanyi-anime-club.top/board</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7000</priority>
+    </url>
+    <url>
+        <loc>https://www.nanyi-anime-club.top/anime_resources</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7000</priority>
+    </url>
+
+    <!-- 赛事中心（每周更新） -->
+    <url>
+        <loc>https://www.nanyi-anime-club.top/contest_center</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8000</priority>
+    </url>
+    <url>
+        <loc>https://www.nanyi-anime-club.top/contest/1</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9000</priority>
+    </url>
+
+    <!-- 用户入口（低频，仍可索引） -->
+    <url>
+        <loc>https://www.nanyi-anime-club.top/login</loc>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.3000</priority>
     </url>
     <url>
         <loc>https://www.nanyi-anime-club.top/register</loc>
-        <lastmod>2026-08-01</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6000</priority>
+        <lastmod>2026-08-18</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.3000</priority>
     </url>
 
 </urlset>

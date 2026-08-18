@@ -97,6 +97,12 @@ def create_app():
     @app.before_request
     def require_login():
 
+        # 放行搜索引擎爬虫
+        ua = request.headers.get('User-Agent', '')
+        bot_agents = ['Googlebot', 'Bingbot', 'Baiduspider', '360Spider', 'Sogou', 'YisouSpider']
+        if any(bot in ua for bot in bot_agents):
+            return None
+
         public_routes = [
             'auth.login',
             'auth.register',
