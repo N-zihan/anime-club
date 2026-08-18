@@ -62,12 +62,6 @@
         <changefreq>weekly</changefreq>
         <priority>0.8000</priority>
     </url>
-    <url>
-        <loc>https://www.nanyi-anime-club.top/contest/1</loc>
-        <lastmod>2026-08-18</lastmod>
-        <changefreq>daily</changefreq>
-        <priority>0.9000</priority>
-    </url>
 
     <!-- 用户入口（低频，仍可索引） -->
     <url>
