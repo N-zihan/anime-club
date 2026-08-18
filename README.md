@@ -1,6 +1,6 @@
 <div align="center">
 
-# 南平一中动漫社官网
+# 动漫社全功能网站
 
 [![Vercel](https://img.shields.io/badge/Deployments-Vercel-000000?logo=vercel)](https://www.nanyi-anime-club.top)
 [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python)](https://python.org)
