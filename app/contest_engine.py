@@ -216,6 +216,12 @@ def auto_activate_contest(contest, now):
 
 def run_qualifying_promotion(contest):
     """海选公示结束后，前32名晋级小组赛并随机分组"""
+    # 防止并发重复执行
+    if contest.status != 'open':
+        return
+    if contest.config and contest.config.get('female_groups'):
+        return
+
     if contest.config is None:
         contest.config = {}
 
@@ -287,6 +293,10 @@ def run_qualifying_promotion(contest):
 
 def run_group_promotion(contest, session=None):
     """小组赛第3轮公示结束后，每组前2晋级淘汰赛，生成16强对阵"""
+    # 防止并发重复执行
+    if contest.config and contest.config.get('knockout_matches_female'):
+        return
+
     if session is None:
         session = db.session
 
@@ -593,6 +603,10 @@ def run_knockout_advance(contest, phase, now, times):
     返回: (是否已推进, 推进后的轮次名称或None)
     """
     if phase == 'knockout_16_result' and now >= times['knockout_16_result_end'] and contest.status == 'knockout':
+        # 防止重复推进
+        if contest.config.get('knockout_matches_female_round8'):
+            return False, None
+
         female_matches = contest.config.get('knockout_matches_female', [])
         male_matches = contest.config.get('knockout_matches_male', [])
         if female_matches:
@@ -606,6 +620,10 @@ def run_knockout_advance(contest, phase, now, times):
         return True, '8强'
 
     elif phase == 'knockout_8_result' and now >= times['knockout_8_result_end'] and contest.status == 'knockout':
+        # 防止重复推进
+        if contest.config.get('knockout_matches_female_round8'):
+            return False, None
+
         female_matches = contest.config.get('knockout_matches_female', [])
         male_matches = contest.config.get('knockout_matches_male', [])
         if female_matches:
@@ -619,6 +637,10 @@ def run_knockout_advance(contest, phase, now, times):
         return True, '4强'
 
     elif phase == 'knockout_4_result' and now >= times['knockout_4_result_end'] and contest.status == 'knockout':
+        # 防止重复推进
+        if contest.config.get('knockout_matches_female_round8'):
+            return False, None
+
         female_matches = contest.config.get('knockout_matches_female', [])
         male_matches = contest.config.get('knockout_matches_male', [])
         if female_matches:
