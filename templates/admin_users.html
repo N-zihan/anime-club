@@ -16,6 +16,7 @@
         <th>头像</th>
         <th>用户名</th>
         <th>QQ</th>
+        <th>邮箱</th>
         <th>注册时间</th>
         <th style="text-align:center;">运营</th>
         <th style="text-align:center;">站长</th>
@@ -32,6 +33,7 @@
         </td>
         <td><strong>{{ user.username }}</strong></td>
         <td>{{ user.qq }}</td>
+        <td>{{ user.email or '未绑定' }}</td>
         <td>{{ user.registered_at.strftime('%Y-%m-%d') }}</td>
         <td style="text-align:center;">
             {% if user.is_staff %}✅{% else %}—{% endif %}
