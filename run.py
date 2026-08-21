@@ -48,6 +48,7 @@ with app.app_context():
     except Exception as e:
         print(f"存储桶初始化跳过: {e}")
         import traceback
+
         traceback.print_exc()
 
 if __name__ == '__main__':

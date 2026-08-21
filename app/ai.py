@@ -5,11 +5,11 @@ AI 解说与预测模块
 使用 SiliconFlow API（兼容 OpenAI 格式）。
 """
 
-import os
 import hashlib
 import logging
+import os
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 
 from openai import OpenAI
 
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 # 延迟初始化客户端
 _client = None
+
 
 def get_client():
     global _client
@@ -31,6 +32,7 @@ def get_client():
             base_url=os.getenv('OPENAI_BASE_URL', 'https://api.siliconflow.cn/v1')
         )
     return _client
+
 
 # 内存缓存
 _cache: Dict[str, Dict[str, Any]] = {}
@@ -343,7 +345,8 @@ def generate_commentary(contest_id: int, phase: str, extra_data: dict = None) ->
         prompt = _build_commentary_prompt(contest, phase, phase_name, extra_data)
 
         # 如果 prompt 返回的是纯文本（非结构化），直接返回
-        if prompt.startswith("海选投票已开启") or prompt.startswith("小组赛数据加载中") or prompt.startswith("淘汰赛数据加载中"):
+        if prompt.startswith("海选投票已开启") or prompt.startswith("小组赛数据加载中") or prompt.startswith(
+                "淘汰赛数据加载中"):
             return True, prompt, None
 
         client = get_client()

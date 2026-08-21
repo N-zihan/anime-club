@@ -145,6 +145,5 @@ def create_app():
     def inject_csrf_token():
         from flask_wtf.csrf import generate_csrf
         return {'csrf_token': generate_csrf}
-    # ==================================================
 
     return app

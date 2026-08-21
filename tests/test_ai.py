@@ -1,7 +1,7 @@
-import pytest
 from unittest.mock import patch, MagicMock
+
 from app.ai import generate_commentary, generate_prediction, _get_cached, _set_cache, _cache
-from app.models import Contest, Candidate
+from app.models import Candidate
 
 
 class TestAICommentary:

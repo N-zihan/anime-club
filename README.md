@@ -21,14 +21,14 @@
 
 ## 功能概览
 
-| 功能         | 说明                                               |
-|--------------|----------------------------------------------------|
-| 用户系统     | 注册、登录、邮箱绑定、密码重置、头像上传           |
-| 留言板       | 支持嵌套回复，关联用户头像                         |
-| 番剧资源     | 社员推荐 → 管理员审核 → 公开显示                   |
-| 照片墙       | 活动照片分类展示，存储于 Supabase Storage          |
-| **萌战系统** | 线上赛事引擎：提名 → 海选 → 小组赛 → 淘汰赛 → 冠军 |
-| 管理后台     | 站长 / 运营双角色权限分离                          |
+| 功能     | 说明                                               |
+|----------|----------------------------------------------------|
+| 用户系统 | 注册、登录、邮箱绑定、密码重置、头像上传           |
+| 留言板   | 支持嵌套回复，关联用户头像                         |
+| 番剧资源 | 社员推荐 → 管理员审核 → 公开显示                   |
+| 照片墙   | 活动照片分类展示，存储于 Supabase Storage          |
+| 萌战系统 | 线上赛事引擎：提名 → 海选 → 小组赛 → 淘汰赛 → 冠军 |
+| 管理后台 | 站长 / 运营双角色权限分离                          |
 
 ## 萌战系统
 
@@ -42,30 +42,29 @@
 | **淘汰赛**（4×5天）                          | 16 强 → 8 强 → 4 强 → 决赛             | 冠军 + 最终排名       |
 | **注**: 除提名期外，每五天的最后一天为公示期 |
 
-
 > 平票处理：淘汰赛平票时比较海选总票数
 > 自动推进：所有阶段按预设时间自动切换
 
 ## 技术栈
 
-| 类别       | 技术                              |
-|------------|-----------------------------------|
-| 后端框架   | Python 3.14.4 + Flask 3.0         |
-| ORM        | SQLAlchemy 2.0                    |
-| 数据库     | PostgreSQL(Supabase)              |
-| 文件存储   | Supabase Storage                  |
-| 图片处理   | Pillow                            |
-| 前端       | HTML + CSS + Jinja2               |
-| 测试       | Pytest(92 个测试用例)             |
-| 部署       | Vercel                            |
-| 认证       | Session-based + Werkzeug 密码哈希 |
-| 安全       | CSRFProtect(Flask-WTF)            |
-| AI 解说    | SiliconFlow API(DeepSeek-V3)      |
+| 类别     | 技术                              |
+|----------|-----------------------------------|
+| 后端框架 | Python 3.14.4 + Flask 3.0         |
+| ORM      | SQLAlchemy 2.0                    |
+| 数据库   | PostgreSQL(Supabase)              |
+| 文件存储 | Supabase Storage                  |
+| 图片处理 | Pillow                            |
+| 前端     | HTML + CSS + Jinja2               |
+| 测试     | Pytest(92 个测试用例)             |
+| 部署     | Vercel                            |
+| 认证     | Session-based + Werkzeug 密码哈希 |
+| 安全     | CSRFProtect(Flask-WTF)            |
+| AI 解说  | SiliconFlow API(DeepSeek-V3)      |
 
 > AI 解说功能依赖 SiliconFlow API，需自行申请 API Key
 
-
 ## 项目结构
+
 ```text
 动漫社网站/
 ├── app/ # 应用核心代码
@@ -115,6 +114,7 @@ pip install -r requirements.txt
 ```
 
 创建 .env 文件:
+
 ```env
 DATABASE_URL=postgresql://...
 GROUP_VERIFICATION_CODE=社团群号
@@ -139,15 +139,19 @@ SMTP_USE_SSL=true # 默认true开启
 MAIL_USERNAME=你的QQ邮箱 # 建议额外注册一个
 MAIL_PASSWORD=SMTP邮箱授权码
 ```
+
 > API_key从[siliconflow](https://cloud.siliconflow.cn)获取，需付费
 
 运行：
+
 ```bash
 python run.py
 ```
+
 访问 http://127.0.0.1:5000
 
 测试：
+
 ```bash
 pytest -v
 ```
@@ -164,7 +168,8 @@ pytest -v
 
 ### 获取连接信息
 
-项目创建完成后，在 Dashboard 页面顶部点击 **Connect** 按钮，会弹出一个连接面板，先选择 **Direct Connection string** ，里面包含了所有你需要的信息：
+项目创建完成后，在 Dashboard 页面顶部点击 **Connect** 按钮，会弹出一个连接面板，先选择 **Direct Connection string**
+，里面包含了所有你需要的信息：
 
 - **Session pooler（推荐）**：端口 `6543`，适用于 Vercel 等 Serverless 环境，支持最多 200 个并发连接
 - **Direct connection**：端口 `5432`，直连数据库，限额 60 个连接
@@ -206,11 +211,13 @@ API Keys 在同一页面的 **Project API keys** 区域获取：
 > Supabase 和 Vercel 的免费计划足够支撑小型社团网站，赛事期间不会产生额外费用
 
 ## 项目状态
+
 - 核心功能完整
 - 92个测试用例全部通过
 - 已部署至生产环境
 
 ## 许可证
+
 本项目采用 MIT License 开源
 
 你可以自由地使用、修改、分发本项目的代码，但需保留原始版权声明。详情请见 LICENSE 文件

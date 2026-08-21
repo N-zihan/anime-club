@@ -25,6 +25,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
+from .ai import generate_commentary, generate_prediction
 from .contest_engine import (
     calc_stage_times, calc_phase, auto_activate_contest,
     run_qualifying_promotion, run_group_promotion,
@@ -33,7 +34,6 @@ from .contest_engine import (
 )
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote
 from .utils import get_supabase, compress_image, get_or_404
-from .ai import generate_commentary, generate_prediction
 
 public_bp = Blueprint('public', __name__)
 

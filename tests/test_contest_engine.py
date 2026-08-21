@@ -2,7 +2,7 @@ from datetime import datetime
 
 from app.contest_engine import (
     calc_stage_times, calc_phase, auto_activate_contest,
-    run_qualifying_promotion, run_final_ranking
+    run_qualifying_promotion
 )
 from app.models import User, Candidate, ContestVote, Contest
 from app.models import db
