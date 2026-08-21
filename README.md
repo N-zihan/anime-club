@@ -199,7 +199,7 @@ API Keys 在同一页面的 **Project API keys** 区域获取：
 
 > Vercel 会自动识别 Flask 应用，无需额外配置。部署后可以在侧边菜单栏 Environment Variables 中随时增删改环境变量
 
-> 域名请前往域名供应商注册，推荐前往 [NameSilo](https://www.namesilo.com)（海外供应商，注册无需备案，如需提交至国内搜索引擎仍建议备案）
+> 域名请前往域名供应商注册，推荐前往 [NameSilo](https://www.namesilo.com)（海外供应商，注册无需备案，若需备案，vercel不再适用，请使用国内服务器）
 >
 > 如果暂时不打算部署到公网，也可以只在本地运行，跳过这一步。run.py 启动后访问 http://127.0.0.1:5000 即可
 
