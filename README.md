@@ -67,39 +67,53 @@
 
 ```text
 动漫社网站/
-├── app/ # 应用核心代码
-│ ├── __init__.py # Flask 应用工厂(含CSRF/Session安全配置)
-│ ├── admin.py # 管理后台(站长/运营双角色)
-│ ├── auth.py # 用户认证(注册/登录/密码重置/邮箱验证)
-│ ├── contest_engine.py # 萌战引擎核心(赛程/晋级/排名)
-│ ├── models.py # 数据库模型(13张表)
-│ ├── public.py # 公共页面路由
-│ ├── user.py # 用户中心(个人设置/头像/主页)
-│ └── utils.py # 工具函数(Supabase/图片压缩)
+├── app/                               # 应用核心代码
+│   ├── __init__.py                    # Flask 应用工厂(含CSRF/Session安全配置)
+│   ├── admin.py                       # 管理后台(站长/运营双角色)
+│   ├── ai.py                          # AI 解说与预测(SiliconFlow API)
+│   ├── auth.py                        # 用户认证(注册/登录/密码重置/邮箱验证)
+│   ├── contest_engine.py              # 萌战引擎核心(赛程/晋级/排名)
+│   ├── models.py                      # 数据库模型(13张表)
+│   ├── public.py                      # 公共页面路由(含PWA manifest动态生成)
+│   ├── user.py                        # 用户中心(个人设置/头像/主页)
+│   └── utils.py                       # 工具函数(Supabase/图片压缩)
 │
-├── templates/ # Jinja2前端模板(42个页面)
-├── static/ # 静态资源
-│ ├── avatars/ # 默认头像
-│ └── css/ # 全局样式
+├── templates/                         # Jinja2前端模板(42个页面)
+│   ├── base.html                      # 基础模板(含PWA注册/深夜模式/新手引导)
+│   ├── splash.html                    # 启动页(含QQ分享OG标签)
+│   └── ...                            # 其余40个页面模板
 │
-├── tests/ # Pytest测试套件(92个用例)
-│ ├── conftest.py # 测试配置与 fixtures
-│ ├── test_auth.py # 认证模块测试
-│ ├── test_admin.py # 管理后台测试
-│ ├── test_public.py # 公共页面测试
-│ ├── test_user.py # 用户中心测试
-│ ├── test_api.py # API 端点测试
-│ ├── test_models.py # 数据模型测试
-│ └── test_contest_engine.py # 萌战引擎测试
+├── static/                            # 静态资源
+│   ├── avatars/                       # 默认头像
+│   ├── css/
+│   │   └── style.css                  # 全局样式(含深色模式/导航栏固定)
+│   ├── images/
+│   │   ├── icon-192.png               # PWA图标(192x192)
+│   │   └── icon-512.png               # PWA图标(512x512)
+│   ├── sw.js                          # Service Worker(PWA离线缓存)
+│   └── favicon.ico                    # 浏览器标签页图标
 │
-├── .env # 环境变量(自行创建)
-├── requirements.txt # Python 依赖
-├── LICENSE # 许可证
-├── pytest.ini # 测试配置
-├── run.py # 应用启动入口
-├── README.md # 项目说明
-├── vercel.json # vercel配置
-└── .gitignore # Git 忽略规则
+├── tests/                             # Pytest测试套件(92个用例)
+│   ├── conftest.py                    # 测试配置与 fixtures
+│   ├── test_admin.py                  # 管理后台测试
+│   ├── test_ai.py                     # AI模块测试
+│   ├── test_api.py                    # API端点测试
+│   ├── test_auth.py                   # 认证模块测试
+│   ├── test_contest_engine.py         # 萌战引擎测试
+│   ├── test_models.py                 # 数据模型测试
+│   ├── test_public.py                 # 公共页面测试
+│   └── test_user.py                   # 用户中心测试
+│
+├── build.js                           # PWA版本号自动注入脚本
+├── package.json                       # Node.js构建配置(Vercel自动执行)
+├── .env                               # 环境变量(自行创建)
+├── requirements.txt                   # Python依赖
+├── LICENSE                            # 许可证
+├── pytest.ini                         # 测试配置
+├── run.py                             # 应用启动入口
+├── README.md                          # 项目说明
+├── vercel.json                        # Vercel部署配置
+└── .gitignore                         # Git忽略规则
 ```
 >/static文件夹中有网站标签头像 favicon.ico ，可以换成你喜欢的
 
