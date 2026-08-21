@@ -101,6 +101,7 @@
 ├── vercel.json # vercel配置
 └── .gitignore # Git 忽略规则
 ```
+>/static文件夹中有网站标签头像 favicon.ico ，可以换成你喜欢的
 
 ## 快速开始
 
