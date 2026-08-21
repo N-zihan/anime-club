@@ -951,6 +951,37 @@ def ai_predict(contest_id):
     return jsonify({'success': False, 'error': error}), 500
 
 
+@public_bp.route('/manifest.json')
+def manifest():
+    import os
+    from flask import jsonify
+    club_name = os.getenv('CLUB_NAME', '动漫社')
+    return jsonify({
+        "name": club_name,
+        "short_name": club_name,
+        "description": "以热爱为名 · 共创二次元家园",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#f0f8ff",
+        "theme_color": "#1e2a3a",
+        "orientation": "portrait",
+        "icons": [
+            {
+                "src": "/static/images/icon-192.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any maskable"
+            },
+            {
+                "src": "/static/images/icon-512.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any maskable"
+            }
+        ]
+    })
+
+
 # 错误处理器
 def page_not_found(e):
     return render_template('404.html'), 404

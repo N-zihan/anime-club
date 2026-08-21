@@ -7,6 +7,14 @@
     <link href="{{ url_for('static', filename='css/style.css') }}?v=5" rel="stylesheet">
     <title>{{ club_name }} - {% block title %}{% endblock %}</title>
     <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" type="image/x-icon"/>
+    <!-- PWA Manifest（动态路由） -->
+    <link rel="manifest" href="/manifest.json">
+    <!-- 主题色（浏览器工具栏颜色） -->
+    <meta name="theme-color" content="#1e2a3a">
+    <!-- iOS Safari 兼容 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/static/images/icon-192.png">
 </head>
 <body>
 <!-- ====== CSRF Token（所有表单通过 {{ csrf_token() }} 使用） ====== -->
@@ -514,5 +522,19 @@
     })();
 </script>
 <!-- ===================== -->
+<script>
+    // 注册 Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/static/sw.js')
+                .then((registration) => {
+                    console.log('Service Worker 注册成功');
+                })
+                .catch((error) => {
+                    console.log('Service Worker 注册失败:', error);
+                });
+        });
+    }
+</script>
 </body>
 </html>
