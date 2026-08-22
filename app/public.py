@@ -1,5 +1,5 @@
 """
-南平一中动漫社官网 · 公共页面模块
+动漫社官网 · 公共页面模块
 ====================================
 
 本模块处理所有对客端可见的页面（无需登录或部分需要登录）：
@@ -34,6 +34,14 @@ from .contest_engine import (
 )
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote
 from .utils import get_supabase, compress_image, get_or_404
+from .config import (
+    NOMINATION_LIMIT,
+    QUALIFYING_MAX_CANDIDATES,
+    QUALIFYING_MAX_VOTES,
+    QUALIFYING_MAX_PER_CANDIDATE,
+    NOMINATION_IMAGE_SIZE,
+    COMPRESS_QUALITY
+)
 
 public_bp = Blueprint('public', __name__)
 
@@ -379,7 +387,7 @@ def submit_nomination(contest_id):
         return redirect(url_for('public.contest_detail', contest_id=contest_id))
 
     count = Nomination.query.filter_by(contest_id=contest_id, user_id=session.get('user_id')).count()
-    if count >= 5:
+    if count >= NOMINATION_LIMIT:
         flash('你已达到提名上限（5个角色）', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest_id))
 
@@ -407,7 +415,7 @@ def submit_nomination(contest_id):
             try:
                 # 读取并压缩图片
                 raw_data = file.read()
-                compressed_data = compress_image(raw_data, max_size=(400, 400), quality=85)
+                compressed_data = compress_image(raw_data, max_size=NOMINATION_IMAGE_SIZE, quality=COMPRESS_QUALITY)
 
                 supabase.storage.from_('contest_images').upload(
                     filename,
@@ -529,16 +537,16 @@ def qualifying_vote_submit(contest_id):
         flash('请至少投给一个角色', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    if candidate_count > 5:
+    if candidate_count > QUALIFYING_MAX_CANDIDATES:
         flash(f'{"女组" if gender == "female" else "男组"}最多只能投给5个角色', 'danger')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
-    if total_votes > 15:
+    if total_votes > QUALIFYING_MAX_VOTES:
         flash(f'{"女组" if gender == "female" else "男组"}总票数不能超过15票', 'danger')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
     for cid, weight in votes_data.items():
-        if weight > 3:
+        if weight > QUALIFYING_MAX_PER_CANDIDATE:
             flash(f'{"女组" if gender == "female" else "男组"}每个角色最多只能投3票', 'danger')
             return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 

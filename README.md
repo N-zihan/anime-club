@@ -68,53 +68,100 @@
 
 ```text
 动漫社网站/
-├── app/                               # 应用核心代码
-│   ├── __init__.py                    # Flask 应用工厂(含CSRF/Session安全配置)
-│   ├── admin.py                       # 管理后台(站长/运营双角色)
-│   ├── ai.py                          # AI 解说与预测(SiliconFlow API)
-│   ├── auth.py                        # 用户认证(注册/登录/密码重置/邮箱验证)
-│   ├── contest_engine.py              # 萌战引擎核心(赛程/晋级/排名)
-│   ├── models.py                      # 数据库模型(13张表)
-│   ├── public.py                      # 公共页面路由(含PWA manifest动态生成)
-│   ├── user.py                        # 用户中心(个人设置/头像/主页)
-│   └── utils.py                       # 工具函数(Supabase/图片压缩)
-│
-├── templates/                         # Jinja2前端模板(42个页面)
-│   ├── base.html                      # 基础模板(含PWA注册/深夜模式/新手引导)
-│   ├── splash.html                    # 启动页(含QQ分享OG标签)
-│   └── ...                            # 其余40个页面模板
-│
-├── static/                            # 静态资源
-│   ├── avatars/                       # 默认头像
+├── .github/                                # GitHub Actions CI/CD 工作流配置
+│   └── workflows/
+│       ├── codeql.yml                      # CodeQL 代码安全扫描
+│       ├── pylint.yml                      # Pylint 代码规范检查
+│       └── python-app.yml                  # Python 应用测试与部署
+├── app/                                    # 应用核心代码（10个模块）
+│   ├── __init__.py                         # Flask 应用工厂
+│   ├── admin.py                            # 管理后台（站长/运营双角色）
+│   ├── ai.py                               # AI 解说与预测（SiliconFlow API）
+│   ├── auth.py                             # 用户认证（注册/登录/邮箱验证）
+│   ├── config.py                           # 全局配置（赛程天数、投票限制、图片压缩）
+│   ├── contest_engine.py                   # 萌战引擎（赛程计算、晋级、排名）
+│   ├── models.py                           # 数据库模型（13张表）
+│   ├── public.py                           # 公共页面路由（含 PWA Manifest）
+│   ├── user.py                             # 用户中心（个人设置、头像、主页）
+│   └── utils.py                            # 工具函数（Supabase、图片压缩）
+├── static/                                 # 静态资源
+│   ├── avatars/
+│   │   └── default.png                     # 默认头像
 │   ├── css/
-│   │   └── style.css                  # 全局样式(含深色模式/导航栏固定)
+│   │   └── style.css                       # 全局样式（含深色模式）
 │   ├── images/
-│   │   ├── icon-192.png               # PWA图标(192x192)
-│   │   └── icon-512.png               # PWA图标(512x512)
-│   ├── sw.js                          # Service Worker(PWA离线缓存)
-│   └── favicon.ico                    # 浏览器标签页图标
-│
-├── tests/                             # Pytest测试套件(92个用例)
-│   ├── conftest.py                    # 测试配置与 fixtures
-│   ├── test_admin.py                  # 管理后台测试
-│   ├── test_ai.py                     # AI模块测试
-│   ├── test_api.py                    # API端点测试
-│   ├── test_auth.py                   # 认证模块测试
-│   ├── test_contest_engine.py         # 萌战引擎测试
-│   ├── test_models.py                 # 数据模型测试
-│   ├── test_public.py                 # 公共页面测试
-│   └── test_user.py                   # 用户中心测试
-│
-├── build.js                           # PWA版本号自动注入脚本
-├── package.json                       # Node.js构建配置(Vercel自动执行)
-├── .env                               # 环境变量(自行创建)
-├── requirements.txt                   # Python依赖
-├── LICENSE                            # 许可证
-├── pytest.ini                         # 测试配置
-├── run.py                             # 应用启动入口
-├── README.md                          # 项目说明
-├── vercel.json                        # Vercel部署配置
-└── .gitignore                         # Git忽略规则
+│   │   ├── icon-192.png                    # PWA 图标（192x192）
+│   │   └── icon-512.png                    # PWA 图标（512x512）
+│   ├── favicon.ico                         # 浏览器标签页图标
+│   ├── og-image.png                        # 社交分享预览图（Open Graph）
+│   ├── robots.txt                          # 搜索引擎爬虫抓取规则
+│   ├── sitemap.xml                         # 站点地图（SEO）
+│   └── sw.js                               # Service Worker（PWA 离线缓存）
+├── templates/                               # Jinja2 前端模板（42个页面）
+│   ├── 400.html                            # 错误页面：请求无效
+│   ├── 403.html                            # 错误页面：访问被拒绝
+│   ├── 404.html                            # 错误页面：页面未找到
+│   ├── 405.html                            # 错误页面：请求方法不允许
+│   ├── 413.html                            # 错误页面：文件太大
+│   ├── 500.html                            # 错误页面：服务器内部错误
+│   ├── about.html                          # 社团介绍
+│   ├── activities.html                     # 活动列表
+│   ├── admin_activities.html               # 后台：活动管理
+│   ├── admin_activity_form.html            # 后台：添加/编辑活动表单
+│   ├── admin_anime_resources.html          # 后台：番剧资源管理
+│   ├── admin_anime_resources_add.html      # 后台：手动添加番剧资源
+│   ├── admin_contests_manage.html          # 后台：赛事管理列表
+│   ├── admin_contest_create.html           # 后台：创建赛事
+│   ├── admin_contest_edit.html             # 后台：编辑赛事（含提名审核）
+│   ├── admin_dashboard.html                # 站长管理面板
+│   ├── admin_gallery.html                  # 后台：照片墙管理
+│   ├── admin_messages.html                 # 后台：留言管理
+│   ├── admin_users.html                    # 后台：用户管理
+│   ├── anime_resources.html                # 番剧资源公开列表
+│   ├── base.html                           # 基础模板（导航栏、深夜模式、新手引导）
+│   ├── board.html                          # 留言板（含嵌套回复）
+│   ├── contest_center.html                 # 赛事中心（进行中/即将开始/已结束）
+│   ├── contest_detail.html                 # 赛事详情（含各阶段入口、AI解说）
+│   ├── contest_group_vote.html             # 小组赛投票页
+│   ├── contest_knockout_vote.html          # 淘汰赛投票页
+│   ├── contest_qualifying_vote.html        # 海选投票页
+│   ├── contest_rules.html                  # 赛事规则确认页
+│   ├── forgot_password.html                # 忘记密码（输入QQ号）
+│   ├── forgot_password_bind.html           # 忘记密码（绑定邮箱）
+│   ├── gallery.html                        # 照片墙（公开浏览）
+│   ├── index.html                          # 首页（卡片导航）
+│   ├── login.html                          # 登录页
+│   ├── members.html                        # 社员名单
+│   ├── no_activities.html                  # 暂无活动提示页
+│   ├── profile.html                        # 个人设置（头像/用户名/密码/邮箱）
+│   ├── register.html                       # 注册页
+│   ├── reset_password.html                 # 重置密码页
+│   ├── splash.html                         # 启动页（Canvas 波浪粒子动画）
+│   ├── staff_dashboard.html                # 运营管理面板
+│   ├── submit_anime.html                   # 提交番剧推荐
+│   └── user_profile.html                   # 个人主页（公开展示）
+├── tests/                                  # Pytest 测试套件
+│   ├── __init__.py                         # 测试包初始化
+│   ├── conftest.py                         # 测试配置与 Fixtures
+│   ├── test_admin.py                       # 管理后台测试
+│   ├── test_ai.py                          # AI 模块测试
+│   ├── test_api.py                         # API 端点测试
+│   ├── test_auth.py                        # 认证模块测试
+│   ├── test_contest_engine.py              # 萌战引擎测试
+│   ├── test_models.py                      # 数据模型测试
+│   ├── test_public.py                      # 公共页面测试
+│   └── test_user.py                        # 用户中心测试
+├── .env                                    # 环境变量（需自行创建）
+├── .gitignore                              # Git 忽略规则
+├── .python-version                         # Python 版本指定（pyenv）
+├── build.js                                # PWA 版本号自动注入脚本
+├── LICENSE                                 # MIT 许可证
+├── package.json                            # Node.js 构建配置（Vercel 自动执行）
+├── pytest.ini                              # Pytest 配置
+├── README.md                               # 项目说明文档
+├── requirements.txt                        # Python 依赖列表
+├── run.py                                  # 应用启动入口
+└── vercel.json                             # Vercel 部署配置
 ```
 >/static文件夹中有网站标签头像 favicon.ico ，可以换成你喜欢的
 

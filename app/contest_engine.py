@@ -1,5 +1,5 @@
 """
-南平一中动漫社官网 · 萌战系统引擎
+动漫社官网 · 萌战系统引擎
 ====================================
 
 本模块是萌战系统的核心逻辑层，负责所有与赛事相关的计算和状态变更。
@@ -26,6 +26,7 @@ from sqlalchemy import func as sa_func
 from sqlalchemy.orm.attributes import flag_modified
 
 from .models import db, Candidate, ContestVote
+from .config import STAGE_DAYS, QUALIFYING_TOP_N, GROUP_COUNT
 
 
 # ============================================================
@@ -66,25 +67,46 @@ def calc_stage_times(open_at):
             'final_result_end': None,
         }
 
+    # 计算各阶段累计天数
+    d = STAGE_DAYS
+    nomination_end_days = d['nomination']
+    review_end_days = nomination_end_days + d['review']
+    qualifying_vote_end_days = review_end_days + d['qualifying_vote']
+    qualifying_end_days = qualifying_vote_end_days + d['qualifying_result']
+    group_round_1_end_days = qualifying_end_days + d['group_round_1']
+    group_round_1_result_end_days = group_round_1_end_days + d['group_round_1_result']
+    group_round_2_end_days = group_round_1_result_end_days + d['group_round_2']
+    group_round_2_result_end_days = group_round_2_end_days + d['group_round_2_result']
+    group_round_3_end_days = group_round_2_result_end_days + d['group_round_3']
+    group_round_3_result_end_days = group_round_3_end_days + d['group_round_3_result']
+    knockout_16_end_days = group_round_3_result_end_days + d['knockout_16']
+    knockout_16_result_end_days = knockout_16_end_days + d['knockout_16_result']
+    knockout_8_end_days = knockout_16_result_end_days + d['knockout_8']
+    knockout_8_result_end_days = knockout_8_end_days + d['knockout_8_result']
+    knockout_4_end_days = knockout_8_result_end_days + d['knockout_4']
+    knockout_4_result_end_days = knockout_4_end_days + d['knockout_4_result']
+    final_vote_end_days = knockout_4_result_end_days + d['final_vote']
+    final_result_end_days = final_vote_end_days + d['final_result']
+
     return {
-        'nomination_end': set_time_to_18(open_at + timedelta(days=5)),
-        'review_end': set_time_to_18(open_at + timedelta(days=8)),
-        'qualifying_vote_end': set_time_to_18(open_at + timedelta(days=12)),
-        'qualifying_end': set_time_to_18(open_at + timedelta(days=13)),
-        'group_round_1_end': set_time_to_18(open_at + timedelta(days=17)),
-        'group_round_1_result_end': set_time_to_18(open_at + timedelta(days=18)),
-        'group_round_2_end': set_time_to_18(open_at + timedelta(days=22)),
-        'group_round_2_result_end': set_time_to_18(open_at + timedelta(days=23)),
-        'group_round_3_end': set_time_to_18(open_at + timedelta(days=27)),
-        'group_round_3_result_end': set_time_to_18(open_at + timedelta(days=28)),
-        'knockout_16_end': set_time_to_18(open_at + timedelta(days=32)),
-        'knockout_16_result_end': set_time_to_18(open_at + timedelta(days=33)),
-        'knockout_8_end': set_time_to_18(open_at + timedelta(days=37)),
-        'knockout_8_result_end': set_time_to_18(open_at + timedelta(days=38)),
-        'knockout_4_end': set_time_to_18(open_at + timedelta(days=42)),
-        'knockout_4_result_end': set_time_to_18(open_at + timedelta(days=43)),
-        'final_vote_end': set_time_to_18(open_at + timedelta(days=47)),
-        'final_result_end': set_time_to_18(open_at + timedelta(days=50)),
+        'nomination_end': set_time_to_18(open_at + timedelta(days=nomination_end_days)),
+        'review_end': set_time_to_18(open_at + timedelta(days=review_end_days)),
+        'qualifying_vote_end': set_time_to_18(open_at + timedelta(days=qualifying_vote_end_days)),
+        'qualifying_end': set_time_to_18(open_at + timedelta(days=qualifying_end_days)),
+        'group_round_1_end': set_time_to_18(open_at + timedelta(days=group_round_1_end_days)),
+        'group_round_1_result_end': set_time_to_18(open_at + timedelta(days=group_round_1_result_end_days)),
+        'group_round_2_end': set_time_to_18(open_at + timedelta(days=group_round_2_end_days)),
+        'group_round_2_result_end': set_time_to_18(open_at + timedelta(days=group_round_2_result_end_days)),
+        'group_round_3_end': set_time_to_18(open_at + timedelta(days=group_round_3_end_days)),
+        'group_round_3_result_end': set_time_to_18(open_at + timedelta(days=group_round_3_result_end_days)),
+        'knockout_16_end': set_time_to_18(open_at + timedelta(days=knockout_16_end_days)),
+        'knockout_16_result_end': set_time_to_18(open_at + timedelta(days=knockout_16_result_end_days)),
+        'knockout_8_end': set_time_to_18(open_at + timedelta(days=knockout_8_end_days)),
+        'knockout_8_result_end': set_time_to_18(open_at + timedelta(days=knockout_8_result_end_days)),
+        'knockout_4_end': set_time_to_18(open_at + timedelta(days=knockout_4_end_days)),
+        'knockout_4_result_end': set_time_to_18(open_at + timedelta(days=knockout_4_result_end_days)),
+        'final_vote_end': set_time_to_18(open_at + timedelta(days=final_vote_end_days)),
+        'final_result_end': set_time_to_18(open_at + timedelta(days=final_result_end_days)),
     }
 
 
@@ -241,28 +263,28 @@ def run_qualifying_promotion(contest):
     female_result = count_votes(female_candidates)
     male_result = count_votes(male_candidates)
 
-    female_top32 = [item['candidate'] for item in female_result[:32]]
-    male_top32 = [item['candidate'] for item in male_result[:32]]
+    female_top_32 = [item['candidate'] for item in female_result[:QUALIFYING_TOP_N]]
+    male_top_32 = [item['candidate'] for item in male_result[:QUALIFYING_TOP_N]]
 
-    for c in female_top32:
+    for c in female_top_32:
         c.stage = 'group_stage'
-    for c in male_top32:
+    for c in male_top_32:
         c.stage = 'group_stage'
 
-    def generate_groups(candidates, group_count=8):
+    def generate_groups(candidates, group_count=GROUP_COUNT):
         random.shuffle(candidates)
         groups = []
         for i in range(group_count):
             groups.append(candidates[i * 4:(i + 1) * 4])
         return groups
 
-    female_groups = generate_groups(female_top32)
-    male_groups = generate_groups(male_top32)
+    female_groups = generate_groups(female_top_32)
+    male_groups = generate_groups(male_top_32)
 
     contest.config['female_groups'] = [[c.id for c in group] for group in female_groups]
     contest.config['male_groups'] = [[c.id for c in group] for group in male_groups]
-    contest.config['female_top32'] = [c.id for c in female_top32]
-    contest.config['male_top32'] = [c.id for c in male_top32]
+    contest.config['female_top_32'] = [c.id for c in female_top_32]
+    contest.config['male_top_32'] = [c.id for c in male_top_32]
 
     contest.config['female_result'] = [
         {'id': item['candidate'].id,
@@ -604,7 +626,7 @@ def run_knockout_advance(contest, phase, now, times):
     """
     if phase == 'knockout_16_result' and now >= times['knockout_16_result_end'] and contest.status == 'knockout':
         # 防止重复推进
-        if contest.config.get('knockout_matches_female_round8'):
+        if contest.config.get('knockout_matches_female_round16'):
             return False, None
 
         female_matches = contest.config.get('knockout_matches_female', [])
@@ -638,7 +660,7 @@ def run_knockout_advance(contest, phase, now, times):
 
     elif phase == 'knockout_4_result' and now >= times['knockout_4_result_end'] and contest.status == 'knockout':
         # 防止重复推进
-        if contest.config.get('knockout_matches_female_round8'):
+        if contest.config.get('knockout_matches_female_round4'):
             return False, None
 
         female_matches = contest.config.get('knockout_matches_female', [])

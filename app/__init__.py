@@ -1,5 +1,5 @@
 """
-南平一中动漫社官网 · Flask 应用工厂模块
+动漫社官网 · Flask 应用工厂模块
 ============================================
 
 本模块是整个网站的核心入口，负责创建和配置 Flask 应用实例。
@@ -28,6 +28,7 @@ from .models import db
 from .public import public_bp, page_not_found, internal_server_error, forbidden
 from .user import user_bp
 from .utils import get_supabase
+from .config import PWA_THEME_COLOR, PWA_BACKGROUND_COLOR
 
 load_dotenv()
 
@@ -86,6 +87,15 @@ def create_app():
     @app.context_processor
     def inject_club_name():
         return {'club_name': CLUB_NAME}
+
+    @app.context_processor
+    def inject_config():
+        return {
+            'config': {
+                'PWA_THEME_COLOR': PWA_THEME_COLOR,
+                'PWA_BACKGROUND_COLOR': PWA_BACKGROUND_COLOR
+            }
+        }
 
     @app.errorhandler(CSRFError)
     def handle_csrf_error(e):

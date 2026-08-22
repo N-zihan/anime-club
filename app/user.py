@@ -1,5 +1,5 @@
 """
-南平一中动漫社官网 · 用户中心模块
+动漫社官网 · 用户中心模块
 ====================================
 
 本模块处理与个人账号相关的功能：
@@ -32,6 +32,7 @@ from sqlalchemy import func
 
 from .models import db, User, Message, AnimeResource
 from .utils import allowed_file, compress_image, get_or_404
+from .config import AVATAR_MAX_SIZE
 
 user_bp = Blueprint('user', __name__)
 
@@ -55,7 +56,7 @@ def profile():
             if 'avatar' in request.files:
                 file = request.files['avatar']
                 if file and allowed_file(file.filename):
-                    if request.content_length and request.content_length > 2 * 1024 * 1024:
+                    if request.content_length and request.content_length > AVATAR_MAX_SIZE:
                         flash('头像文件不能超过2MB', 'danger')
                     else:
                         raw_data = file.read()

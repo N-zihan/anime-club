@@ -1,5 +1,5 @@
 """
-南平一中动漫社官网 · 管理后台模块
+动漫社官网 · 管理后台模块
 ====================================
 
 本模块为社团管理层提供完整的后台管理功能，包含以下子系统：
@@ -30,6 +30,7 @@ from openpyxl.styles import Font, Alignment
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, Candidate, \
     ContestVote
 from .utils import get_supabase, allowed_file, compress_image, get_or_404
+from .config import PHOTO_COMPRESS_SIZE, COMPRESS_QUALITY
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -185,7 +186,7 @@ def admin_gallery_upload():
         try:
             raw_data = file.read()
             # 照片墙压缩到 1200x1200，品质85
-            compressed = compress_image(raw_data, max_size=(1200, 1200), quality=85)
+            compressed = compress_image(raw_data, max_size=PHOTO_COMPRESS_SIZE, quality=COMPRESS_QUALITY)
             supabase.storage.from_('photos').upload(
                 filename,
                 compressed,
