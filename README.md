@@ -1,6 +1,6 @@
 <div align="center">
 
-# 动漫社全功能网站
+# 动漫社网站
 
 [![Vercel](https://img.shields.io/badge/Deployments-Vercel-000000?logo=vercel)](https://www.nanyi-anime-club.top)
 [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python)](https://python.org)
@@ -13,7 +13,7 @@
 
 > 建站即用 · 开箱即改
 
-动漫社全功能网站，集社团展示、互动交流、资源分享、线上赛事于一体
+动漫社网站，集社团展示、互动交流、资源分享、线上赛事于一体
 
 ***在线访问***：[www.nanyi-anime-club.top](https://www.nanyi-anime-club.top)
 
