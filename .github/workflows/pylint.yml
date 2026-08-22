@@ -21,4 +21,4 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint app/ tests/ --fail-under=8.5
+        pylint . --fail-under=8.5 --ignore=tests
