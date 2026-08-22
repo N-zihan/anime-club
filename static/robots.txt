@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /
+Allow: /$
+
+Sitemap: https://www.nanyi-anime-club.top/sitemap.xml
