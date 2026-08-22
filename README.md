@@ -98,7 +98,7 @@
 │   ├── robots.txt                          # 搜索引擎爬虫抓取规则
 │   ├── sitemap.xml                         # 站点地图（SEO）
 │   └── sw.js                               # Service Worker（PWA 离线缓存）
-├── templates/                               # Jinja2 前端模板（42个页面）
+├── templates/                              # Jinja2 前端模板（42个页面）
 │   ├── 400.html                            # 错误页面：请求无效
 │   ├── 403.html                            # 错误页面：访问被拒绝
 │   ├── 404.html                            # 错误页面：页面未找到
