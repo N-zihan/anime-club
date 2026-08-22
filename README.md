@@ -10,6 +10,7 @@
 [![Pylint](https://github.com/N-zihan/anime-club/actions/workflows/pylint.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/pylint.yml)
 [![CodeQL Advanced](https://github.com/N-zihan/anime-club/actions/workflows/codeql.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/github/v/tag/N-zihan/anime-club?label=Version)](https://github.com/N-zihan/anime-club/tags)
 
 > 建站即用 · 开箱即改
 
@@ -277,6 +278,7 @@ API Keys 在同一页面的 **Project API keys** 区域获取：
 
 - 核心功能完整
 - 131测试用例全部通过
+- Pylint 评分 8.87/10（忽略测试文件）
 - 已部署至生产环境
 
 ## 许可证
