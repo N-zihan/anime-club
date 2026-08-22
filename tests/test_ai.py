@@ -1,7 +1,6 @@
-from unittest.mock import patch, MagicMock
-
 from app.ai import generate_commentary, generate_prediction, _get_cached, _set_cache, _cache
 from app.models import Candidate
+from unittest.mock import patch, MagicMock
 
 
 class TestAICommentary:
@@ -218,3 +217,46 @@ class TestAIIntegration:
             user_message = messages[1]['content']
             assert "测试萌战" in user_message
             assert "候选角色数：64" in user_message
+
+
+# ========== 内部 prompt 构建函数 ==========
+from app.ai import _build_group_prompt, _build_knockout_prompt, _build_qualifying_prompt
+
+
+class TestAIPromptBuilders:
+
+    def test_build_group_prompt(self, sample_contest, db_session):
+        # 构造 extra_data
+        extra_data = {
+            'gender': 'female',
+            'groups': [[1, 2, 3, 4], [5, 6, 7, 8]],
+            'group_results': {
+                'female': [
+                    {
+                        'group_name': 'A组',
+                        'matches': [
+                            {'candidate1': {'name': 'A1'}, 'candidate2': {'name': 'A2'},
+                             'votes1': 10, 'votes2': 5, 'winner': None}
+                        ]
+                    }
+                ]
+            },
+            'ranking': [{'name': 'A1', 'points': 3}]
+        }
+        prompt = _build_group_prompt(sample_contest, 'group_round_1', extra_data)
+        assert '女组 小组赛' in prompt
+        assert 'A组' in prompt
+        assert 'A1' in prompt
+
+    def test_build_knockout_prompt(self, sample_contest):
+        extra_data = {
+            'gender': 'female',
+            'matches': [
+                {'candidate1_name': 'K1', 'candidate2_name': 'K2',
+                 'votes1': 8, 'votes2': 6, 'status': 'active'}
+            ]
+        }
+        prompt = _build_knockout_prompt(sample_contest, 'knockout_16', extra_data)
+        assert '女组 16强' in prompt
+        assert 'K1' in prompt
+        assert 'K2' in prompt

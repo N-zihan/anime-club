@@ -56,3 +56,82 @@ class TestAdmin:
         response = admin_client.get('/admin/contests/create')
         assert response.status_code == 200
         assert '创建赛事' in response.text
+
+
+from io import BytesIO
+# ========== 活动增删改、照片上传、用户权限切换 ==========
+from unittest.mock import patch
+
+
+class TestAdminExtra:
+
+    def test_admin_activity_add(self, admin_client, db_session):
+        resp = admin_client.post('/admin/activities/add', data={
+            'title': '新活动',
+            'date': '2026-10-20',
+            'content': '测试内容'
+        }, follow_redirects=True)
+        from app.models import Activity
+        activity = Activity.query.filter_by(title='新活动').first()
+        assert activity is not None
+        assert activity.date == '2026-10-20'
+        assert activity.content == '测试内容'
+        assert resp.status_code == 200
+
+    def test_admin_activity_edit(self, admin_client, sample_activity, db_session):
+        resp = admin_client.post(f'/admin/activities/edit/{sample_activity.id}', data={
+            'title': '修改标题',
+            'date': '2026-10-21',
+            'content': '修改内容'
+        }, follow_redirects=True)
+        from app.models import Activity
+        activity = db_session.get(Activity, sample_activity.id)
+        assert activity.title == '修改标题'
+        assert activity.date == '2026-10-21'
+        assert activity.content == '修改内容'
+        assert resp.status_code == 200
+
+    def test_admin_activity_delete(self, admin_client, sample_activity, db_session):
+        with patch('app.admin.get_supabase') as mock_supabase:
+            mock_supabase.return_value.storage.from_.return_value.remove.return_value = None
+            resp = admin_client.get(f'/admin/activities/delete/{sample_activity.id}', follow_redirects=True)
+            from app.models import Activity
+            assert db_session.get(Activity, sample_activity.id) is None
+            assert resp.status_code == 200
+
+    def test_admin_gallery_upload(self, admin_client, sample_activity, db_session):
+        from io import BytesIO
+        with patch('app.admin.get_supabase') as mock_supabase, \
+                patch('app.admin.compress_image', return_value=b'compressed_data'):
+            mock_supabase.return_value.storage.from_.return_value.upload.return_value = None
+            data = {
+                'file': (BytesIO(b'fake image data'), 'test.jpg'),
+                'activity_id': str(sample_activity.id)
+            }
+            resp = admin_client.post('/admin/gallery/upload', data=data,
+                                     content_type='multipart/form-data', follow_redirects=True)
+            from app.models import Photo
+            photo = Photo.query.first()
+            assert photo is not None
+            assert photo.activity_id == sample_activity.id
+            assert photo.uploader is not None
+            assert 'jpg' in photo.filename
+            assert resp.status_code == 200
+
+    def test_admin_toggle_staff(self, admin_client, sample_user, db_session):
+        from app.models import User
+        user = db_session.get(User, sample_user.id)
+        original = user.is_staff
+        resp = admin_client.get(f'/admin/users/toggle_staff/{sample_user.id}', follow_redirects=True)
+        db_session.refresh(user)
+        assert user.is_staff == (not original)
+        assert resp.status_code == 200
+
+    def test_admin_toggle_owner(self, admin_client, sample_user, db_session):
+        from app.models import User
+        user = db_session.get(User, sample_user.id)
+        original = user.is_owner
+        resp = admin_client.get(f'/admin/users/toggle_owner/{sample_user.id}', follow_redirects=True)
+        db_session.refresh(user)
+        assert user.is_owner == (not original)
+        assert resp.status_code == 200

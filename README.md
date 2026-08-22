@@ -47,20 +47,20 @@
 
 ## 技术栈
 
-| 类别     | 技术                                       |
-|----------|--------------------------------------------|
-| 后端框架 | Python 3.14.4 + Flask 3.0                  |
-| ORM      | SQLAlchemy 2.0                             |
-| 数据库   | PostgreSQL(Supabase)                       |
-| 文件存储 | Supabase Storage                           |
-| 图片处理 | Pillow                                     |
-| 前端     | HTML + CSS + Jinja2                        |
-| 测试     | Pytest(92 个测试用例)                      |
-| 部署     | Vercel                                     |
-| 认证     | Session-based + Werkzeug 密码哈希          |
-| 安全     | CSRFProtect(Flask-WTF)                     |
-| AI 解说  | SiliconFlow API(DeepSeek-V3)               |
-| PWA      | Service Worker + Manifest（可安装至桌面）  |
+| 类别     | 技术                                      |
+|----------|-------------------------------------------|
+| 后端框架 | Python 3.14.4 + Flask 3.0                 |
+| ORM      | SQLAlchemy 2.0                            |
+| 数据库   | PostgreSQL(Supabase)                      |
+| 文件存储 | Supabase Storage                          |
+| 图片处理 | Pillow                                    |
+| 前端     | HTML + CSS + Jinja2                       |
+| 测试     | Pytest                                    |
+| 部署     | Vercel                                    |
+| 认证     | Session-based + Werkzeug 密码哈希         |
+| 安全     | CSRFProtect(Flask-WTF)                    |
+| AI 解说  | SiliconFlow API(DeepSeek-V3)              |
+| PWA      | Service Worker + Manifest（可安装至桌面） |
 
 > AI 解说功能依赖 SiliconFlow API，需自行申请 API Key
 
@@ -276,7 +276,7 @@ API Keys 在同一页面的 **Project API keys** 区域获取：
 ## 项目状态
 
 - 核心功能完整
-- 92个测试用例全部通过
+- 131测试用例全部通过
 - 已部署至生产环境
 
 ## 许可证

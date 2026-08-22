@@ -124,6 +124,7 @@ def create_app():
         public_routes = [
             'auth.login',
             'auth.register',
+            'auth.send_register_code',
             'static',
             'public.splash',
             'auth.forgot_password',

@@ -1,8 +1,7 @@
 import os
+import pytest
 import sys
 from datetime import datetime, timedelta
-
-import pytest
 
 # ====== 设置测试环境变量（必须在导入 app 之前） ======
 os.environ['GROUP_VERIFICATION_CODE'] = 'test_group_code'
@@ -69,6 +68,8 @@ def db_session(app):
     with app.app_context():
         db.create_all()
         yield db.session
+        db.session.remove()
+        db.engine.dispose()
         db.drop_all()
 
 

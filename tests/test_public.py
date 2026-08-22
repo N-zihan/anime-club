@@ -1,9 +1,8 @@
-from datetime import timedelta, datetime
-
 import pytest
-
 from app.auth import CLUB_NAME
 from app.models import ContestVote, Contest
+from datetime import timedelta, datetime
+from unittest.mock import patch
 
 
 class TestPublic:
@@ -262,3 +261,145 @@ class TestVoting:
             follow_redirects=True
         )
         assert response.status_code == 200
+
+
+# ========== 赛事各阶段、投票边界、AI接口 ==========
+
+class TestPublicExtra:
+
+    def test_contest_detail_nomination_phase(self, logged_in_client, sample_contest, db_session):
+        contest = sample_contest
+        contest.status = 'open'
+        contest.open_at = datetime(2026, 10, 1, 18, 0, 0)
+        db_session.commit()
+        with patch('app.public.datetime') as mock_dt:
+            mock_dt.now.return_value = datetime(2026, 10, 3, 12, 0, 0)
+            mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
+            resp = logged_in_client.get(f'/contest/{contest.id}')
+            assert '当前为 <strong>提名期</strong>' in resp.text
+
+    def test_qualifying_vote_zero_votes(self, logged_in_client, sample_contest, db_session, sample_user):
+        contest = sample_contest
+        contest.status = 'open'
+        contest.open_at = datetime.now() - timedelta(days=8)
+        db_session.commit()
+
+        resp = logged_in_client.post(
+            f'/contest/{contest.id}/qualifying/submit',
+            data={'gender': 'female'},
+            follow_redirects=False
+        )
+        assert resp.status_code == 302
+        from app.models import ContestVote
+        votes = ContestVote.query.filter_by(
+            contest_id=contest.id,
+            user_id=sample_user.id,
+            round_number=0
+        ).all()
+        assert len(votes) == 0
+
+    def test_qualifying_vote_exceed_candidates(self, logged_in_client, sample_contest, db_session, sample_user):
+        contest = sample_contest
+        contest.status = 'open'
+        contest.open_at = datetime.now() - timedelta(days=8)
+        db_session.commit()
+
+        candidates = contest.candidates.filter_by(gender='female').limit(6).all()
+        data = {'gender': 'female'}
+        for c in candidates:
+            data[f'vote_{c.id}'] = '1'
+
+        resp = logged_in_client.post(
+            f'/contest/{contest.id}/qualifying/submit',
+            data=data,
+            follow_redirects=False
+        )
+        assert resp.status_code == 302
+        votes = ContestVote.query.filter_by(
+            contest_id=contest.id,
+            user_id=sample_user.id,
+            round_number=0
+        ).all()
+        assert len(votes) == 0
+
+    def test_group_vote_submit_success(self, logged_in_client, sample_contest, db_session, sample_user):
+        contest = sample_contest
+        contest.status = 'group_stage'
+        # 设置开始时间为 22 天前，使当前处于小组赛第1轮（提名5天+海选5天+小组赛第1轮开始）
+        contest.open_at = datetime.now() - timedelta(days=22)
+        female_candidates = contest.candidates.filter_by(gender='female').limit(4).all()
+        if len(female_candidates) < 4:
+            pytest.skip("Need 4 female candidates")
+        contest.config = {'female_groups': [[c.id for c in female_candidates]]}
+        db_session.commit()
+
+        # 模拟当前时间为小组赛第1轮期间
+        with patch('app.public.datetime') as mock_dt:
+            mock_dt.now.return_value = datetime.now() - timedelta(days=18)  # 第1轮投票期内
+            mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
+            resp = logged_in_client.post(
+                f'/contest/{contest.id}/group/submit',
+                data={'gender': 'female', 'candidate_id': female_candidates[0].id},
+                follow_redirects=False
+            )
+            # 成功提交应返回重定向（302）
+            assert resp.status_code == 302
+            # 检查数据库是否有投票记录
+            from app.models import ContestVote
+            vote = ContestVote.query.filter_by(
+                contest_id=contest.id,
+                user_id=sample_user.id,
+                round_number=1,  # 小组赛第1轮
+                gender='female',
+                candidate_id=female_candidates[0].id
+            ).first()
+            assert vote is not None
+
+    def test_knockout_vote_submit_success(self, logged_in_client, sample_contest, db_session, sample_user):
+        contest = sample_contest
+        contest.status = 'knockout'
+        # 设置开始时间为 40 天前，使当前处于淘汰赛16强阶段
+        contest.open_at = datetime.now() - timedelta(days=40)
+        female_candidates = contest.candidates.filter_by(gender='female').limit(2).all()
+        if len(female_candidates) < 2:
+            pytest.skip("Need 2 female candidates")
+        contest.config = {
+            'knockout_matches_female': [
+                {
+                    'candidate1': female_candidates[0].id,
+                    'candidate2': female_candidates[1].id,
+                    'status': 'active'
+                }
+            ]
+        }
+        db_session.commit()
+
+        with patch('app.public.datetime') as mock_dt:
+            mock_dt.now.return_value = datetime.now() - timedelta(days=35)  # 16强投票期内
+            mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
+            resp = logged_in_client.post(
+                f'/contest/{contest.id}/knockout/submit',
+                data={'gender': 'female', 'candidate_id': female_candidates[0].id},
+                follow_redirects=False
+            )
+            assert resp.status_code == 302
+            from app.models import ContestVote
+            vote = ContestVote.query.filter_by(
+                contest_id=contest.id,
+                user_id=sample_user.id,
+                round_number=4,  # 淘汰赛轮次固定为4
+                sub_round=1,  # 16强为1
+                gender='female',
+                candidate_id=female_candidates[0].id
+            ).first()
+            assert vote is not None
+
+    def test_ai_commentary_api(self, logged_in_client, sample_contest):
+        with patch('app.public.generate_commentary', return_value=(True, 'AI commentary', None)):
+            resp = logged_in_client.get(f'/contest/{sample_contest.id}/commentary?phase=qualifying')
+            assert resp.json['commentary'] == 'AI commentary'
+
+    def test_ai_prediction_api(self, logged_in_client, sample_contest):
+        with patch('app.public.generate_prediction', return_value=(True, 'AI prediction', None)):
+            resp = logged_in_client.get(f'/contest/{sample_contest.id}/predict')
+            assert resp.json['prediction'] == 'AI prediction'

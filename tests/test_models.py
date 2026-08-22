@@ -1,8 +1,6 @@
-from datetime import datetime, timedelta
-
 import pytest
-
 from app.models import User, Contest, Nomination, Candidate, ContestVote, Activity, AnimeResource, Message, Reply
+from datetime import datetime, timedelta
 
 
 class TestUserModel:

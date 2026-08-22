@@ -1,11 +1,11 @@
-from datetime import datetime
-
 from app.contest_engine import (
     calc_stage_times, calc_phase, auto_activate_contest,
     run_qualifying_promotion
 )
 from app.models import User, Candidate, ContestVote, Contest
 from app.models import db
+from datetime import datetime
+from sqlalchemy.orm.attributes import flag_modified
 
 
 class TestCalcStageTimes:
@@ -334,3 +334,95 @@ class TestRunKnockoutAdvance:
         for match in matches_8:
             assert match['status'] == 'active'
             assert match['round_name'] == '8强'
+
+
+# ========== 小组赛晋级、淘汰赛推进、阶段判断细节 ==========
+from app.contest_engine import run_group_promotion, run_knockout_advance, prepare_group_round_data, calc_phase
+from datetime import timedelta
+
+
+class TestContestEngineExtra:
+
+    def test_run_group_promotion_already_run(self, sample_contest, db_session):
+        sample_contest.config['female_groups'] = [[1, 2, 3, 4]]
+        db_session.commit()
+        run_group_promotion(sample_contest)  # 应直接返回，不报错
+
+    def test_calc_phase_group_stage_detail(self, sample_contest):
+        sample_contest.status = 'group_stage'
+        times = calc_stage_times(sample_contest.open_at)
+        # 第一轮投票
+        now = datetime(2026, 10, 15, 12, 0, 0)
+        phase = calc_phase(sample_contest, now, times)
+        assert phase == 'group_round_1'
+        # 第一轮公示
+        now = datetime(2026, 10, 19, 18, 0, 0)
+        phase = calc_phase(sample_contest, now, times)
+        assert phase == 'group_round_1_result'
+
+    def test_prepare_group_round_data(self, sample_contest, db_session, sample_user):
+        sample_contest.status = 'group_stage'
+        female_candidates = sample_contest.candidates.filter_by(gender='female').limit(4).all()
+
+        # 设置分组配置
+        sample_contest.config['female_groups'] = [[c.id for c in female_candidates]]
+        # 关键：标记 config 字段已修改
+        flag_modified(sample_contest, 'config')
+        db_session.commit()
+
+        # 为每个候选人投一票（第1轮），避免唯一约束冲突
+        for idx, c in enumerate(female_candidates):
+            vote = ContestVote(
+                contest_id=sample_contest.id,
+                candidate_id=c.id,
+                user_id=sample_user.id,
+                round_number=1,
+                gender='female',
+                weight=1,
+                match_index=idx,
+                group_index=idx % 2
+            )
+            db_session.add(vote)
+        db_session.commit()
+
+        # 重新获取 contest 确保数据最新
+        contest = db_session.get(Contest, sample_contest.id)
+        from app.contest_engine import prepare_group_round_data
+        results, female_rank, male_rank = prepare_group_round_data(contest, 'group_round_1_result')
+
+        assert results is not None
+        assert 'female' in results
+        assert len(results['female']) == 1
+        assert len(results['female'][0]['matches']) == 2
+
+    def test_run_knockout_advance_16_to_8(self, sample_contest, db_session):
+        contest = sample_contest
+        contest.status = 'knockout'
+        candidates = contest.candidates.filter_by(gender='female').limit(16).all()
+        # 构造16强比赛
+        matches = []
+        for i in range(0, 16, 2):
+            matches.append({
+                'candidate1': candidates[i].id,
+                'candidate2': candidates[i + 1].id,
+                'winner': candidates[i].id,
+                'status': 'finished',
+                'round_name': '16强'
+            })
+        contest.config = {
+            'knockout_matches_female': matches,
+            'knockout_matches_male': [],
+            'female_result': [],
+            'male_result': []
+        }
+        db_session.commit()
+        times = calc_stage_times(contest.open_at)
+        now = times['knockout_16_result_end'] + timedelta(seconds=1)
+        advanced, round_name = run_knockout_advance(contest, 'knockout_16_result', now, times)
+        assert advanced is True
+        assert round_name == '8强'
+        # 验证新的8强对阵已生成
+        new_matches = contest.config.get('knockout_matches_female', [])
+        assert len(new_matches) == 4
+        for m in new_matches:
+            assert m['status'] == 'active'
