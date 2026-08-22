@@ -18,7 +18,6 @@
 
 import io
 import os
-
 from PIL import Image
 from dotenv import load_dotenv
 from flask import abort

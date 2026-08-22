@@ -25,7 +25,6 @@ import smtplib
 import sys
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
-
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
 from .models import db, User

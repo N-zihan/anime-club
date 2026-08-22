@@ -16,7 +16,6 @@
 """
 
 import os
-
 from dotenv import load_dotenv
 from flask import Flask, session, request, redirect, url_for, flash
 from flask_wtf import CSRFProtect
@@ -24,11 +23,10 @@ from flask_wtf.csrf import CSRFError
 
 from .admin import admin_bp
 from .auth import auth_bp
+from .config import PWA_THEME_COLOR, PWA_BACKGROUND_COLOR
 from .models import db
 from .public import public_bp, page_not_found, internal_server_error, forbidden
 from .user import user_bp
-from .utils import get_supabase
-from .config import PWA_THEME_COLOR, PWA_BACKGROUND_COLOR
 
 load_dotenv()
 

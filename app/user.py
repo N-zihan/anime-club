@@ -26,13 +26,12 @@
 import base64
 import secrets
 from datetime import datetime, timedelta
-
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort, Response, jsonify
 from sqlalchemy import func
 
+from .config import AVATAR_MAX_SIZE
 from .models import db, User, Message, AnimeResource
 from .utils import allowed_file, compress_image, get_or_404
-from .config import AVATAR_MAX_SIZE
 
 user_bp = Blueprint('user', __name__)
 

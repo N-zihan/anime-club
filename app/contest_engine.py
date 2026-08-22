@@ -21,12 +21,11 @@
 
 import random
 from datetime import timedelta
-
 from sqlalchemy import func as sa_func
 from sqlalchemy.orm.attributes import flag_modified
 
-from .models import db, Candidate, ContestVote
 from .config import STAGE_DAYS, QUALIFYING_TOP_N, GROUP_COUNT
+from .models import db, Candidate, ContestVote
 
 
 # ============================================================

@@ -8,8 +8,8 @@ let swContent = fs.readFileSync(swPath, 'utf8');
 const version = process.env.APP_VERSION || Date.now().toString();
 
 swContent = swContent.replace(
-  /const CACHE_VERSION = '.*';/,
-  `const CACHE_VERSION = '${version}';`
+    /const CACHE_VERSION = '.*';/,
+    `const CACHE_VERSION = '${version}';`
 );
 
 fs.writeFileSync(swPath, swContent);

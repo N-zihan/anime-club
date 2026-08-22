@@ -20,20 +20,11 @@
 import os
 import uuid
 from datetime import timedelta, datetime, timezone
-
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from .ai import generate_commentary, generate_prediction
-from .contest_engine import (
-    calc_stage_times, calc_phase, auto_activate_contest,
-    run_qualifying_promotion, run_group_promotion,
-    run_knockout_advance, run_final_ranking,
-    prepare_group_round_data
-)
-from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote
-from .utils import get_supabase, compress_image, get_or_404
 from .config import (
     NOMINATION_LIMIT,
     QUALIFYING_MAX_CANDIDATES,
@@ -42,6 +33,14 @@ from .config import (
     NOMINATION_IMAGE_SIZE,
     COMPRESS_QUALITY
 )
+from .contest_engine import (
+    calc_stage_times, calc_phase, auto_activate_contest,
+    run_qualifying_promotion, run_group_promotion,
+    run_knockout_advance, run_final_ranking,
+    prepare_group_round_data
+)
+from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote
+from .utils import get_supabase, compress_image, get_or_404
 
 public_bp = Blueprint('public', __name__)
 

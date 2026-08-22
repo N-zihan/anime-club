@@ -9,9 +9,8 @@ import hashlib
 import logging
 import os
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
-
 from openai import OpenAI
+from typing import Optional, Dict, Any
 
 from .models import Contest, Candidate, ContestVote, db
 
