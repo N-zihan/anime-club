@@ -2,5 +2,8 @@
   "name": "anime-club",
   "scripts": {
     "build": "node build.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
   }
 }
