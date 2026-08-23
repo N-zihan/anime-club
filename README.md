@@ -9,6 +9,7 @@
 [![Python application](https://github.com/N-zihan/anime-club/actions/workflows/python-app.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/python-app.yml)
 [![Pylint](https://github.com/N-zihan/anime-club/actions/workflows/pylint.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/pylint.yml)
 [![CodeQL Advanced](https://github.com/N-zihan/anime-club/actions/workflows/codeql.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/codeql.yml)
+[![Playwright Tests](https://github.com/N-zihan/anime-club/actions/workflows/node.js.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/node.js.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/github/v/tag/N-zihan/anime-club?label=Version)](https://github.com/N-zihan/anime-club/tags)
 
