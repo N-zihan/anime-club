@@ -58,7 +58,7 @@
 | 文件存储 | Supabase Storage                          |
 | 图片处理 | Pillow                                    |
 | 前端     | HTML + CSS + Jinja2                       |
-| 测试     | Pytest                                    |
+| 测试     | Pytest + Playwright                       |
 | 部署     | Vercel                                    |
 | 认证     | Session-based + Werkzeug 密码哈希         |
 | 安全     | CSRFProtect(Flask-WTF)                    |
@@ -221,7 +221,11 @@ python run.py
 测试：
 
 ```bash
+# 后端测试
 pytest -v
+
+# 前端 E2E 测试
+npm test
 ```
 
 ## 部署准备
@@ -281,7 +285,8 @@ API Keys 在同一页面的 **Project API keys** 区域获取：
 ## 项目状态
 
 - 核心功能完整
-- 131测试用例全部通过
+- 后端测试：131 个用例全部通过（覆盖率 62%）
+- 前端测试：27 个用例，23 通过，4 跳过（投票流程依赖数据，暂不阻塞 CI）
 - Pylint 评分 8.87/10（忽略测试文件）
 - 已部署至生产环境
 

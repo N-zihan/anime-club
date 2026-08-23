@@ -121,7 +121,7 @@ def register():
             return redirect(url_for('auth.register'))
 
         # 验证邮箱验证码（测试环境完全跳过）
-        if 'pytest' not in sys.modules:
+        if 'pytest' not in sys.modules and os.getenv('TESTING') != '1':
             stored_code = session.get('email_code')
             stored_email = session.get('pending_email')
             if not stored_code or not stored_email or stored_email != email:

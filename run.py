@@ -15,7 +15,11 @@
 注意：开发模式下 debug=False，如需调试请手动修改。
 """
 
+import os
+from datetime import datetime, timedelta
+
 from app import create_app, db
+from app.models import User, Contest, Candidate
 from app.utils import get_supabase
 
 app = create_app()
@@ -25,6 +29,67 @@ with app.app_context():
     # -------- 创建数据库表 --------
     db.create_all()
     print("数据库表检查完成")
+
+    # ====== 测试环境自动创建测试数据 ======
+    if os.getenv('TESTING') == '1':
+        print("测试模式：正在初始化测试数据...")
+
+        # 1. 创建测试用户（带后台权限）
+        user = User.query.filter_by(username='testuser').first()
+        if user:
+            user.set_password('password123')
+        else:
+            user = User(username='testuser', qq='123456789', email='test@qq.com')
+            user.set_password('password123')
+            user.is_staff = True  # 运营权限
+            user.is_owner = True  # 站长权限
+            db.session.add(user)
+        db.session.commit()
+        print("  - 测试用户已就绪: testuser")
+
+        # 2. 创建测试赛事
+        if not Contest.query.filter_by(title='测试赛事').first():
+            contest = Contest(
+                title='测试赛事',
+                description='用于前端自动化测试的赛事',
+                type='saimoe',
+                gender_mode='separate',
+                status='open',
+                open_at=datetime.now() - timedelta(days=1),
+                close_at=datetime.now() + timedelta(days=50),
+                config={}
+            )
+            db.session.add(contest)
+            db.session.commit()
+            print(f"  - 创建测试赛事: ID={contest.id}")
+
+            # 3. 添加候选角色（女组5个，男组5个）
+            for i in range(5):
+                c = Candidate(
+                    contest_id=contest.id,
+                    name=f'测试女角色{i}',
+                    source='测试作品',
+                    gender='female',
+                    image_url='https://via.placeholder.com/80/ff6b6b?text=F' + str(i),
+                    stage='pending'
+                )
+                db.session.add(c)
+            for i in range(5):
+                c = Candidate(
+                    contest_id=contest.id,
+                    name=f'测试男角色{i}',
+                    source='测试作品',
+                    gender='male',
+                    image_url='https://via.placeholder.com/80/4dabf7?text=M' + str(i),
+                    stage='pending'
+                )
+                db.session.add(c)
+            db.session.commit()
+            print("  - 创建候选角色: 女组5个，男组5个")
+
+        db.session.commit()
+        print("测试数据初始化完成")
+    # ====================================
 
     # -------- 创建 Supabase 存储桶 --------
     try:
