@@ -1,20 +1,11 @@
-# Python 缓存
 __pycache__/
 *.pyc
-
-# pytest 缓存
 .pytest_cache/
 .coverage
 htmlcov/
-
-# 环境变量
 .env
 *.env.
 .idea/
-.idea
-
-# 干扰代码数据排除文件
 /cloc_ignore.txt
-
-# npm依赖文件
 /node_modules/
+/test-results/
