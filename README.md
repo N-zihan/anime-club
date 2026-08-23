@@ -164,7 +164,9 @@
 ├── run.py                                  # 应用启动入口
 └── vercel.json                             # Vercel 部署配置
 ```
->/static文件夹中有网站标签头像 favicon.ico ，可以换成你喜欢的
+> /static 文件夹中有 favicon.ico、icon-192.png、icon-512.png、og-image.png
+> 
+> 这些是我为我的社团放的预览图，你可以换成你喜欢的
 
 ## 快速开始
 
@@ -192,7 +194,7 @@ APP_VERSION=版本号 # 默认 dev
 # AI模型配置
 OPENAI_API_KEY=sk-...
 OPENAI_BASE_URL=https://api.siliconflow.cn/v1 
-AI_MODEL=deepseek-ai/DeepSeek-V3
+AI_MODEL=deepseek-ai/DeepSeek-V4-Flash
 AI_CACHE_ENABLED=true
 AI_CACHE_TTL=3600     
 

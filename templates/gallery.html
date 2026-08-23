@@ -2,11 +2,11 @@
 {% block title %}珍贵历史图片 - 动漫社{% endblock %}
 {% block content %}
 
-<h1>📸 动漫社珍贵历史图片</h1>
+<h1>动漫社珍贵历史图片</h1>
 
 <!-- ========== 往期活动照片（未分类） ========== -->
 <div class="activity-photo-group">
-    <h2>📂 往期活动照片</h2>
+    <h2>往期活动照片</h2>
     <div class="gallery-grid">
         {% for photo in uncategorized_photos %}
         <div class="gallery-item">
@@ -22,7 +22,7 @@
 {% for activity in activities %}
 {% if activity.photos %}
 <div class="activity-photo-group">
-    <h2>📅 {{ activity.title }} <span style="font-size:0.9rem; color:#7f8c8d;">（{{ activity.date }}）</span></h2>
+    <h2>{{ activity.title }} <span style="font-size:0.9rem; color:#7f8c8d;">（{{ activity.date }}）</span></h2>
     <div class="gallery-grid">
         {% for photo in activity.photos %}
         <div class="gallery-item">
@@ -36,7 +36,7 @@
 
 {% endblock %}
 
-<!-- ========== 样式（已在原文件末尾，保留不变） ========== -->
+<!-- ========== 样式 ========== -->
 {% block styles %}
 <style>
     .container {
