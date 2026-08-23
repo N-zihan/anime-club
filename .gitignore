@@ -12,3 +12,9 @@ htmlcov/
 *.env.
 .idea/
 .idea
+
+# 干扰代码数据排除文件
+/cloc_ignore.txt
+
+# npm依赖文件
+/node_modules/
