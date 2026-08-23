@@ -28,7 +28,7 @@
             <div style="text-align:center;" data-candidate-id="{{ pair[0] }}">
                 {% set c1 = candidates.get(pair[0]) %}
                 {% if c1 and c1.image_url %}
-                <img src="{{ c1.image_url }}" style="width:50px; height:50px; object-fit:cover; border-radius:50%; display:block; margin:0 auto 4px;">
+                <img src="{{ c1.image_url }}" style="max-width:50px; max-height:50px; width:auto; height:auto; border-radius:6px; display:block; margin:0 auto 4px;">
                 {% endif %}
                 <div><strong style="color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</strong></div>
                 <div style="font-size:0.75rem; color: var(--text-muted);">{{ c1.source if c1 else '' }}</div>
@@ -45,7 +45,7 @@
             <div style="text-align:center;" data-candidate-id="{{ pair[1] }}">
                 {% set c2 = candidates.get(pair[1]) %}
                 {% if c2 and c2.image_url %}
-                <img src="{{ c2.image_url }}" style="width:50px; height:50px; object-fit:cover; border-radius:50%; display:block; margin:0 auto 4px;">
+                <img src="{{ c2.image_url }}" style="max-width:50px; max-height:50px; width:auto; height:auto; border-radius:6px; display:block; margin:0 auto 4px;">
                 {% endif %}
                 <div><strong style="color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</strong></div>
                 <div style="font-size:0.75rem; color: var(--text-muted);">{{ c2.source if c2 else '' }}</div>
@@ -192,7 +192,7 @@
         <td style="padding:6px 10px; color: var(--text-primary);">{{ loop.index }}</td>
         <td style="padding:6px 10px; display:flex; align-items:center; gap:6px; color: var(--text-primary);">
             {% if item.image_url %}
-            <img src="{{ item.image_url }}" style="width:28px; height:28px; border-radius:50%; object-fit:cover;">
+            <img src="{{ item.image_url }}" style="max-width:28px; max-height:28px; width:auto; height:auto; border-radius:4px;">
             {% endif %}
             {{ item.name }}
         </td>

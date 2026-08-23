@@ -165,7 +165,7 @@
     {% for c in candidates %}
     <div style="background: var(--bg-card); border-radius:8px; padding:12px; text-align:center;" data-candidate-id="{{ c.id }}">
         {% if c.image_url %}<img alt="{{ c.name }}" src="{{ c.image_url }}"
-                                 style="width:80px; height:80px; object-fit:cover; border-radius:50%;">{% endif %}
+                                 style="max-width:80px; max-height:80px; width:auto; height:auto; border-radius:8px;">{% endif %}
         <div><strong>{{ c.name }}</strong></div>
         <div style="font-size:0.85rem; color: var(--text-secondary);">{{ c.source }}</div>
         <div style="font-size:0.8rem; color: var(--text-muted);">{{ '女' if c.gender == 'female' else '男' }}</div>
