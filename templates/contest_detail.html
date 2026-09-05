@@ -161,14 +161,16 @@
 <!-- ============================================================ -->
 <h3 style="margin-top:30px;">候选角色</h3>
 {% if candidates %}
-<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px; margin-top:10px;">
-    {% for c in candidates %}
+<!-- ===== 女组 ===== -->
+<h4 style="margin-top:20px; color: #e91e63;">女组</h4>
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px;">
+    {% for c in candidates if c.gender == 'female' %}
     <div style="background: var(--bg-card); border-radius:8px; padding:12px; text-align:center;" data-candidate-id="{{ c.id }}">
         {% if c.image_url %}<img alt="{{ c.name }}" src="{{ c.image_url }}"
                                  style="max-width:80px; max-height:80px; width:auto; height:auto; border-radius:8px;">{% endif %}
         <div><strong>{{ c.name }}</strong></div>
         <div style="font-size:0.85rem; color: var(--text-secondary);">{{ c.source }}</div>
-        <div style="font-size:0.8rem; color: var(--text-muted);">{{ '女' if c.gender == 'female' else '男' }}</div>
+        <div style="font-size:0.8rem; color: var(--text-muted);">女</div>
         <div style="font-size:0.7rem; color: var(--text-muted); margin-top:4px;">
             状态：
             {% if c.stage == 'champion' %}
@@ -196,6 +198,50 @@
             {% endif %}
         </div>
     </div>
+    {% else %}
+    <p style="color: var(--text-muted);">暂无女组候选</p>
+    {% endfor %}
+</div>
+
+<!-- ===== 男组 ===== -->
+<h4 style="margin-top:20px; color: #2196f3;">男组</h4>
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px;">
+    {% for c in candidates if c.gender == 'male' %}
+    <div style="background: var(--bg-card); border-radius:8px; padding:12px; text-align:center;" data-candidate-id="{{ c.id }}">
+        {% if c.image_url %}<img alt="{{ c.name }}" src="{{ c.image_url }}"
+                                 style="max-width:80px; max-height:80px; width:auto; height:auto; border-radius:8px;">{% endif %}
+        <div><strong>{{ c.name }}</strong></div>
+        <div style="font-size:0.85rem; color: var(--text-secondary);">{{ c.source }}</div>
+        <div style="font-size:0.8rem; color: var(--text-muted);">男</div>
+        <div style="font-size:0.7rem; color: var(--text-muted); margin-top:4px;">
+            状态：
+            {% if c.stage == 'champion' %}
+            🏆 冠军
+            {% elif c.stage == 'knockout' %}
+            {% if contest.status == 'closed' %}
+            淘汰赛（未夺冠）
+            {% else %}
+            淘汰赛进行中
+            {% endif %}
+            {% elif c.stage == 'group_stage' %}
+            {% if contest.status in ['knockout', 'closed'] %}
+            小组赛淘汰
+            {% else %}
+            小组赛进行中
+            {% endif %}
+            {% elif c.stage == 'pending' %}
+            {% if contest.status in ['group_stage', 'knockout', 'closed'] %}
+            海选淘汰
+            {% else %}
+            待审核
+            {% endif %}
+            {% else %}
+            {{ c.stage }}
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted);">暂无男组候选</p>
     {% endfor %}
 </div>
 {% else %}
