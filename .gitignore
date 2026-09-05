@@ -6,6 +6,5 @@ htmlcov/
 .env
 *.env.
 .idea/
-/cloc_ignore.txt
 /node_modules/
 /test-results/
