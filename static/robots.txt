@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: /
 Allow: /$
-Sitemap: https://www.nanyi-anime-club.top/sitemap.xml
+Sitemap: https://www.nanyi-anime-club.top/static/sitemap.xml
