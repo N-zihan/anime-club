@@ -979,6 +979,11 @@ def manifest():
     })
 
 
+@public_bp.route('/robots.txt')
+def robots():
+    return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'static'), 'robots.txt')
+
+
 # 错误处理器
 def page_not_found(e):
     return render_template('404.html'), 404

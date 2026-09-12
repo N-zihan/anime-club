@@ -1,5 +1,8 @@
 User-agent: *
-Disallow: /
+Disallow: /user
+Disallow: /admin/
+Disallow: /staff/
+Disallow: /profile
+Disallow: /api/
 Allow: /$
-
 Sitemap: https://www.nanyi-anime-club.top/sitemap.xml
