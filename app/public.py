@@ -10,7 +10,7 @@
 import os
 import uuid
 from datetime import timedelta, datetime, timezone
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
