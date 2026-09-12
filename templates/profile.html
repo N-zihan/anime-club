@@ -97,6 +97,7 @@
     const emailInput = document.getElementById('bindEmailInput');
     const codeInput = document.getElementById('bindEmailCode');
     const msgDiv = document.getElementById('emailBindMessage');
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
     let countdown = 0;
 
     function showMsg(text, type) {
@@ -123,7 +124,10 @@
 
         fetch('/profile', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
             body: 'action=send_email_code&email=' + encodeURIComponent(email)
         })
         .then(res => res.json())
@@ -166,7 +170,10 @@
 
         fetch('/profile', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
             body: 'action=verify_email_code&code=' + encodeURIComponent(code)
         })
         .then(res => res.json())

@@ -49,11 +49,15 @@
 let countdown = 0;
 function sendCode() {
     const email = document.getElementById('registerEmail').value;
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
     if (!email) { alert('请先填写邮箱'); return; }
     if (countdown > 0) return;
     fetch('/send_register_code', {
         method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
         body: 'email=' + encodeURIComponent(email)
     })
     .then(res => res.json())
