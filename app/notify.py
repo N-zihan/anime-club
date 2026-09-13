@@ -8,6 +8,8 @@ import os
 from .models import db, Notification, User
 from .auth import send_email
 
+club_name = os.getenv('CLUB_NAME', '动漫社')
+
 
 def _build_email_html(title: str, content: str, link: str = None) -> str:
     """生成统一风格的 HTML 邮件正文"""
@@ -76,7 +78,7 @@ def notify(user_id: int, title: str, content: str = '', type: str = 'system',
         if user and user.email:
             html = _build_email_html(title, content or '你有一条新通知', _absolute_link(link))
             try:
-                send_email(user.email, f'【动漫社】{title}', html, is_html=True)
+                send_email(user.email, f'【{club_name}】{title}', html, is_html=True)
             except Exception as e:
                 print(f'邮件通知发送失败: {e}')
 

@@ -32,6 +32,9 @@ from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Co
     ContestVote
 from .utils import get_supabase, allowed_file, compress_image, get_or_404
 from .notify import notify
+from .config import STAGE_DAYS, PHOTO_COMPRESS_SIZE, COMPRESS_QUALITY
+
+TOTAL_CONTEST_DAYS = sum(STAGE_DAYS.values())
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -307,6 +310,7 @@ def admin_users():
 
 @admin_bp.route('/admin/users/delete/<int:user_id>')
 @admin_required
+@owner_required
 def admin_delete_user(user_id):
     user = get_or_404(User, user_id)
     if user.id == session.get('user_id'):
@@ -341,6 +345,7 @@ def admin_delete_user(user_id):
 
 @admin_bp.route('/admin/users/toggle_staff/<int:user_id>')
 @admin_required
+@owner_required
 def admin_toggle_staff(user_id):
     user = get_or_404(User, user_id)
     user.is_staff = not user.is_staff
@@ -351,14 +356,35 @@ def admin_toggle_staff(user_id):
 
 @admin_bp.route('/admin/users/toggle_owner/<int:user_id>')
 @admin_required
+@owner_required
 def admin_toggle_owner(user_id):
     user = get_or_404(User, user_id)
-    if not user.is_owner:
-        User.query.update({User.is_owner: False})
-        db.session.commit()
-    user.is_owner = not user.is_owner
+
+    # 目标已是站长 → 不允许取消（社团必须始终保留一位站长）
+    if user.is_owner:
+        flash('站长不能取消自己，请直接转移给其他成员', 'warning')
+        return redirect(url_for('admin.admin_users'))
+
+    # 转移站长：先清空所有人的站长标记，再指定新站长
+    User.query.update({User.is_owner: False})
+    user.is_owner = True
     db.session.commit()
-    flash(f'用户 {user.username} 的站长状态已更新', 'success')
+
+    # 刷新当前请求发起者的 session 角色（原站长此时已失去 owner）
+    current_id = session.get('user_id')
+    if current_id == user.id:
+        session['user_role'] = 'owner'
+    else:
+        current = db.session.get(User, current_id)
+        if current:
+            if current.is_owner:
+                session['user_role'] = 'owner'
+            elif current.is_staff:
+                session['user_role'] = 'staff'
+            else:
+                session['user_role'] = 'member'
+
+    flash(f'已将站长转移给 {user.username}', 'success')
     return redirect(url_for('admin.admin_users'))
 
 
@@ -482,7 +508,7 @@ def admin_contest_create():
         flash(f'赛事 "{title}" 创建成功', 'success')
         return redirect(url_for('admin.admin_contest_edit', contest_id=contest.id))
 
-    return render_template('admin_contest_create.html')
+    return render_template('admin_contest_create.html', total_days=TOTAL_CONTEST_DAYS)
 
 
 @admin_bp.route('/admin/contests/edit/<int:contest_id>', methods=['GET', 'POST'])
@@ -510,7 +536,8 @@ def admin_contest_edit(contest_id):
     return render_template('admin_contest_edit.html',
                            contest=contest,
                            nominations=pending_nominations,
-                           candidates=candidates)
+                           candidates=candidates,
+                           total_days=TOTAL_CONTEST_DAYS)
 
 
 @admin_bp.route('/admin/contests/delete/<int:contest_id>')

@@ -122,7 +122,7 @@
 <p style="color:#e74c3c;">你已达到提名上限（5个角色）</p>
 {% else %}
 <form action="{{ url_for('public.submit_nomination', contest_id=contest.id) }}" enctype="multipart/form-data"
-      method="POST">
+      method="POST" id="nominationForm">
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:500px;">
         <div><input name="name" placeholder="角色名" required style="width:100%; padding:8px;" type="text"></div>
         <div><input name="source" placeholder="作品名" required style="width:100%; padding:8px;" type="text"></div>
@@ -141,7 +141,7 @@
         <textarea name="description" placeholder="角色简介（选填）" rows="2"
                   style="width:100%; max-width:500px; padding:8px;"></textarea>
     </div>
-    <button class="btn-primary" style="margin-top:10px;" type="submit">提交提名</button>
+    <button class="btn-primary" id="nominateBtn" style="margin-top:10px;" type="submit">提交提名</button>
 </form>
 <script>
     document.getElementById('nominationForm').addEventListener('submit', function() {
@@ -298,7 +298,7 @@
 {% if contest.config and contest.config.female_ranking %}
 <h3 style="margin-top:30px;">最终排名</h3>
 <h4>女组</h4>
-<div style="background: var(--bg-card); border-radius:10px; padding:10px; text-align:center; border:1px solid var(--border-color); {% if loop.index == 1 %}border-color:gold; border-width:2px;{% endif %}">
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px;">
     {% for item in contest.config.female_ranking[:8] %}
     <div style="background: var(--bg-card); border-radius:10px; padding:10px; text-align:center; border:1px solid var(--border-color); {% if loop.index == 1 %}border-color:gold; border-width:2px;{% endif %}">
         <div style="font-weight:700;">{% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{%
@@ -519,10 +519,13 @@
         const contestId = {{contest.id}};
         {% if session.user_id %}
         // 初始化 Supabase 客户端
-        const supabase = window.supabase.createClient(
-            '{{ supabase_url }}',
-            '{{ supabase_anon_key }}'
-        );
+        const SUPABASE_URL = '{{ supabase_url or "" }}';
+        const SUPABASE_ANON_KEY = '{{ supabase_anon_key or "" }}';
+        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+            console.warn('Supabase 未配置，实时票数更新已禁用');
+            return;
+        }
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // 订阅投票变化
         const channel = supabase
@@ -556,6 +559,16 @@
         }
 
         {%endif %}
+    })();
+</script>
+<script>
+    (function() {
+        var form = document.getElementById('nominationForm');
+        if (!form) return;
+        form.addEventListener('submit', function() {
+            var btn = document.getElementById('nominateBtn');
+            if (btn) { btn.disabled = true; btn.textContent = '提交中...'; }
+        });
     })();
 </script>
 

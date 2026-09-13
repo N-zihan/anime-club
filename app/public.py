@@ -663,18 +663,14 @@ def group_vote_submit(contest_id):
         flash('赛事开始时间未设置', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    def set_time_to_18(dt):
-        return dt.replace(hour=18, minute=0, second=0, microsecond=0)
+    # 与 calc_phase 共用同一套时间轴，避免出现两套天数
+    times = calc_stage_times(open_at)
 
-    round_1_end = set_time_to_18(open_at + timedelta(days=17))
-    round_2_end = set_time_to_18(open_at + timedelta(days=22))
-    round_3_end = set_time_to_18(open_at + timedelta(days=27))
-
-    if now < round_1_end:
+    if now <= times['group_round_1_end']:
         round_number = 1
-    elif now < round_2_end:
+    elif now <= times['group_round_2_end']:
         round_number = 2
-    elif now < round_3_end:
+    elif now <= times['group_round_3_end']:
         round_number = 3
     else:
         flash('小组赛已结束', 'warning')
@@ -854,21 +850,15 @@ def knockout_vote_submit(contest_id):
         flash('赛事开始时间未设置', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    def set_time_to_18(dt):
-        return dt.replace(hour=18, minute=0, second=0, microsecond=0)
+    times = calc_stage_times(open_at)
 
-    knockout_16_end = set_time_to_18(open_at + timedelta(days=32))
-    knockout_8_end = set_time_to_18(open_at + timedelta(days=37))
-    knockout_4_end = set_time_to_18(open_at + timedelta(days=42))
-    knockout_final_end = set_time_to_18(open_at + timedelta(days=47))
-
-    if now < knockout_16_end:
+    if now <= times['knockout_16_end']:
         round_name = '16强'
-    elif now < knockout_8_end:
+    elif now <= times['knockout_8_end']:
         round_name = '8强'
-    elif now < knockout_4_end:
+    elif now <= times['knockout_4_end']:
         round_name = '4强'
-    elif now < knockout_final_end:
+    elif now <= times['final_vote_end']:
         round_name = '决赛'
     else:
         flash('淘汰赛已结束', 'warning')

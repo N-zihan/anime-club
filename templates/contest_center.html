@@ -7,7 +7,7 @@
 <h3>进行中</h3>
 <div class="contest-list">
     {% for c in open_contests %}
-    <a class="contest-card" href="{{ url_for('public.contest_rules', contest_id=c.id) }}">
+    <a class="contest-card" href="{{ url_for('public.contest_detail', contest_id=c.id) }}">
         <h4>{{ c.title }}</h4>
         <p>{{ c.description[:100] }}{% if c.description|length > 100 %}...{% endif %}</p>
         <p><small>开始：{{ c.open_at.strftime('%Y-%m-%d %H:%M') if c.open_at else '未设置' }}</small></p>

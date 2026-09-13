@@ -22,7 +22,7 @@
             <label>比赛开始时间</label>
             <input name="open_at" required type="datetime-local">
             <small style="color:#94a3b8; display:block; margin-top:4px;">
-                系统将自动计算结束时间（开始时间 + 48天）
+                系统将自动计算结束时间（开始时间 + {{ total_days }} 天）
             </small>
         </div>
         <button class="btn-primary" type="submit">创建赛事</button>

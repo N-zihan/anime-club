@@ -45,7 +45,7 @@
             </div>
         </div>
     </div>
-    {% if match.status == 'active' and not match.voted %}
+    {% if match.status == 'active' %}
     <div style="text-align:center; margin-top:12px;">
         <button class="btn-primary vote-btn" data-candidate="{{ match.candidate1 }}" data-name="{{ c1.name if c1 else '' }}" style="padding:6px 24px; background:#e91e63; border:none; border-radius:30px; cursor:pointer; color:white;">投给 {{ c1.name if c1 else '' }}</button>
         <span style="margin:0 16px; color: var(--text-muted);">或</span>
@@ -134,9 +134,13 @@
 {% if phase == 'final_result' %}
 <hr style="border-color: var(--border-color); margin:30px 0;">
 <h3>决赛结果</h3>
-{% set matches = contest.config.get('knockout_matches_female', []) if gender == 'female' else contest.config.get('knockout_matches_male', []) %}
-{% if matches %}
-{% set final_match = matches|last %}
+{% set final_key = 'knockout_matches_female_final' if gender == 'female' else 'knockout_matches_male_final' %}
+{% set final_matches = contest.config.get(final_key, []) if contest.config else [] %}
+{% if not final_matches %}
+{% set final_matches = contest.config.get('knockout_matches_female', []) if gender == 'female' else contest.config.get('knockout_matches_male', []) %}
+{% endif %}
+{% if final_matches %}
+{% set final_match = final_matches|last %}
 <div style="background: var(--bg-card); border-radius:12px; padding:16px; text-align:center; border:2px solid #f39c12;">
     <div style="display:flex; justify-content:center; align-items:center; gap:30px; font-size:1.2rem;">
         {% set c1 = candidates.get(final_match.candidate1) %}

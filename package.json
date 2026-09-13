@@ -3,7 +3,8 @@
   "scripts": {
     "build": "node build.js",
     "test": "npx playwright test",
-    "test:ui": "npx playwright test --ui"
+    "test:ui": "npx playwright test --ui",
+    "engines": { "node": ">=20" }
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1"

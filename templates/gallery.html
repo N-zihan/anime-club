@@ -2,6 +2,48 @@
 {% block title %}珍贵历史图片 - 动漫社{% endblock %}
 {% block content %}
 
+<style>
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .gallery-item {
+        background-color: var(--bg-code, #f0f0f0);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .gallery-item:hover {
+        transform: scale(1.02);
+    }
+
+    .gallery-item img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .activity-photo-group {
+        margin-bottom: 40px;
+    }
+
+    @media (max-width: 768px) {
+        .gallery-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .gallery-item img {
+            height: 150px;
+        }
+    }
+</style>
+
 <h1>动漫社珍贵历史图片</h1>
 
 <!-- ========== 往期活动照片（未分类） ========== -->
@@ -22,7 +64,7 @@
 {% for activity in activities %}
 {% if activity.photos %}
 <div class="activity-photo-group">
-    <h2>{{ activity.title }} <span style="font-size:0.9rem; color:#7f8c8d;">（{{ activity.date }}）</span></h2>
+    <h2>{{ activity.title }} <span style="font-size:0.9rem; color: var(--text-muted);">（{{ activity.date }}）</span></h2>
     <div class="gallery-grid">
         {% for photo in activity.photos %}
         <div class="gallery-item">
@@ -34,57 +76,4 @@
 {% endif %}
 {% endfor %}
 
-{% endblock %}
-
-<!-- ========== 样式 ========== -->
-{% block styles %}
-<style>
-    .container {
-        max-width: 1200px;
-        margin: 30px auto;
-        padding: 0 20px;
-    }
-
-    h1 {
-        text-align: center;
-        color: #333;
-        margin-bottom: 30px;
-    }
-
-    .gallery-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-    }
-
-    .gallery-item {
-        background-color: #f0f0f0;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
-    }
-
-    .gallery-item:hover {
-        transform: scale(1.02);
-    }
-
-    .gallery-item img {
-        width: 100%;
-        height: 250px;
-        object-fit: cover;
-        display: block;
-    }
-
-    @media (max-width: 768px) {
-        .gallery-grid {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-        }
-
-        .gallery-item img {
-            height: 150px;
-        }
-    }
-</style>
 {% endblock %}

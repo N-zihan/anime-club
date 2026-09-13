@@ -907,6 +907,7 @@ def prepare_group_round_data(contest, phase):
                 'draws': 0,
                 'losses': 0,
                 'points': 0,
+                'total_votes': 0,
             }
 
         for r in range(1, round_num + 1):
@@ -929,10 +930,15 @@ def prepare_group_round_data(contest, phase):
                         contest_id=contest.id, candidate_id=cid1,
                         round_number=r, gender=gender
                     ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+
                     votes2 = ContestVote.query.filter_by(
                         contest_id=contest.id, candidate_id=cid2,
                         round_number=r, gender=gender
                     ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+
+                    # 累加本轮票数到 total_votes
+                    stats[cid1]['total_votes'] += votes1
+                    stats[cid2]['total_votes'] += votes2
 
                     if votes1 > votes2:
                         stats[cid1]['wins'] += 1

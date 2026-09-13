@@ -13,7 +13,7 @@
 <div style="background: var(--bg-card); border-radius:12px; padding:16px; margin-bottom:20px; border:1px solid var(--border-color);">
     <h4 style="margin:0 0 12px 0; color: var(--text-primary);">{{ ['A','B','C','D','E','F','G','H'][loop.index0] }}组</h4>
 
-    {% set round_num = phase.split('_')[1]|int %}
+    {% set round_num = phase.split('_')[-1]|int %}
     {% if round_num == 1 %}
     {% set pairs = [(group[0], group[1]), (group[2], group[3])] %}
     {% elif round_num == 2 %}
@@ -128,7 +128,7 @@
 
 {% elif phase in ['group_round_1_result', 'group_round_2_result', 'group_round_3_result'] %}
 <!-- ========== 公示期 ========== -->
-{% set round_num = phase.split('_')[1]|int %}
+{% set round_num = phase.split('_')[-1]|int %}
 <h3>小组赛第{{ round_num }}轮公示</h3>
 <p style="color: var(--text-secondary);">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
 
