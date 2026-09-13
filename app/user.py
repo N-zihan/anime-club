@@ -28,7 +28,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from sqlalchemy import func
 
 from .config import AVATAR_MAX_SIZE
-from .models import db, User, Message, AnimeResource
+from .models import db, User, Message, AnimeResource, Notification
 from .utils import allowed_file, compress_image, get_or_404
 
 user_bp = Blueprint('user', __name__)
@@ -182,3 +182,60 @@ def get_avatar(user_id):
 def dismiss_bind_prompt():
     session.pop('show_bind_prompt', None)
     return redirect(url_for('public.index'))
+
+
+@user_bp.route('/notifications')
+def notifications():
+    """通知列表页"""
+    if not session.get('user_id'):
+        return redirect(url_for('auth.login'))
+
+    items = Notification.query.filter_by(
+        user_id=session['user_id']
+    ).order_by(Notification.created_at.desc()).all()
+
+    # 时间转东八区
+    for n in items:
+        n.created_at = n.created_at + timedelta(hours=8)
+
+    return render_template('notifications.html', notifications=items)
+
+
+@user_bp.route('/notifications/read/<int:nid>')
+def notification_read(nid):
+    """标记单条已读并跳转"""
+    if not session.get('user_id'):
+        return redirect(url_for('auth.login'))
+    n = db.session.get(Notification, nid)
+    if n and n.user_id == session['user_id']:
+        n.is_read = True
+        db.session.commit()
+        if n.link:
+            return redirect(n.link)
+    return redirect(url_for('user.notifications'))
+
+
+@user_bp.route('/notifications/read_all')
+def notification_read_all():
+    """全部标记已读"""
+    if not session.get('user_id'):
+        return redirect(url_for('auth.login'))
+    Notification.query.filter_by(
+        user_id=session['user_id'],
+        is_read=False
+    ).update({'is_read': True})
+    db.session.commit()
+    flash('已全部标记为已读', 'success')
+    return redirect(url_for('user.notifications'))
+
+
+@user_bp.route('/api/notifications/count')
+def notification_count():
+    """返回未读数（给导航栏铃铛用）"""
+    if not session.get('user_id'):
+        return jsonify({'count': 0})
+    count = Notification.query.filter_by(
+        user_id=session['user_id'],
+        is_read=False
+    ).count()
+    return jsonify({'count': count})

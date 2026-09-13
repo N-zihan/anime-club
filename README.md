@@ -85,7 +85,8 @@
 │   ├── changelog.py                        # github日志更新
 │   ├── config.py                           # 全局配置（赛程天数、投票限制、图片压缩）
 │   ├── contest_engine.py                   # 萌战引擎（赛程计算、晋级、排名）
-│   ├── models.py                           # 数据库模型（13张表）
+│   ├── models.py                           # 数据库模型
+│   ├── notify.py                           # 通知模块
 │   ├── public.py                           # 公共页面路由（含 PWA Manifest）
 │   ├── user.py                             # 用户中心（个人设置、头像、主页）
 │   └── utils.py                            # 工具函数（Supabase、图片压缩）
@@ -144,6 +145,8 @@
 │   ├── splash.html                         # 启动页（Canvas 波浪粒子动画）
 │   ├── staff_dashboard.html                # 运营管理面板
 │   ├── submit_anime.html                   # 提交番剧推荐
+│   ├── notifications.html                  # 通知列表页
+│   ├── admin_notification_send.html        # 管理员发通知页面
 │   └── user_profile.html                   # 个人主页（公开展示）
 ├── tests/                                  # Pytest 测试套件
 │   ├── __init__.py                         # 测试包初始化

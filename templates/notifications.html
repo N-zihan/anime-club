@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}我的通知{% endblock %}
+{% block content %}
+<div class="admin-header">
+    <h2>我的通知</h2>
+    {% if notifications %}
+    <a class="btn-add" href="{{ url_for('user.notification_read_all') }}">全部已读</a>
+    {% endif %}
+</div>
+
+{% if notifications %}
+<div style="display:flex; flex-direction:column; gap:12px;">
+    {% for n in notifications %}
+    <a href="{{ url_for('user.notification_read', nid=n.id) }}"
+       style="display:block; padding:16px 20px; background: var(--bg-card); border-radius:12px; border:1px solid var(--border-color); text-decoration:none; {% if not n.is_read %}border-left:4px solid #4a90d9;{% endif %}">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <strong style="color: var(--text-primary);">{{ n.title }}</strong>
+            <span style="font-size:0.75rem; color: var(--text-muted);">{{ n.created_at.strftime('%m-%d %H:%M') }}</span>
+        </div>
+        {% if n.content %}
+        <p style="margin:0; color: var(--text-secondary); font-size:0.9rem;">{{ n.content }}</p>
+        {% endif %}
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<p style="text-align:center; color:#94a3b8; padding:40px 0;">暂无通知</p>
+{% endif %}
+{% endblock %}

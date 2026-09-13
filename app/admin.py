@@ -31,6 +31,7 @@ from .config import PHOTO_COMPRESS_SIZE, COMPRESS_QUALITY
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, Candidate, \
     ContestVote
 from .utils import get_supabase, allowed_file, compress_image, get_or_404
+from .notify import notify
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -562,6 +563,14 @@ def admin_nomination_approve(nomination_id):
     db.session.add(candidate)
     nomination.status = 'approved'
     db.session.commit()
+    notify(
+        nomination.user_id,
+        f'你的提名「{nomination.name}」已通过',
+        '角色已进入候选池，快去看看吧！',
+        type='audit',
+        link=url_for('public.contest_detail', contest_id=contest.id)
+    )
+    db.session.commit()
     flash(f'已通过提名: {nomination.name}', 'success')
     return redirect(url_for('admin.admin_contest_edit', contest_id=contest.id))
 
@@ -572,6 +581,13 @@ def admin_nomination_reject(nomination_id):
     nomination = get_or_404(Nomination, nomination_id)
     contest_id = nomination.contest_id
     nomination.status = 'rejected'
+    db.session.commit()
+    notify(
+        nomination.user_id,
+        f'你的提名「{nomination.name}」被拒绝',
+        '如有疑问请联系管理员。',
+        type='audit',
+    )
     db.session.commit()
     flash(f'已拒绝提名: {nomination.name}', 'warning')
     return redirect(url_for('admin.admin_contest_edit', contest_id=contest_id))
@@ -586,3 +602,18 @@ def admin_candidate_delete(candidate_id):
     db.session.commit()
     flash('已从候选池移除该角色', 'success')
     return redirect(url_for('admin.admin_contest_edit', contest_id=contest_id))
+
+
+@admin_bp.route('/admin/notifications/send', methods=['GET', 'POST'])
+@admin_required
+def admin_notification_send():
+    if request.method == 'POST':
+        title = request.form.get('title')
+        content = request.form.get('content')
+        if title:
+            from .notify import notify_all
+            notify_all(title, content, type='system')
+            db.session.commit()
+            flash('通知已发送给全体社员', 'success')
+            return redirect(url_for('admin.admin_notification_send'))
+    return render_template('admin_notification_send.html')

@@ -33,6 +33,7 @@ from .contest_engine import (
 )
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote
 from .utils import get_supabase, compress_image, get_or_404
+from .notify import notify
 
 public_bp = Blueprint('public', __name__)
 
@@ -136,6 +137,25 @@ def add_reply(message_id):
         )
         db.session.add(reply)
         db.session.commit()
+        # 通知被回复的人
+        msg = db.session.get(Message, message_id)
+        target_user_id = None
+        if parent_reply_id:
+            parent = db.session.get(Reply, int(parent_reply_id))
+            if parent and parent.user_id and parent.user_id != session.get('user_id'):
+                target_user_id = parent.user_id
+        elif msg and msg.user_id and msg.user_id != session.get('user_id'):
+            target_user_id = msg.user_id
+
+        if target_user_id:
+            notify(
+                target_user_id,
+                f'{nickname} 回复了你',
+                content[:50] + ('...' if len(content) > 50 else ''),
+                type='reply',
+                link=url_for('public.board')
+            )
+            db.session.commit()
     return redirect(url_for('public.board'))
 
 

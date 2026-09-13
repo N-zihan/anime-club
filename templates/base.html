@@ -36,6 +36,10 @@
     </div>
     <div class="nav-right">
         {% if session.user_id %}
+        <a href="{{ url_for('user.notifications') }}" style="position:relative; padding:6px 14px;" id="notif-bell">
+            🔔
+            <span id="notif-badge" style="display:none; position:absolute; top:0; right:4px; background:#e74c3c; color:white; font-size:0.65rem; padding:1px 5px; border-radius:10px;"></span>
+        </a>
         <a class="user-name" href="{{ url_for('user.user_profile', name=session.username) }}">{{ session.username }}</a>
         {% else %}
         <a href="{{ url_for('auth.login') }}">登录</a>
@@ -536,6 +540,25 @@
         });
     }
 </script>
+{% if session.user_id %}
+<script>
+    function loadNotifCount() {
+        fetch('/api/notifications/count')
+            .then(r => r.json())
+            .then(d => {
+                const badge = document.getElementById('notif-badge');
+                if (d.count > 0) {
+                    badge.textContent = d.count > 99 ? '99+' : d.count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+    }
+    loadNotifCount();
+    setInterval(loadNotifCount, 60000);  // 每分钟刷新一次
+</script>
+{% endif %}
 <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
 </body>
 </html>

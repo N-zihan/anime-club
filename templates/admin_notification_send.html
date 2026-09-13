@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}发送系统通知{% endblock %}
+{% block content %}
+<div class="card-form">
+    <h2>发送系统通知</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>标题</label>
+            <input name="title" required type="text" placeholder="例如：网站将于今晚维护">
+        </div>
+        <div class="form-group">
+            <label>内容（可选）</label>
+            <textarea name="content" rows="4" placeholder="补充说明..."></textarea>
+        </div>
+        <button class="btn-primary" type="submit">发送给全体社员</button>
+    </form>
+</div>
+{% endblock %}

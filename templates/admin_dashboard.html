@@ -35,6 +35,11 @@
         <h3>赛事管理</h3>
         <p>创建、管理线上赛事</p>
     </a>
+    <a class="card" href="{{ url_for('admin.admin_notification_send') }}">
+        <div class="card-icon">📢</div>
+        <h3>系统通知</h3>
+        <p>向全体社员发送通知</p>
+    </a>
     <!-- 以后可以扩展更多管理功能 -->
 </div>
 {% endblock %}
