@@ -27,6 +27,7 @@ from email.mime.text import MIMEText
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
 from .models import db, User
+from email.utils import formataddr
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -51,7 +52,7 @@ def send_email(to_email, subject, body):
     try:
         msg = MIMEText(body, 'plain', 'utf-8')
         msg['Subject'] = subject
-        msg['From'] = f'{CLUB_NAME} <{MAIL_USERNAME}>'
+        msg['From'] = formataddr((CLUB_NAME, MAIL_USERNAME))
         msg['To'] = to_email
         if SMTP_USE_SSL:
             server = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT)
