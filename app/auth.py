@@ -65,7 +65,7 @@ def build_email_html(title: str, content: str) -> str:
             </div>
             <div style="background:#f8fafc; padding:16px 32px; text-align:center;">
                 <p style="margin:0; color:#94a3b8; font-size:0.75rem;">
-                    此邮件由系统自动发送，请勿回复。
+                    此邮件由系统自动发送，请勿回复
                 </p>
             </div>
         </div>
@@ -106,7 +106,7 @@ def send_verification_email(to_email, code):
     <div style="margin:20px 0; text-align:center;">
         <span style="display:inline-block; font-size:2rem; font-weight:700; color:#1e2a3a; letter-spacing:8px; padding:12px 24px; background:#f1f5f9; border-radius:12px;">{code}</span>
     </div>
-    <p style="color:#64748b; font-size:0.85rem;">验证码 10 分钟内有效，请勿告知他人。</p>
+    <p style="color:#64748b; font-size:0.85rem;">验证码 10 分钟内有效，请勿告知他人</p>
     """
     html = build_email_html('邮箱验证码', content)
     return send_email(to_email, subject, html, is_html=True)
