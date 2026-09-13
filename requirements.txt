@@ -9,6 +9,7 @@ pillow==12.2.0
 openpyxl==3.1.2
 gunicorn==23.0.0
 openai
+requests==2.33.1
 
 # 测试依赖（部署时不需要，本地开发用）
 pytest==9.1.1

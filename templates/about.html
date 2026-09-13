@@ -67,4 +67,19 @@
         联系方式：QQ：9625615
     </p>
 </div>
+<!-- ===== 网站更新日志 ===== -->
+{% if commits %}
+<h2 style="margin-top:50px;">网站更新日志</h2>
+<div style="border-radius:16px; padding:24px; background: var(--bg-card); border:1px solid var(--border-color);">
+    {% for c in commits %}
+    <div style="display:flex; gap:16px; padding:10px 0; {% if not loop.last %}border-bottom:1px solid var(--border-color);{% endif %}">
+        <div style="flex-shrink:0; font-size:0.8rem; color: var(--text-muted); width:90px;">{{ c.date }}</div>
+        <div style="flex:1;">
+            <a href="{{ c.url }}" target="_blank" style="color: var(--text-primary); text-decoration:none;">{{ c.message }}</a>
+            <span style="font-size:0.75rem; color: var(--text-muted); margin-left:8px;">{{ c.sha }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 {% endblock %}

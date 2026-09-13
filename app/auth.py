@@ -24,10 +24,11 @@ import smtplib
 import sys
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
+from email.utils import formataddr
+
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
 from .models import db, User
-from email.utils import formataddr
 
 auth_bp = Blueprint('auth', __name__)
 

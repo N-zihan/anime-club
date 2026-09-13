@@ -10,11 +10,13 @@
 import os
 import uuid
 from datetime import timedelta, datetime, timezone
+
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from .ai import generate_commentary, generate_prediction
+from .changelog import get_recent_commits
 from .config import (
     NOMINATION_LIMIT,
     QUALIFYING_MAX_CANDIDATES,
@@ -50,7 +52,8 @@ def about():
     users = User.query.all()
     staff = User.query.filter_by(is_staff=True).all()
     owner = User.query.filter_by(is_owner=True).first()
-    return render_template('about.html', users=users, staff=staff, owner=owner)
+    commits = get_recent_commits(20)
+    return render_template('about.html', users=users, staff=staff, owner=owner, commits=commits)
 
 
 @public_bp.route('/activities')

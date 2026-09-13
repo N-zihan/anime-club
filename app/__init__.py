@@ -16,6 +16,7 @@
 """
 
 import os
+
 from dotenv import load_dotenv
 from flask import Flask, session, request, redirect, url_for, flash
 from flask_wtf import CSRFProtect

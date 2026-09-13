@@ -82,6 +82,7 @@
 │   ├── admin.py                            # 管理后台（站长/运营双角色）
 │   ├── ai.py                               # AI 解说与预测（SiliconFlow API）
 │   ├── auth.py                             # 用户认证（注册/登录/邮箱验证）
+│   ├── changelog.py                        # github日志更新
 │   ├── config.py                           # 全局配置（赛程天数、投票限制、图片压缩）
 │   ├── contest_engine.py                   # 萌战引擎（赛程计算、晋级、排名）
 │   ├── models.py                           # 数据库模型（13张表）
@@ -193,6 +194,8 @@ SECRET_KEY=自创一个密码
 SUPABASE_ANON_KEY=Settings → API → anon public # 用于前端
 CLUB_NAME=社团名字 # 默认 动漫社
 APP_VERSION=版本号 # 默认 dev
+GITHUB_REPO=
+GITHUB_TOKEN= # ghp秘钥
 
 # AI模型配置
 OPENAI_API_KEY=sk-...

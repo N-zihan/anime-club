@@ -20,9 +20,10 @@
 import io
 import uuid
 from datetime import datetime, timedelta
+from functools import wraps
+
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from flask import send_file
-from functools import wraps
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
