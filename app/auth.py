@@ -45,13 +45,42 @@ SMTP_PORT = int(os.getenv('SMTP_PORT', 465))
 SMTP_USE_SSL = os.getenv('SMTP_USE_SSL', 'true').lower() == 'true'
 
 
-def send_email(to_email, subject, body):
+def build_email_html(title: str, content: str) -> str:
+    """生成统一风格的 HTML 邮件正文"""
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="UTF-8"></head>
+    <body style="margin:0; padding:0; background:#f0f8ff; font-family:'Helvetica Neue',Arial,sans-serif;">
+        <div style="max-width:520px; margin:40px auto; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
+            <div style="background:#1e2a3a; padding:24px 32px;">
+                <h1 style="margin:0; color:#ffffff; font-size:1.2rem; font-weight:600;">{CLUB_NAME}</h1>
+                <p style="margin:6px 0 0 0; color:#94a3b8; font-size:0.8rem;">以热爱为名 · 共创二次元家园</p>
+            </div>
+            <div style="padding:32px;">
+                <h2 style="margin:0 0 16px 0; color:#1e2a3a; font-size:1.1rem;">{title}</h2>
+                <div style="color:#334155; font-size:0.95rem; line-height:1.7;">
+                    {content}
+                </div>
+            </div>
+            <div style="background:#f8fafc; padding:16px 32px; text-align:center;">
+                <p style="margin:0; color:#94a3b8; font-size:0.75rem;">
+                    此邮件由系统自动发送，请勿回复。
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+
+def send_email(to_email, subject, body, is_html=False):
     """通用发邮件函数"""
     if not MAIL_USERNAME or not MAIL_PASSWORD:
         print('邮件未配置，跳过发送')
         return False
     try:
-        msg = MIMEText(body, 'plain', 'utf-8')
+        msg = MIMEText(body, 'html' if is_html else 'plain', 'utf-8')
         msg['Subject'] = subject
         msg['From'] = formataddr((CLUB_NAME, MAIL_USERNAME))
         msg['To'] = to_email
@@ -72,15 +101,30 @@ def send_email(to_email, subject, body):
 def send_verification_email(to_email, code):
     """发送6位验证码"""
     subject = f'【{CLUB_NAME}】邮箱验证码'
-    body = f'您的验证码是：{code}\n\n10分钟内有效，请勿告知他人。'
-    return send_email(to_email, subject, body)
+    content = f"""
+    <p>您的验证码是：</p>
+    <div style="margin:20px 0; text-align:center;">
+        <span style="display:inline-block; font-size:2rem; font-weight:700; color:#1e2a3a; letter-spacing:8px; padding:12px 24px; background:#f1f5f9; border-radius:12px;">{code}</span>
+    </div>
+    <p style="color:#64748b; font-size:0.85rem;">验证码 10 分钟内有效，请勿告知他人。</p>
+    """
+    html = build_email_html('邮箱验证码', content)
+    return send_email(to_email, subject, html, is_html=True)
 
 
 def send_reset_email(to_email, reset_link):
     """发送重置链接"""
     subject = f'【{CLUB_NAME}】密码修改'
-    body = f'您好，您正在申请修改{CLUB_NAME}官网的密码。\n\n请点击以下链接修改密码（1小时内有效）：\n{reset_link}\n\n如非本人操作，请忽略此邮件。'
-    return send_email(to_email, subject, body)
+    content = f"""
+    <p>您好，您正在申请修改 {CLUB_NAME} 官网的密码</p>
+    <div style="margin:24px 0; text-align:center;">
+        <a href="{reset_link}" style="display:inline-block; padding:12px 32px; background:#1e2a3a; color:#ffffff; text-decoration:none; border-radius:40px; font-weight:600;">点击修改密码</a>
+    </div>
+    <p style="color:#64748b; font-size:0.85rem;">链接 1 小时内有效。如非本人操作，请忽略此邮件</p>
+    <p style="color:#94a3b8; font-size:0.75rem; word-break:break-all;">如果按钮无法点击，请复制以下链接到浏览器：<br>{reset_link}</p>
+    """
+    html = build_email_html('密码修改', content)
+    return send_email(to_email, subject, html, is_html=True)
 
 
 # ---------- 注册 ----------
