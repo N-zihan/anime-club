@@ -2,6 +2,14 @@
 {% block title %}个人设置{% endblock %}
 {% block content %}
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
 <div style="max-width:600px; margin:0 auto; padding:20px 0;">
 
     <h2 style="text-align:center; margin-bottom:24px; color: var(--text-primary);">个人设置</h2>
@@ -42,16 +50,19 @@
 
         <!-- 绑定邮箱 -->
         <div style="background: var(--bg-card); padding:20px 24px; border-radius:12px; border:1px solid var(--border-color);">
-            <h4 style="margin-top:0; margin-bottom:4px; color: var(--text-primary);">绑定邮箱</h4>
-            <p style="color: var(--text-secondary); font-size:0.9rem; margin-bottom:16px;">用于修改密码，请填写常用QQ邮箱</p>
-
-            <div id="emailBindStatus">
-                {% if user.email %}
-                    <p style="margin-bottom:12px; color: var(--text-primary);">当前已绑定：<strong>{{ user.email }}</strong></p>
-                    <hr style="margin:12px 0; border-color: var(--border-color);">
-                    <p style="font-size:0.9rem; color: var(--text-secondary); margin-bottom:8px;">更换邮箱：</p>
-                {% endif %}
-            </div>
+            <h4 style="margin-top:0; margin-bottom:8px; color: var(--text-primary);">绑定邮箱</h4>
+            {% if user.email %}
+            <p style="color: var(--text-secondary); font-size:0.9rem; margin-bottom:14px;">
+                当前已绑定：<strong style="color: var(--text-primary);">{{ user.email }}</strong>
+            </p>
+            <a href="{{ url_for('user.bind_email') }}"
+               style="display:inline-block; padding:8px 18px; background:#1e2a3a; color:white; border-radius:6px; text-decoration:none; font-size:0.9rem;">更换邮箱 →</a>
+            {% else %}
+            <p style="color: var(--text-secondary); font-size:0.9rem; margin-bottom:14px;">尚未绑定邮箱</p>
+            <a href="{{ url_for('user.bind_email') }}"
+               style="display:inline-block; padding:8px 18px; background:#f39c12; color:white; border-radius:6px; text-decoration:none; font-size:0.9rem;">前往绑定 →</a>
+            {% endif %}
+        </div>
 
             <div id="emailBindForm">
                 <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">

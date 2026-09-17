@@ -105,7 +105,7 @@ class TestUserExtra:
 
     def test_bind_email_send_code(self, logged_in_client, sample_user):
         with patch('app.user.send_verification_email', return_value=True):
-            resp = logged_in_client.post('/profile', data={'action': 'send_email_code', 'email': 'new@qq.com'})
+            resp = logged_in_client.post('/bind_email', data={'action': 'send_email_code', 'email': 'new@qq.com'})
             assert resp.json['success'] is True
 
     def test_bind_email_verify_code(self, logged_in_client, sample_user, db_session):
@@ -113,7 +113,7 @@ class TestUserExtra:
             sess['profile_email_code'] = '123456'
             sess['profile_pending_email'] = 'new@qq.com'
             sess['profile_email_expires'] = (datetime.now() + timedelta(minutes=5)).isoformat()
-        resp = logged_in_client.post('/profile', data={'action': 'verify_email_code', 'code': '123456'})
+        resp = logged_in_client.post('/bind_email', data={'action': 'verify_email_code', 'code': '123456'})
         assert resp.json['success'] is True
         assert resp.json['email'] == 'new@qq.com'
         from app.models import User
