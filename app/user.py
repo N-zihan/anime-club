@@ -85,23 +85,6 @@ def profile():
                     flash(f'用户名已从 "{old_username}" 更新为 "{new_username}"', 'success')
             return redirect(url_for('user.profile'))
 
-        # ---------- 修改密码 ----------
-        if action == 'change_password':
-            old = request.form.get('old_password')
-            new = request.form.get('new_password')
-            confirm = request.form.get('confirm_password')
-            if not user.check_password(old):
-                flash('原密码错误', 'danger')
-            elif new != confirm:
-                flash('两次输入的新密码不一致', 'danger')
-            elif len(new) < 6:
-                flash('新密码至少6位', 'danger')
-            else:
-                user.set_password(new)
-                db.session.commit()
-                flash('密码修改成功', 'success')
-            return redirect(url_for('user.profile'))
-
         # ---------- 绑定邮箱：发送验证码 ----------
         if action == 'send_email_code':
             email = request.form.get('email')
@@ -151,6 +134,44 @@ def profile():
             return jsonify({'success': True, 'message': '邮箱绑定成功', 'email': pending_email})
 
     return render_template('profile.html', user=user)
+
+
+@user_bp.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    """独立的修改密码页面"""
+    if not session.get('user_id'):
+        flash('请先登录', 'warning')
+        return redirect(url_for('auth.login'))
+
+    user = db.session.get(User, session['user_id'])
+    if not user:
+        session.clear()
+        return redirect(url_for('auth.login'))
+
+    if request.method == 'POST':
+        old = request.form.get('old_password')
+        new = request.form.get('new_password')
+        confirm = request.form.get('confirm_password')
+
+        if not user.check_password(old):
+            flash('原密码错误', 'danger')
+            return redirect(url_for('user.change_password'))
+        elif new != confirm:
+            flash('两次输入的新密码不一致', 'danger')
+            return redirect(url_for('user.change_password'))
+        elif len(new) < 6:
+            flash('新密码至少6位', 'danger')
+            return redirect(url_for('user.change_password'))
+        elif new == old:
+            flash('新密码不能与原密码相同', 'danger')
+            return redirect(url_for('user.change_password'))
+        else:
+            user.set_password(new)
+            db.session.commit()
+            flash('密码修改成功', 'success')
+            return redirect(url_for('user.profile'))
+
+    return render_template('change_password.html', user=user)
 
 
 # ---------- 个人主页 ----------

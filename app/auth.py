@@ -44,6 +44,7 @@ MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
 SMTP_HOST = os.getenv('SMTP_HOST', 'smtp.qq.com')
 SMTP_PORT = int(os.getenv('SMTP_PORT', 465))
 SMTP_USE_SSL = os.getenv('SMTP_USE_SSL', 'true').lower() == 'true'
+EMAIL_PATTERN = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
 
 def send_email(to_email, subject, body, is_html=False):
@@ -122,6 +123,7 @@ def register():
         email = request.form.get('email')
         group = request.form.get('group')
         password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
         code = request.form.get('code')
 
         # 验证用户名
@@ -134,6 +136,11 @@ def register():
         if not qq.isdigit() or not (5 <= len(qq) <= 12):
             flash('QQ号必须是5-12位数字', 'danger')
             return redirect(url_for('auth.register'))
+
+            # 验证邮箱格式
+            if not re.match(EMAIL_PATTERN, email or ''):
+                flash('邮箱格式不正确', 'danger')
+                return redirect(url_for('auth.register'))
 
         # 验证社团验证码
         if group != GROUP_VERIFICATION_CODE:
@@ -149,6 +156,14 @@ def register():
             return redirect(url_for('auth.register'))
         if User.query.filter_by(email=email).first():
             flash('该邮箱已被绑定', 'danger')
+            return redirect(url_for('auth.register'))
+
+        # 验证密码
+        if password != confirm_password:
+            flash('两次输入的密码不一致', 'danger')
+            return redirect(url_for('auth.register'))
+        if len(password) < 6:
+            flash('密码至少6位', 'danger')
             return redirect(url_for('auth.register'))
 
         # 验证邮箱验证码（测试环境完全跳过）

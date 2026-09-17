@@ -35,16 +35,9 @@
 
         <!-- 修改密码 -->
         <div style="background: var(--bg-card); padding:20px 24px; border-radius:12px; border:1px solid var(--border-color);">
-            <h4 style="margin-top:0; margin-bottom:12px; color: var(--text-primary);">修改密码</h4>
-            <form method="POST">
-                <input type="hidden" name="action" value="change_password">
-                <div style="display:flex; flex-direction:column; gap:8px; max-width:300px;">
-                    <input type="password" name="old_password" placeholder="原密码" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; background: var(--bg-input); color: var(--text-primary);">
-                    <input type="password" name="new_password" placeholder="新密码（至少6位）" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; background: var(--bg-input); color: var(--text-primary);">
-                    <input type="password" name="confirm_password" placeholder="确认新密码" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; background: var(--bg-input); color: var(--text-primary);">
-                    <button type="submit" style="padding:8px 18px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer; align-self:flex-start;">修改密码</button>
-                </div>
-            </form>
+            <h4 style="margin-top:0; margin-bottom:8px; color: var(--text-primary);">修改密码</h4>
+            <a href="{{ url_for('user.change_password') }}"
+                style="display:inline-block; padding:8px 18px; background:#1e2a3a; color:white; border-radius:6px; text-decoration:none; font-size:0.9rem;">前往修改 →</a>
         </div>
 
         <!-- 绑定邮箱 -->
