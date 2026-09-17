@@ -26,6 +26,7 @@ class TestAuth:
             'email': 'test123@qq.com',
             'group': 'test_group_code',
             'password': 'testpass123',
+            'confirm_password': 'testpass123',
             'code': '123456'  # 随便填
         }, follow_redirects=True)
         assert response.status_code == 200

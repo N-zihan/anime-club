@@ -44,8 +44,7 @@ class TestUser:
         assert sample_user.username == 'newname123'
 
     def test_change_password(self, logged_in_client, sample_user):
-        response = logged_in_client.post('/profile', data={
-            'action': 'change_password',
+        response = logged_in_client.post('/change_password', data={
             'old_password': 'password123',
             'new_password': 'newpass456',
             'confirm_password': 'newpass456'
