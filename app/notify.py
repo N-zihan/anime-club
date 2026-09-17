@@ -21,7 +21,6 @@ def _build_email_html(title: str, content: str, link: str = None) -> str:
         </div>
         """
 
-    club_name = os.getenv('CLUB_NAME', '动漫社')
     return f"""
         <!DOCTYPE html>
         <html>

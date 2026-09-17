@@ -45,35 +45,6 @@ SMTP_PORT = int(os.getenv('SMTP_PORT', 465))
 SMTP_USE_SSL = os.getenv('SMTP_USE_SSL', 'true').lower() == 'true'
 
 
-def build_email_html(title: str, content: str) -> str:
-    """生成统一风格的 HTML 邮件正文"""
-    return f"""
-    <!DOCTYPE html>
-    <html>
-    <head><meta charset="UTF-8"></head>
-    <body style="margin:0; padding:0; background:#f0f8ff; font-family:'Helvetica Neue',Arial,sans-serif;">
-        <div style="max-width:520px; margin:40px auto; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-            <div style="background:#1e2a3a; padding:24px 32px;">
-                <h1 style="margin:0; color:#ffffff; font-size:1.2rem; font-weight:600;">{CLUB_NAME}</h1>
-                <p style="margin:6px 0 0 0; color:#94a3b8; font-size:0.8rem;">以热爱为名 · 共创二次元家园</p>
-            </div>
-            <div style="padding:32px;">
-                <h2 style="margin:0 0 16px 0; color:#1e2a3a; font-size:1.1rem;">{title}</h2>
-                <div style="color:#334155; font-size:0.95rem; line-height:1.7;">
-                    {content}
-                </div>
-            </div>
-            <div style="background:#f8fafc; padding:16px 32px; text-align:center;">
-                <p style="margin:0; color:#94a3b8; font-size:0.75rem;">
-                    此邮件由系统自动发送，请勿回复
-                </p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-
-
 def send_email(to_email, subject, body, is_html=False):
     """通用发邮件函数"""
     if not MAIL_USERNAME or not MAIL_PASSWORD:
@@ -98,8 +69,13 @@ def send_email(to_email, subject, body, is_html=False):
         return False
 
 
+def _email_html(title, content, link=None):
+    """延迟导入 notify 里的统一邮件模板，避免循环依赖"""
+    from .notify import _build_email_html
+    return _build_email_html(title, content, link)
+
+
 def send_verification_email(to_email, code):
-    """发送6位验证码"""
     subject = f'【{CLUB_NAME}】邮箱验证码'
     content = f"""
     <p>您的验证码是：</p>
@@ -108,7 +84,7 @@ def send_verification_email(to_email, code):
     </div>
     <p style="color:#64748b; font-size:0.85rem;">验证码 10 分钟内有效，请勿告知他人</p>
     """
-    html = build_email_html('邮箱验证码', content)
+    html = _email_html('邮箱验证码', content)
     return send_email(to_email, subject, html, is_html=True)
 
 
@@ -117,13 +93,22 @@ def send_reset_email(to_email, reset_link):
     subject = f'【{CLUB_NAME}】密码修改'
     content = f"""
     <p>您好，您正在申请修改 {CLUB_NAME} 官网的密码</p>
-    <div style="margin:24px 0; text-align:center;">
-        <a href="{reset_link}" style="display:inline-block; padding:12px 32px; background:#1e2a3a; color:#ffffff; text-decoration:none; border-radius:40px; font-weight:600;">点击修改密码</a>
-    </div>
     <p style="color:#64748b; font-size:0.85rem;">链接 1 小时内有效。如非本人操作，请忽略此邮件</p>
     <p style="color:#94a3b8; font-size:0.75rem; word-break:break-all;">如果按钮无法点击，请复制以下链接到浏览器：<br>{reset_link}</p>
     """
-    html = build_email_html('密码修改', content)
+    html = _email_html('密码修改', content, link=reset_link)
+    return send_email(to_email, subject, html, is_html=True)
+
+
+def send_welcome_email(to_email, username):
+    """绑定邮箱成功后发送欢迎邮件"""
+    subject = f'【{CLUB_NAME}】欢迎加入二次元家园'
+    content = f"""
+    <p>你好，<strong>{username}</strong>！</p>
+    <p>你的邮箱已成功绑定。从现在起，社团的重要活动、赛事通知、审核结果都会通过邮件第一时间送达，记得常回来看看。</p>
+    <p>祝你在这里找到属于自己的二次元天地！</p>
+    """
+    html = _email_html('欢迎加入', content)
     return send_email(to_email, subject, html, is_html=True)
 
 
@@ -371,6 +356,11 @@ def forgot_bind_verify():
     session.pop('forgot_bind_code', None)
     session.pop('forgot_bind_email', None)
     session.pop('forgot_bind_expires', None)
+
+    try:
+        send_welcome_email(email, user.username)
+    except Exception as e:
+        print(f'欢迎邮件发送失败: {e}')
 
     flash('邮箱绑定成功！', 'success')
 

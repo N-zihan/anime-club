@@ -34,7 +34,7 @@ from .utils import allowed_file, compress_image, get_or_404
 user_bp = Blueprint('user', __name__)
 
 # ---------- 发邮件函数（复用 auth 的） ----------
-from .auth import send_verification_email
+from .auth import send_verification_email, send_welcome_email
 
 
 @user_bp.route('/profile', methods=['GET', 'POST'])
@@ -141,6 +141,12 @@ def profile():
             session.pop('profile_pending_email', None)
             session.pop('profile_email_expires', None)
             session.pop('show_bind_prompt', None)
+
+            # 发送欢迎邮件（失败不影响绑定结果）
+            try:
+                send_welcome_email(pending_email, user.username)
+            except Exception as e:
+                print(f'欢迎邮件发送失败: {e}')
 
             return jsonify({'success': True, 'message': '邮箱绑定成功', 'email': pending_email})
 

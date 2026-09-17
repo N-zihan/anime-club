@@ -27,7 +27,6 @@ from flask import send_file
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
-from .config import PHOTO_COMPRESS_SIZE, COMPRESS_QUALITY
 from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, Candidate, \
     ContestVote
 from .utils import get_supabase, allowed_file, compress_image, get_or_404

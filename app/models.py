@@ -7,7 +7,7 @@
 所有模型均使用 UTC 时间存储，显示时转换为东八区。
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -21,7 +21,7 @@ class User(db.Model):
     qq = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    registered_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    registered_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc) + timedelta(hours=8))
     avatar = db.Column(db.LargeBinary, nullable=True)
     avatar_mime = db.Column(db.String(50), nullable=True)
     is_staff = db.Column(db.Boolean, default=False)
