@@ -25,6 +25,7 @@ import sys
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email.utils import formataddr
+from sqlalchemy.exc import IntegrityError
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
@@ -173,16 +174,12 @@ def register():
             new_user.is_staff = True
         new_user.set_password(password)
         db.session.add(new_user)
-        db.session.commit()
-        # 创建用户
-        is_first_user = User.query.count() == 0
-        new_user = User(username=username, qq=qq, email=email)
-        if is_first_user:
-            new_user.is_owner = True
-            new_user.is_staff = True
-        new_user.set_password(password)
-        db.session.add(new_user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash('用户名、QQ 号或邮箱已被注册，请检查后重试', 'danger')
+            return redirect(url_for('auth.register'))
 
         # 清理 session
         session.pop('email_code', None)
