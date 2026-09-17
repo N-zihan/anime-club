@@ -174,6 +174,29 @@ def register():
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
+        # 创建用户
+        is_first_user = User.query.count() == 0
+        new_user = User(username=username, qq=qq, email=email)
+        if is_first_user:
+            new_user.is_owner = True
+            new_user.is_staff = True
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        # 清理 session
+        session.pop('email_code', None)
+        session.pop('pending_email', None)
+        session.pop('email_code_expires', None)
+
+        # 发送欢迎邮件（失败不影响注册结果）
+        try:
+            send_welcome_email(email, username)
+        except Exception as e:
+            print(f'欢迎邮件发送失败: {e}')
+
+        flash('注册成功！请登录', 'success')
+        return redirect(url_for('auth.login'))
 
         # 清理 session
         session.pop('email_code', None)
