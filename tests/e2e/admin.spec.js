@@ -2,6 +2,13 @@ import {expect, test} from '@playwright/test';
 
 test.describe('后台管理', () => {
     test.beforeEach(async ({page}) => {
+        // 禁用新手引导（避免遮罩层拦截交互）
+        await page.addInitScript(() => {
+            for (let i = 0; i < 100; i++) {
+                localStorage.setItem(`onboarding_done_${i}`, 'true');
+            }
+        });
+
         await page.goto('/login');
         await page.fill('input[name="username"]', 'testuser');
         await page.fill('input[name="password"]', 'password123');

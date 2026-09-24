@@ -189,7 +189,7 @@ pip install -r requirements.txt
 创建 .env 文件:
 
 ```env
-DATABASE_URL=postgresql://...
+DATABASE_URL=postgresql://... # 从Supabase获取
 GROUP_VERIFICATION_CODE=社团群号
 SUPABASE_URL=https://...
 SUPABASE_KEY=Settings → API → service_role secret # 仅供后端
@@ -201,21 +201,21 @@ GITHUB_REPO=
 GITHUB_TOKEN= # ghp秘钥
 
 # AI模型配置
-OPENAI_API_KEY=sk-...
+OPENAI_API_KEY=sk-... # 自行配置
 OPENAI_BASE_URL=https://api.siliconflow.cn/v1 
 AI_MODEL=deepseek-ai/DeepSeek-V4-Flash
 AI_CACHE_ENABLED=true
 AI_CACHE_TTL=3600     
 
-# SMTP 邮件配置(用于发送验证码和重置链接)
+# SMTP 邮件配置(用于发送验证码和重置链接以及通知)
 SMTP_HOST= # 默认smtp.qq.com
 SMTP_PORT= # 默认465
 SMTP_USE_SSL=true # 默认true开启
-MAIL_USERNAME=你的QQ邮箱 # 建议额外注册一个
+MAIL_USERNAME=你的邮箱 # 建议额外注册一个
 MAIL_PASSWORD=SMTP邮箱授权码
 ```
 
-> API_key从[siliconflow](https://cloud.siliconflow.cn)获取，需付费
+> API_key从[siliconflow](https://cloud.siliconflow.cn)获取
 
 运行：
 
@@ -250,7 +250,7 @@ npm test
 项目创建完成后，在 Dashboard 页面顶部点击 **Connect** 按钮，会弹出一个连接面板，先选择 **Direct Connection string**
 ，里面包含了所有你需要的信息：
 
-- **Session pooler（推荐）**：端口 `6543`，适用于 Vercel 等 Serverless 环境，支持最多 200 个并发连接
+- **Transaction pooler（推荐）**：端口 `6543`，适用于 Vercel 等 Serverless 环境，支持最多 200 个并发连接
 - **Direct connection**：端口 `5432`，直连数据库，限额 60 个连接
 
 在 **Connection string** 区域找到 `URI` 格式的连接串，复制后替换密码即可得到 `DATABASE_URL`。

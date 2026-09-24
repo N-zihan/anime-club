@@ -2,6 +2,13 @@ import {expect, test} from '@playwright/test';
 
 test.describe('留言板', () => {
     test.beforeEach(async ({page}) => {
+        // 禁用新手引导（避免遮罩层拦截交互）
+        await page.addInitScript(() => {
+            for (let i = 0; i < 100; i++) {
+                localStorage.setItem(`onboarding_done_${i}`, 'true');
+            }
+        });
+
         // 尝试注册（用户可能已存在，忽略错误）
         await page.goto('/register');
         await page.fill('input[name="username"]', 'testuser');
