@@ -99,7 +99,6 @@
 │   │   ├── icon-192.png                    # PWA 图标（192x192）
 │   │   └── icon-512.png                    # PWA 图标（512x512）
 │   ├── favicon.ico                         # 浏览器标签页图标
-│   ├── og-image.png                        # 社交分享预览图（Open Graph）
 │   ├── robots.txt                          # 搜索引擎爬虫抓取规则
 │   ├── sitemap.xml                         # 站点地图（SEO）
 │   └── sw.js                               # Service Worker（PWA 离线缓存）
@@ -149,6 +148,7 @@
 │   ├── admin_notification_send.html        # 管理员发通知页面
 │   └── user_profile.html                   # 个人主页（公开展示）
 ├── tests/                                  # Pytest 测试套件
+│   ├── e2e/                                # Playwright 测试套件
 │   ├── __init__.py                         # 测试包初始化
 │   ├── conftest.py                         # 测试配置与 Fixtures
 │   ├── test_admin.py                       # 管理后台测试
