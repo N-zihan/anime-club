@@ -203,6 +203,8 @@ def members():
 @public_bp.route('/contest_center')
 def contest_center():
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
+    for c in Contest.query.filter_by(status='draft').all():
+        auto_activate_contest(c, now)
     open_contests = Contest.query.filter(
         Contest.status == 'open',
         Contest.open_at <= now,
