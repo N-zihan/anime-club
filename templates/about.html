@@ -67,19 +67,15 @@
         联系方式：QQ：9625615
     </p>
 </div>
-<!-- ===== 网站更新日志 ===== -->
-{% if commits %}
-<h2 style="margin-top:50px;">网站更新日志</h2>
+<!-- ===== 网站发展史入口 ===== -->
+<h2 style="margin-top:50px;">网站发展史</h2>
 <div style="border-radius:16px; padding:24px; background: var(--bg-card); border:1px solid var(--border-color);">
-    {% for c in commits %}
-    <div style="display:flex; gap:16px; padding:10px 0; {% if not loop.last %}border-bottom:1px solid var(--border-color);{% endif %}">
-        <div style="flex-shrink:0; font-size:0.8rem; color: var(--text-muted); width:90px;">{{ c.date }}</div>
-        <div style="flex:1;">
-            <a href="{{ c.url }}" target="_blank" style="color: var(--text-primary); text-decoration:none;">{{ c.message }}</a>
-            <span style="font-size:0.75rem; color: var(--text-muted); margin-left:8px;">{{ c.sha }}</span>
-        </div>
-    </div>
-    {% endfor %}
+    <p style="margin:0 0 16px 0; color: var(--text-secondary); line-height:1.7;">
+        这个网站从第一行代码到现在的每一次改动，都被完整记录了下来
+    </p>
+    <a href="{{ url_for('public.history') }}"
+       style="display:inline-block; padding:8px 20px; background:#1e2a3a; color:white; border-radius:6px; text-decoration:none; font-size:0.9rem;">
+        查看完整发展史 →
+    </a>
 </div>
-{% endif %}
 {% endblock %}

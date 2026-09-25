@@ -16,7 +16,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from .ai import generate_commentary, generate_prediction
-from .changelog import get_recent_commits
 from .config import (
     NOMINATION_LIMIT,
     QUALIFYING_MAX_CANDIDATES,
@@ -53,8 +52,15 @@ def about():
     users = User.query.all()
     staff = User.query.filter_by(is_staff=True).all()
     owner = User.query.filter_by(is_owner=True).first()
-    commits = get_recent_commits(20)
-    return render_template('about.html', users=users, staff=staff, owner=owner, commits=commits)
+    return render_template('about.html', users=users, staff=staff, owner=owner)
+
+
+@public_bp.route('/about/history')
+def history():
+    """网站发展史页面"""
+    from .changelog import get_all_commits
+    commits = get_all_commits()
+    return render_template('history.html', commits=commits)
 
 
 @public_bp.route('/activities')
