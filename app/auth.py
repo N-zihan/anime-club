@@ -137,10 +137,10 @@ def register():
             flash('QQ号必须是5-12位数字', 'danger')
             return redirect(url_for('auth.register'))
 
-            # 验证邮箱格式
-            if not re.match(EMAIL_PATTERN, email or ''):
-                flash('邮箱格式不正确', 'danger')
-                return redirect(url_for('auth.register'))
+        # 验证邮箱格式
+        if not re.match(EMAIL_PATTERN, email or ''):
+            flash('邮箱格式不正确', 'danger')
+            return redirect(url_for('auth.register'))
 
         # 验证社团验证码
         if group != GROUP_VERIFICATION_CODE:
