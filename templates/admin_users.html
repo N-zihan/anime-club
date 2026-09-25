@@ -42,21 +42,24 @@
             {% if user.is_owner %}👑{% else %}—{% endif %}
         </td>
         <td style="text-align:center;">
-            <a class="btn-edit" href="{{ url_for('admin.admin_toggle_staff', user_id=user.id) }}">
-                {{ '取消运营' if user.is_staff else '设为运营' }}
-            </a>
-            {% if user.is_owner %}
-            <span style="color:gold; font-size:0.85rem; margin-right:6px;">👑 现任站长</span>
-            {% else %}
-            <a class="btn-edit" href="{{ url_for('admin.admin_toggle_owner', user_id=user.id) }}"
-               style="color:#2c3e50;"
-               onclick="return confirm('确定将站长转移给 {{ user.username }} 吗？原站长将失去权限')">
-                转移站长
-            </a>
-            {% endif %}
+            <form method="POST" action="{{ url_for('admin.admin_toggle_staff', user_id=user.id) }}"
+                  style="display:inline;">
+                <button type="submit" class="btn-edit">{{ '取消运营' if user.is_staff else '设为运营' }}</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.admin_toggle_owner', user_id=user.id) }}"
+                  style="display:inline;"
+                  onsubmit="return confirm('确定将站长转移给 {{ user.username }} 吗？')">
+                <button type="submit" class="btn-edit"
+                        style="color:{{ 'gold' if user.is_owner else '#2c3e50' }};">
+                    {{ '取消站长' if user.is_owner else '设为站长' }}
+                </button>
+            </form>
             {% if user.id != session.user_id %}
-            <a class="btn-delete" href="{{ url_for('admin.admin_delete_user', user_id=user.id) }}"
-               onclick="return confirm('确定删除用户 {{ user.username }} 吗？')">删除</a>
+            <form method="POST" action="{{ url_for('admin.admin_delete_user', user_id=user.id) }}"
+                  style="display:inline;"
+                  onsubmit="return confirm('确定删除用户 {{ user.username }} 吗？')">
+                <button type="submit" class="btn-delete">删除</button>
+            </form>
             {% else %}
             <span style="color:#aaa; font-size:0.85rem;">（自己）</span>
             {% endif %}

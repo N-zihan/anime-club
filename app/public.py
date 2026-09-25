@@ -11,7 +11,7 @@ import os
 import uuid
 from datetime import timedelta, datetime, timezone
 
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory, Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -35,6 +35,16 @@ from .utils import get_supabase, compress_image, get_or_404
 from .notify import notify
 
 public_bp = Blueprint('public', __name__)
+
+
+def _calc_current_phase(contest):
+    """计算赛事当前 phase（投票页面用）"""
+    if contest.open_at and contest.open_at.tzinfo is not None:
+        contest.open_at = contest.open_at.replace(tzinfo=None)
+    now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
+    times = calc_stage_times(contest.open_at)
+    auto_activate_contest(contest, now)
+    return calc_phase(contest, now, times)
 
 
 @public_bp.route('/')
@@ -256,31 +266,40 @@ def contest_detail(contest_id):
     phase = calc_phase(contest, now, times)
 
     # 4. 执行自动推进
+    # 循环处理，防止因为跳过了中间阶段而卡住
+    for _ in range(8):
+        # 海选 → 小组赛
+        if contest.status == 'open' and now >= times['qualifying_end']:
+            has_groups = contest.config and contest.config.get('female_groups')
+            if not has_groups:
+                run_qualifying_promotion(contest)
+                flash('海选结果已公布，小组赛开始！', 'success')
+                continue
 
-    # 海选 → 小组赛
-    if phase == 'qualifying_result' and now >= times['qualifying_end'] and contest.status == 'open':
-        run_qualifying_promotion(contest)
-        flash('海选结果已公布，小组赛开始！', 'success')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        # 小组赛 → 淘汰赛
+        if contest.status in ['open', 'group_stage'] and now >= times['group_round_3_result_end']:
+            has_knockout = contest.config and contest.config.get('knockout_matches_female')
+            if not has_knockout:
+                run_group_promotion(contest)
+                flash('小组赛结束，淘汰赛16强对阵已生成！', 'success')
+                continue
 
-    # 小组赛 → 淘汰赛
-    if phase == 'group_round_3_result' and now >= times['group_round_3_result_end'] and contest.status in ['open',
-                                                                                                           'group_stage']:
-        run_group_promotion(contest)
-        flash('小组赛结束，淘汰赛16强对阵已生成！', 'success')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        # 淘汰赛各轮推进
+        advanced, round_name = run_knockout_advance(contest, now, times)
+        if advanced:
+            flash(f'淘汰赛{round_name}对阵已生成！', 'success')
+            continue
 
-    # 淘汰赛各轮推进
-    advanced, round_name = run_knockout_advance(contest, phase, now, times)
-    if advanced:
-        flash(f'淘汰赛{round_name}对阵已生成！', 'success')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        # 决赛结束 → 最终排名
+        if contest.status != 'closed' and now >= times['final_result_end']:
+            run_final_ranking(contest)
+            flash('赛事已结束，最终排名已生成！', 'success')
+            continue
 
-    # 决赛结束 → 最终排名
-    if phase == 'final_result' and now >= times['final_result_end'] and contest.status != 'closed':
-        run_final_ranking(contest)
-        flash('赛事已结束，最终排名已生成！', 'success')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        break
+
+    # 推进后重新计算 phase（状态可能已变）
+    phase = calc_phase(contest, now, times)
 
     # 5. 准备小组赛公示数据（仅当处于小组赛公示期）
     group_round_results = None
@@ -487,6 +506,7 @@ def qualifying_vote_female(contest_id):
     return render_template('contest_qualifying_vote.html',
                            contest=contest,
                            candidates=candidates,
+                           phase=_calc_current_phase(contest),
                            gender='female')
 
 
@@ -508,6 +528,7 @@ def qualifying_vote_male(contest_id):
     return render_template('contest_qualifying_vote.html',
                            contest=contest,
                            candidates=candidates,
+                           phase=_calc_current_phase(contest),
                            gender='male')
 
 
@@ -624,6 +645,7 @@ def group_vote_female(contest_id):
                            contest=contest,
                            groups=groups,
                            candidates=candidates,
+                           phase=_calc_current_phase(contest),
                            gender='female',
                            round_type='group')
 
@@ -649,6 +671,7 @@ def group_vote_male(contest_id):
                            contest=contest,
                            groups=groups,
                            candidates=candidates,
+                           phase=_calc_current_phase(contest),
                            gender='male',
                            round_type='group')
 
@@ -814,6 +837,7 @@ def knockout_vote_female(contest_id):
                            contest=contest,
                            matches=matches,
                            candidates=candidates,
+                           phase=_calc_current_phase(contest),
                            gender='female')
 
 
@@ -837,6 +861,7 @@ def knockout_vote_male(contest_id):
                            contest=contest,
                            matches=matches,
                            candidates=candidates,
+                           phase=_calc_current_phase(contest),
                            gender='male')
 
 
@@ -954,7 +979,8 @@ def api_votes(candidate_id):
 def ai_commentary(contest_id):
     """获取 AI 实时战报"""
     phase = request.args.get('phase', '')
-    success, content, error = generate_commentary(contest_id, phase)
+    force = request.args.get('force') == 'true'
+    success, content, error = generate_commentary(contest_id, phase, force=force)
     if success:
         return jsonify({'success': True, 'commentary': content})
     return jsonify({'success': False, 'error': error}), 500
@@ -1003,6 +1029,32 @@ def manifest():
 @public_bp.route('/robots.txt')
 def robots():
     return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'static'), 'robots.txt')
+
+
+@public_bp.route('/sw.js')
+def service_worker():
+    """Service Worker 挂根路径，作用域覆盖全站。
+    运行时把 CACHE_VERSION 替换为部署版本号，避免被浏览器缓存。"""
+    import re
+    base = os.path.join(os.path.dirname(__file__), '..')
+    sw_path = os.path.join(base, 'sw.js')
+
+    try:
+        with open(sw_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    except OSError:
+        return 'Service Worker not found', 404
+
+    # Vercel 会自动注入这个环境变量；本地开发时回退到 dev
+    version = os.getenv('VERCEL_GIT_COMMIT_SHA', 'dev')[:8]
+    content = re.sub(
+        r"const CACHE_VERSION = '.*';",
+        f"const CACHE_VERSION = '{version}';",
+        content,
+        count=1,
+    )
+
+    return Response(content, mimetype='application/javascript')
 
 
 # 错误处理器

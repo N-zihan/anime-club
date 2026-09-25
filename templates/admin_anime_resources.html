@@ -14,10 +14,16 @@
         <div class="card-header">
             <strong>{{ res.title }}</strong>
             <div class="card-actions">
-                <a class="edit-btn" href="{{ url_for('admin.approve_anime_resource', id=res.id) }}"
-                   onclick="return confirm('批准该资源？')">通过</a>
-                <a class="delete-btn" href="{{ url_for('admin.reject_anime_resource', id=res.id) }}"
-                   onclick="return confirm('拒绝并删除该资源？')">拒绝</a>
+                <form method="POST" action="{{ url_for('admin.approve_anime_resource', id=res.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirm('批准该资源？')">
+                    <button type="submit" class="edit-btn">通过</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.reject_anime_resource', id=res.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirm('拒绝并删除该资源？')">
+                    <button type="submit" class="delete-btn">拒绝</button>
+                </form>
             </div>
         </div>
         <p>{{ res.description or '无描述' }}</p>
@@ -43,8 +49,11 @@
         <div class="card-header">
             <strong>{{ res.title }}</strong>
             <div class="card-actions">
-                <a class="delete-btn" href="{{ url_for('admin.admin_anime_resources_delete', id=res.id) }}"
-                   onclick="return confirm('确定删除？')">删除</a>
+                <form method="POST" action="{{ url_for('admin.admin_anime_resources_delete', id=res.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirm('确定删除？')">
+                    <button type="submit" class="delete-btn">删除</button>
+                </form>
             </div>
         </div>
         <p>{{ res.description or '无描述' }}</p>

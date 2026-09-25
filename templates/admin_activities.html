@@ -25,8 +25,11 @@
         <td>{{ act.content[:50] }}{% if act.content|length > 50 %}...{% endif %}</td>
         <td style="text-align:center;">
             <a class="btn-edit" href="{{ url_for('admin.admin_activity_edit', id=act.id) }}">编辑</a>
-            <a class="btn-delete" href="{{ url_for('admin.admin_activity_delete', id=act.id) }}"
-               onclick="return confirm('确定删除？')">删除</a>
+            <form method="POST" action="{{ url_for('admin.admin_activity_delete', id=act.id) }}"
+                  style="display:inline;"
+                  onsubmit="return confirm('确定删除？')">
+                <button type="submit" class="btn-delete">删除</button>
+            </form>
             <a class="btn-edit" href="{{ url_for('admin.admin_gallery') }}">照片墙</a>
         </td>
     </tr>

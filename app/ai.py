@@ -314,7 +314,7 @@ def _build_generic_prompt(contest: Contest, phase_name: str) -> str:
 """
 
 
-def generate_commentary(contest_id: int, phase: str, extra_data: dict = None) -> tuple:
+def generate_commentary(contest_id: int, phase: str, extra_data: dict = None, force: bool = False) -> tuple:
     """生成实时战报"""
     try:
         contest = db.session.get(Contest, contest_id)
@@ -324,12 +324,13 @@ def generate_commentary(contest_id: int, phase: str, extra_data: dict = None) ->
         if phase == 'not_started':
             return True, "赛事尚未开始，AI 解说将在提名期启动后自动开启。请于 10 月 1 日 18:00 后回来查看！", None
 
-        # 检查缓存
+        # 检查缓存（force 跳过）
         round_info = extra_data.get('round_info', '') if extra_data else ''
         cache_key = _get_cache_key(contest_id, phase, 'commentary', round_info)
-        cached = _get_cached(cache_key)
-        if cached:
-            return True, cached, None
+        if not force:
+            cached = _get_cached(cache_key)
+            if cached:
+                return True, cached, None
 
         # 阶段名称映射
         phase_names = {

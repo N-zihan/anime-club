@@ -109,7 +109,6 @@
 ├── .env.example                            # 环境变量模板（填写好后删除 .example 后缀使用）
 ├── .gitignore                              # Git 忽略规则
 ├── .python-version                         # Python 版本指定
-├── build.js                                # PWA 版本号自动注入脚本
 ├── LICENSE                                 # MIT 许可证
 ├── package.json                            # Node.js 构建配置
 ├── pytest.ini                              # Pytest 配置

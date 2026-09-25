@@ -17,6 +17,18 @@
     border: 1px solid #fed7aa;
 }
 
+.alert-success {
+    background: var(--alert-bg-success);
+    color: var(--alert-text-success);
+    border: 1px solid var(--alert-border-success);
+}
+
+.alert-info {
+    background: var(--alert-bg-info);
+    color: var(--alert-text-info);
+    border: 1px solid var(--alert-border-info);
+}
+
 /* 全局重置 */
 * {
     margin: 0;
@@ -767,24 +779,6 @@ footer {
     margin: 0;
 }
 
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-.admin-table th,
-.admin-table td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: left;
-}
-
-.admin-table th {
-    background-color: #f5f5f5;
-    font-weight: bold;
-}
-
 /* ---------- 后台管理表格（现代化） ---------- */
 .admin-table {
     width: 100%;
@@ -794,6 +788,7 @@ footer {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     font-size: 0.95rem;
     background: white;
+    margin-top: 20px;
 }
 
 .admin-table thead {
@@ -869,6 +864,12 @@ footer {
     --alert-bg-warning: #fffbeb;
     --alert-text-warning: #92400e;
     --alert-border-warning: #fed7aa;
+    --alert-bg-success: #f0fdf4;
+    --alert-text-success: #15803d;
+    --alert-border-success: #bbf7d0;
+    --alert-bg-info: #eff6ff;
+    --alert-text-info: #1d4ed8;
+    --alert-border-info: #bfdbfe;
 }
 
 [data-theme="dark"] {
@@ -891,6 +892,12 @@ footer {
     --alert-bg-warning: #2d241a;
     --alert-text-warning: #fbbf24;
     --alert-border-warning: #78350f;
+    --alert-bg-success: #14532d;
+    --alert-text-success: #86efac;
+    --alert-border-success: #166534;
+    --alert-bg-info: #1e3a8a;
+    --alert-text-info: #93c5fd;
+    --alert-border-info: #1e40af;
 }
 
 body {
@@ -1146,27 +1153,18 @@ a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not
 }
 
 /* 1. 所有块级容器强制深色背景 + 浅色文字 */
-[data-theme="dark"] div,
-[data-theme="dark"] section,
-[data-theme="dark"] main,
-[data-theme="dark"] article,
-[data-theme="dark"] aside,
-[data-theme="dark"] header,
-[data-theme="dark"] footer:not(nav footer),
-[data-theme="dark"] form,
-[data-theme="dark"] fieldset,
-[data-theme="dark"] table,
-[data-theme="dark"] ul,
-[data-theme="dark"] ol,
-[data-theme="dark"] li {
-    background-color: var(--bg-card) !important;
-    border-color: var(--border-color) !important;
-    color: var(--text-primary) !important;
-}
 
 [data-theme="dark"] body {
     background-color: var(--bg-body) !important;
     color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] table {
+    background: var(--bg-card);
+}
+
+[data-theme="dark"] thead {
+    background: var(--bg-code);
 }
 
 /* 2. 所有文本元素强制浅色文字 */
@@ -1307,4 +1305,13 @@ a:not(nav a):not(.btn-primary):not(.btn-add):not(.btn-edit):not(.btn-delete):not
 
 [data-theme="dark"] .anime-warning {
     color: #e74c3c !important;
+}
+
+button.btn-edit,
+button.btn-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
 }

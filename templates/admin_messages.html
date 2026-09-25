@@ -31,8 +31,11 @@
                     style="background:none; border:none; cursor:pointer; color:#4a90d9; font-size:0.85rem;">
                 查看回复
             </button>
-            <a class="btn-delete" href="{{ url_for('admin.admin_delete_message', message_id=msg.id) }}"
-               onclick="return confirm('确定删除该留言及其所有回复吗？')">删除</a>
+            <form method="POST" action="{{ url_for('admin.admin_delete_message', message_id=msg.id) }}"
+                  style="display:inline;"
+                  onsubmit="return confirm('确定删除该留言及其所有回复吗？')">
+                <button type="submit" class="btn-delete">删除</button>
+            </form>
         </td>
     </tr>
     <!-- 回复行（默认隐藏） -->
@@ -46,9 +49,12 @@
                     <span style="font-weight:600; min-width:80px;">{{ reply.user.username if reply.user else reply.nickname }}</span>
                     <span style="color:#94a3b8; font-size:0.75rem; min-width:140px;">{{ reply.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
                     <span style="flex:1; color:#334155;">{{ reply.content }}</span>
-                    <a class="btn-delete" href="{{ url_for('admin.admin_delete_reply', reply_id=reply.id) }}"
-                       onclick="return confirm('确定删除该回复吗？')"
-                       style="font-size:0.8rem; white-space:nowrap;">删除</a>
+                    <form method="POST" action="{{ url_for('admin.admin_delete_reply', reply_id=reply.id) }}"
+                          style="display:inline;"
+                          onsubmit="return confirm('确定删除该回复吗？')">
+                        <button type="submit" class="btn-delete"
+                                style="font-size:0.8rem; white-space:nowrap;">删除</button>
+                    </form>
                 </div>
                 {% endfor %}
                 {% else %}

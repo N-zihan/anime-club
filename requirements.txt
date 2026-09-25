@@ -13,7 +13,6 @@ click==8.3.3
 # ---- 数据库 ----
 SQLAlchemy==2.0.51
 psycopg[binary]==3.2.10
-psycopg2-binary==2.9.12
 greenlet==3.5.0
 
 # ---- 配置 ----

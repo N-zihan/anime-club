@@ -1,11 +1,10 @@
 {
   "name": "anime-club",
   "type": "module",
+  "engines": { "node": ">=20" },
   "scripts": {
-    "build": "node build.js",
     "test": "npx playwright test",
-    "test:ui": "npx playwright test --ui",
-    "engines": { "node": ">=20" }
+    "test:ui": "npx playwright test --ui"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1"

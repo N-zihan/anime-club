@@ -324,7 +324,7 @@ class TestRunKnockoutAdvance:
         times = calc_stage_times(contest.open_at)
         now = times['knockout_16_result_end'] + timedelta(seconds=1)
 
-        advanced, round_name = run_knockout_advance(contest, 'knockout_16_result', now, times)
+        advanced, round_name = run_knockout_advance(contest, now, times)
         assert advanced is True
         assert round_name == '8强'
 
@@ -418,7 +418,7 @@ class TestContestEngineExtra:
         db_session.commit()
         times = calc_stage_times(contest.open_at)
         now = times['knockout_16_result_end'] + timedelta(seconds=1)
-        advanced, round_name = run_knockout_advance(contest, 'knockout_16_result', now, times)
+        advanced, round_name = run_knockout_advance(contest, now, times)
         assert advanced is True
         assert round_name == '8强'
         # 验证新的8强对阵已生成

@@ -29,7 +29,7 @@ from sqlalchemy.exc import IntegrityError
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
-from .models import db, User
+from .models import db, User, Nomination, ContestVote, Message, Reply, AnimeResource, Notification
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -210,14 +210,6 @@ def register():
         flash('注册成功！请登录', 'success')
         return redirect(url_for('auth.login'))
 
-        # 清理 session
-        session.pop('email_code', None)
-        session.pop('pending_email', None)
-        session.pop('email_code_expires', None)
-
-        flash('注册成功！请登录', 'success')
-        return redirect(url_for('auth.login'))
-
     return render_template('register.html')
 
 
@@ -288,6 +280,20 @@ def delete_account():
         return redirect(url_for('auth.login'))
     user = db.session.get(User, session['user_id'])
     if user:
+        # 级联删除：先删子表，再删主表
+        # 1. 该用户作为作者的所有回复
+        Reply.query.filter_by(user_id=user.id).delete()
+        # 2. 该用户消息下的所有回复（含他人回复）
+        for msg in Message.query.filter_by(user_id=user.id).all():
+            Reply.query.filter_by(message_id=msg.id).delete()
+        # 3. 该用户的留言
+        Message.query.filter_by(user_id=user.id).delete()
+        # 4. 提名 / 投票 / 番剧推荐 / 通知
+        Nomination.query.filter_by(user_id=user.id).delete()
+        ContestVote.query.filter_by(user_id=user.id).delete()
+        AnimeResource.query.filter_by(user_id=user.id).delete()
+        Notification.query.filter_by(user_id=user.id).delete()
+        # 5. 最后删用户
         db.session.delete(user)
         db.session.commit()
     session.clear()

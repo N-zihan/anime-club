@@ -94,7 +94,7 @@ class TestAdminExtra:
     def test_admin_activity_delete(self, admin_client, sample_activity, db_session):
         with patch('app.admin.get_supabase') as mock_supabase:
             mock_supabase.return_value.storage.from_.return_value.remove.return_value = None
-            resp = admin_client.get(f'/admin/activities/delete/{sample_activity.id}', follow_redirects=True)
+            resp = admin_client.post(f'/admin/activities/delete/{sample_activity.id}', follow_redirects=True)
             from app.models import Activity
             assert db_session.get(Activity, sample_activity.id) is None
             assert resp.status_code == 200
@@ -122,7 +122,7 @@ class TestAdminExtra:
         from app.models import User
         user = db_session.get(User, sample_user.id)
         original = user.is_staff
-        resp = admin_client.get(f'/admin/users/toggle_staff/{sample_user.id}', follow_redirects=True)
+        resp = admin_client.post(f'/admin/users/toggle_staff/{sample_user.id}', follow_redirects=True)
         db_session.refresh(user)
         assert user.is_staff == (not original)
         assert resp.status_code == 200
@@ -131,7 +131,7 @@ class TestAdminExtra:
         from app.models import User
         user = db_session.get(User, sample_user.id)
         original = user.is_owner
-        resp = admin_client.get(f'/admin/users/toggle_owner/{sample_user.id}', follow_redirects=True)
+        resp = admin_client.post(f'/admin/users/toggle_owner/{sample_user.id}', follow_redirects=True)
         db_session.refresh(user)
         assert user.is_owner == (not original)
         assert resp.status_code == 200

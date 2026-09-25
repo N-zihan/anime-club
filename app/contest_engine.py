@@ -619,62 +619,70 @@ def generate_next_round(contest, matches, gender, sub_round, round_name):
 # 淘汰赛推进
 # ============================================================
 
-def run_knockout_advance(contest, phase, now, times):
+def run_knockout_advance(contest, now, times):
     """
     淘汰赛各轮自动推进
     返回: (是否已推进, 推进后的轮次名称或None)
     """
-    if phase == 'knockout_16_result' and now >= times['knockout_16_result_end'] and contest.status == 'knockout':
-        # 防止重复推进
-        if contest.config.get('knockout_matches_female_round16'):
-            return False, None
+    if contest.status != 'knockout':
+        return False, None
 
-        female_matches = contest.config.get('knockout_matches_female', [])
-        male_matches = contest.config.get('knockout_matches_male', [])
+    if contest.config is None:
+        contest.config = {}
+    config = contest.config
+
+    # 16强 → 8强（检查 round8 是否存在来判断是否已推进）
+    if now >= times['knockout_16_result_end'] and not config.get('knockout_matches_female_round8'):
+        female_matches = config.get('knockout_matches_female', [])
+        male_matches = config.get('knockout_matches_male', [])
+        if not female_matches and not male_matches:
+            return False, None
         if female_matches:
-            contest.config['knockout_matches_female_round16'] = female_matches.copy()
-            contest.config['knockout_matches_female'] = generate_next_round(contest, female_matches, 'female', 1, '8强')
+            config['knockout_matches_female_round16'] = female_matches.copy()
+            config['knockout_matches_female'] = generate_next_round(
+                contest, female_matches, 'female', 1, '8强')
         if male_matches:
-            contest.config['knockout_matches_male_round16'] = male_matches.copy()
-            contest.config['knockout_matches_male'] = generate_next_round(contest, male_matches, 'male', 1, '8强')
+            config['knockout_matches_male_round16'] = male_matches.copy()
+            config['knockout_matches_male'] = generate_next_round(
+                contest, male_matches, 'male', 1, '8强')
         flag_modified(contest, 'config')
         db.session.commit()
         return True, '8强'
 
-    elif phase == 'knockout_8_result' and now >= times['knockout_8_result_end'] and contest.status == 'knockout':
-        # 防止重复推进
-        if contest.config.get('knockout_matches_female_round8'):
+    # 8强 → 4强
+    if now >= times['knockout_8_result_end'] and not config.get('knockout_matches_female_round4'):
+        female_matches = config.get('knockout_matches_female', [])
+        male_matches = config.get('knockout_matches_male', [])
+        if not female_matches and not male_matches:
             return False, None
-
-        female_matches = contest.config.get('knockout_matches_female', [])
-        male_matches = contest.config.get('knockout_matches_male', [])
         if female_matches:
-            contest.config['knockout_matches_female_round8'] = female_matches.copy()
-            contest.config['knockout_matches_female'] = generate_next_round(contest, female_matches, 'female', 2, '4强')
+            config['knockout_matches_female_round8'] = female_matches.copy()
+            config['knockout_matches_female'] = generate_next_round(
+                contest, female_matches, 'female', 2, '4强')
         if male_matches:
-            contest.config['knockout_matches_male_round8'] = male_matches.copy()
-            contest.config['knockout_matches_male'] = generate_next_round(contest, male_matches, 'male', 2, '4强')
+            config['knockout_matches_male_round8'] = male_matches.copy()
+            config['knockout_matches_male'] = generate_next_round(
+                contest, male_matches, 'male', 2, '4强')
         flag_modified(contest, 'config')
         db.session.commit()
         return True, '4强'
 
-    elif phase == 'knockout_4_result' and now >= times['knockout_4_result_end'] and contest.status == 'knockout':
-        # 防止重复推进
-        if contest.config.get('knockout_matches_female_round4'):
+    # 4强 → 决赛
+    if now >= times['knockout_4_result_end'] and not config.get('knockout_matches_female_final'):
+        female_matches = config.get('knockout_matches_female', [])
+        male_matches = config.get('knockout_matches_male', [])
+        if not female_matches and not male_matches:
             return False, None
-
-        female_matches = contest.config.get('knockout_matches_female', [])
-        male_matches = contest.config.get('knockout_matches_male', [])
         if female_matches:
-            contest.config['knockout_matches_female_round4'] = female_matches.copy()
+            config['knockout_matches_female_round4'] = female_matches.copy()
             final_matches = generate_next_round(contest, female_matches, 'female', 3, '决赛')
-            contest.config['knockout_matches_female_final'] = final_matches.copy()
-            contest.config['knockout_matches_female'] = final_matches
+            config['knockout_matches_female_final'] = final_matches.copy()
+            config['knockout_matches_female'] = final_matches
         if male_matches:
-            contest.config['knockout_matches_male_round4'] = male_matches.copy()
+            config['knockout_matches_male_round4'] = male_matches.copy()
             final_matches_male = generate_next_round(contest, male_matches, 'male', 3, '决赛')
-            contest.config['knockout_matches_male_final'] = final_matches_male.copy()
-            contest.config['knockout_matches_male'] = final_matches_male
+            config['knockout_matches_male_final'] = final_matches_male.copy()
+            config['knockout_matches_male'] = final_matches_male
         flag_modified(contest, 'config')
         db.session.commit()
         return True, '决赛'

@@ -56,8 +56,12 @@ def profile():
                     if request.content_length and request.content_length > AVATAR_MAX_SIZE:
                         flash('头像文件不能超过2MB', 'danger')
                     else:
-                        raw_data = file.read()
-                        compressed = compress_image(raw_data, max_size=(200, 200), quality=80)
+                        try:
+                            raw_data = file.read()
+                            compressed = compress_image(raw_data, max_size=(200, 200), quality=80)
+                        except Exception:
+                            flash('图片格式无效或已损坏', 'danger')
+                            return redirect(url_for('user.profile'))
                         user.avatar = compressed
                         user.avatar_mime = 'image/jpeg'
                         db.session.commit()

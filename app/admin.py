@@ -27,8 +27,8 @@ from flask import send_file
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
-from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, Candidate, \
-    ContestVote
+from .models import (db, User, Activity, Photo, AnimeResource, Message, Reply,
+                     Contest, Nomination, Candidate, ContestVote, Notification)
 from .utils import get_supabase, allowed_file, compress_image, get_or_404
 from .notify import notify
 from .config import STAGE_DAYS, PHOTO_COMPRESS_SIZE, COMPRESS_QUALITY
@@ -105,9 +105,14 @@ def admin_activities():
 @admin_required
 def admin_activity_add():
     if request.method == 'POST':
-        title = request.form['title']
-        date = request.form['date']
-        content = request.form['content']
+        title = request.form.get('title', '').strip()
+        date = request.form.get('date', '').strip()
+        content = request.form.get('content', '').strip()
+
+        if not title or not date or not content:
+            flash('标题、日期和内容不能为空', 'danger')
+            return redirect(url_for('admin.admin_activity_add'))
+
         new_activity = Activity(title=title, date=date, content=content)
         db.session.add(new_activity)
         db.session.commit()
@@ -121,16 +126,24 @@ def admin_activity_add():
 def admin_activity_edit(id):
     activity = get_or_404(Activity, id)
     if request.method == 'POST':
-        activity.title = request.form['title']
-        activity.date = request.form['date']
-        activity.content = request.form['content']
+        title = request.form.get('title', '').strip()
+        date = request.form.get('date', '').strip()
+        content = request.form.get('content', '').strip()
+
+        if not title or not date or not content:
+            flash('标题、日期和内容不能为空', 'danger')
+            return redirect(url_for('admin.admin_activity_edit', id=id))
+
+        activity.title = title
+        activity.date = date
+        activity.content = content
         db.session.commit()
         flash('活动已更新', 'success')
         return redirect(url_for('admin.admin_activities'))
     return render_template('admin_activity_form.html', activity=activity)
 
 
-@admin_bp.route('/admin/activities/delete/<int:id>')
+@admin_bp.route('/admin/activities/delete/<int:id>', methods=['POST'])
 @admin_required
 def admin_activity_delete(id):
     supabase = get_supabase()
@@ -166,9 +179,6 @@ def admin_gallery():
 @admin_required
 def admin_gallery_upload():
     supabase = get_supabase()
-    if not session.get('user_id'):
-        flash('请先登录再上传照片', 'warning')
-        return redirect(url_for('auth.login'))
 
     if 'file' not in request.files:
         flash('没有文件', 'danger')
@@ -212,7 +222,7 @@ def admin_gallery_upload():
     return redirect(url_for('admin.admin_gallery'))
 
 
-@admin_bp.route('/admin/gallery/delete/<int:photo_id>')
+@admin_bp.route('/admin/gallery/delete/<int:photo_id>', methods=['POST'])
 @admin_required
 def admin_gallery_delete(photo_id):
     """删除单张照片（文件 + 数据库记录）"""
@@ -242,7 +252,7 @@ def admin_anime_resources():
     return render_template('admin_anime_resources.html', pending_resources=pending, approved_resources=approved)
 
 
-@admin_bp.route('/admin/anime_resources/approve/<int:id>')
+@admin_bp.route('/admin/anime_resources/approve/<int:id>', methods=['POST'])
 @admin_required
 def approve_anime_resource(id):
     resource = get_or_404(AnimeResource, id)
@@ -252,7 +262,7 @@ def approve_anime_resource(id):
     return redirect(url_for('admin.admin_anime_resources'))
 
 
-@admin_bp.route('/admin/anime_resources/reject/<int:id>')
+@admin_bp.route('/admin/anime_resources/reject/<int:id>', methods=['POST'])
 @admin_required
 def reject_anime_resource(id):
     resource = get_or_404(AnimeResource, id)
@@ -262,7 +272,7 @@ def reject_anime_resource(id):
     return redirect(url_for('admin.admin_anime_resources'))
 
 
-@admin_bp.route('/admin/anime_resources/delete/<int:id>')
+@admin_bp.route('/admin/anime_resources/delete/<int:id>', methods=['POST'])
 @admin_required
 def admin_anime_resources_delete(id):
     resource = get_or_404(AnimeResource, id)
@@ -307,7 +317,7 @@ def admin_users():
     return render_template('admin_users.html', users=users)
 
 
-@admin_bp.route('/admin/users/delete/<int:user_id>')
+@admin_bp.route('/admin/users/delete/<int:user_id>', methods=['POST'])
 @admin_required
 @owner_required
 def admin_delete_user(user_id):
@@ -325,16 +335,21 @@ def admin_delete_user(user_id):
     # 2. 删除该用户的投票（ContestVote）
     ContestVote.query.filter_by(user_id=user.id).delete()
 
-    # 3. 删除该用户的留言（Message）和回复（Reply）
-    # 留言：先删回复，再删留言
+    # 3. 删除该用户的回复（作为作者）
+    Reply.query.filter_by(user_id=user.id).delete()
+
+    # 4. 删除该用户的留言及这些留言下的所有回复（含他人回复）
     for msg in Message.query.filter_by(user_id=user.id).all():
         Reply.query.filter_by(message_id=msg.id).delete()
     Message.query.filter_by(user_id=user.id).delete()
 
-    # 4. 删除该用户的番剧推荐（AnimeResource）
+    # 5. 删除该用户的通知
+    Notification.query.filter_by(user_id=user.id).delete()
+
+    # 6. 删除该用户的番剧推荐
     AnimeResource.query.filter_by(user_id=user.id).delete()
 
-    # 5. 最后删除用户
+    # 7. 最后删除用户
     db.session.delete(user)
     db.session.commit()
 
@@ -342,7 +357,7 @@ def admin_delete_user(user_id):
     return redirect(url_for('admin.admin_users'))
 
 
-@admin_bp.route('/admin/users/toggle_staff/<int:user_id>')
+@admin_bp.route('/admin/users/toggle_staff/<int:user_id>', methods=['POST'])
 @admin_required
 @owner_required
 def admin_toggle_staff(user_id):
@@ -353,7 +368,7 @@ def admin_toggle_staff(user_id):
     return redirect(url_for('admin.admin_users'))
 
 
-@admin_bp.route('/admin/users/toggle_owner/<int:user_id>')
+@admin_bp.route('/admin/users/toggle_owner/<int:user_id>', methods=['POST'])
 @admin_required
 @owner_required
 def admin_toggle_owner(user_id):
@@ -443,7 +458,7 @@ def admin_messages():
     return render_template('admin_messages.html', messages=messages)
 
 
-@admin_bp.route('/admin/messages/delete/<int:message_id>')
+@admin_bp.route('/admin/messages/delete/<int:message_id>', methods=['POST'])
 @admin_required
 def admin_delete_message(message_id):
     """删除留言及其所有回复"""
@@ -457,7 +472,7 @@ def admin_delete_message(message_id):
     return redirect(url_for('admin.admin_messages'))
 
 
-@admin_bp.route('/admin/replies/delete/<int:reply_id>')
+@admin_bp.route('/admin/replies/delete/<int:reply_id>', methods=['POST'])
 @admin_required
 def admin_delete_reply(reply_id):
     """删除单条回复，保留留言和其他回复"""
@@ -500,7 +515,7 @@ def admin_contest_create():
             status='draft',
             created_by=session.get('user_id'),
             open_at=open_at,
-            close_at=open_at + timedelta(days=50),  # 自动计算结束时间
+            close_at=open_at + timedelta(days=TOTAL_CONTEST_DAYS),  # 自动计算结束时间
         )
         db.session.add(contest)
         db.session.commit()
@@ -524,7 +539,7 @@ def admin_contest_edit(contest_id):
         open_at_str = request.form.get('open_at')
         if open_at_str:
             contest.open_at = datetime.strptime(open_at_str, '%Y-%m-%dT%H:%M')
-            contest.close_at = contest.open_at + timedelta(days=50)  # 更新开始时间时自动刷新结束时间
+            contest.close_at = contest.open_at + timedelta(days=TOTAL_CONTEST_DAYS)  # 更新开始时间时自动刷新结束时间
 
         db.session.commit()
         flash('赛事信息已更新', 'success')
@@ -539,7 +554,7 @@ def admin_contest_edit(contest_id):
                            total_days=TOTAL_CONTEST_DAYS)
 
 
-@admin_bp.route('/admin/contests/delete/<int:contest_id>')
+@admin_bp.route('/admin/contests/delete/<int:contest_id>', methods=['POST'])
 @admin_required
 def admin_contest_delete(contest_id):
     contest = get_or_404(Contest, contest_id)
@@ -560,7 +575,7 @@ def admin_contest_delete(contest_id):
 
 
 # ---------- 提名审核 ----------
-@admin_bp.route('/admin/nominations/approve/<int:nomination_id>')
+@admin_bp.route('/admin/nominations/approve/<int:nomination_id>', methods=['POST'])
 @admin_required
 def admin_nomination_approve(nomination_id):
     nomination = get_or_404(Nomination, nomination_id)
@@ -601,7 +616,7 @@ def admin_nomination_approve(nomination_id):
     return redirect(url_for('admin.admin_contest_edit', contest_id=contest.id))
 
 
-@admin_bp.route('/admin/nominations/reject/<int:nomination_id>')
+@admin_bp.route('/admin/nominations/reject/<int:nomination_id>', methods=['POST'])
 @admin_required
 def admin_nomination_reject(nomination_id):
     nomination = get_or_404(Nomination, nomination_id)
@@ -619,7 +634,7 @@ def admin_nomination_reject(nomination_id):
     return redirect(url_for('admin.admin_contest_edit', contest_id=contest_id))
 
 
-@admin_bp.route('/admin/candidates/delete/<int:candidate_id>')
+@admin_bp.route('/admin/candidates/delete/<int:candidate_id>', methods=['POST'])
 @admin_required
 def admin_candidate_delete(candidate_id):
     candidate = get_or_404(Candidate, candidate_id)
