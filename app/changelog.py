@@ -67,7 +67,7 @@ def _extract_tag(message: str) -> str:
     ):
         if message.startswith(kw):
             return tag
-    return 'early'
+    return 'other'
 
 
 def _clean_message(message: str) -> str:
