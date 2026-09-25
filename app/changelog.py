@@ -43,9 +43,7 @@ def should_show(message: str) -> bool:
     lower = msg.lower()
     if any(kw in lower for kw in EXCLUDE_KEYWORDS):
         return False
-    if msg.startswith(INCLUDE_PREFIXES):
-        return True
-    return False
+    return True
 
 
 def _extract_tag(message: str) -> str:
@@ -69,7 +67,7 @@ def _extract_tag(message: str) -> str:
     ):
         if message.startswith(kw):
             return tag
-    return 'other'
+    return 'early'
 
 
 def _clean_message(message: str) -> str:
@@ -92,6 +90,7 @@ def get_all_commits() -> list:
         headers['Authorization'] = f'token {token}'
 
     data = []
+    seen_messages = set()
     try:
         page = 1
         while True:
@@ -105,6 +104,11 @@ def get_all_commits() -> list:
                 first_line = c['commit']['message'].split('\n')[0].strip()
                 if not should_show(first_line):
                     continue
+
+                # 去重：相同 message 只保留最早出现的那条
+                if first_line in seen_messages:
+                    continue
+                seen_messages.add(first_line)
 
                 data.append({
                     'message': _clean_message(first_line),
