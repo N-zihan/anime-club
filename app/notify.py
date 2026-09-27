@@ -36,6 +36,7 @@ def _build_email_html(title: str, content: str, link: str = None) -> str:
                     <div style="color:#334155; font-size:0.95rem; line-height:1.7;">
                         {content}
                     </div>
+                    {link_html}
                 </div>
                 <div style="background:#f8fafc; padding:16px 32px; text-align:center;">
                     <p style="margin:0; color:#94a3b8; font-size:0.75rem;">
@@ -58,7 +59,7 @@ def _absolute_link(link: str) -> str:
     return base.rstrip('/') + link
 
 
-def notify(user_id: int, title: str, content: str = '', type: str = 'system',
+def notify(user_id: int, title: str, content: str = '', notify_type: str = 'system',
            link: str = None, send_mail: bool = True):
     """给单个用户发通知（站内 + 邮件）"""
     # 1. 站内通知
@@ -66,7 +67,7 @@ def notify(user_id: int, title: str, content: str = '', type: str = 'system',
         user_id=user_id,
         title=title,
         content=content,
-        type=type,
+        type=notify_type,
         link=link,
     )
     db.session.add(n)
@@ -82,15 +83,15 @@ def notify(user_id: int, title: str, content: str = '', type: str = 'system',
                 print(f'邮件通知发送失败: {e}')
 
 
-def notify_many(user_ids: list, title: str, content: str = '', type: str = 'system',
+def notify_many(user_ids: list, title: str, content: str = '', notify_type: str = 'system',
                 link: str = None, send_mail: bool = True):
     """批量发通知"""
     for uid in user_ids:
-        notify(uid, title, content, type, link, send_mail=send_mail)
+        notify(uid, title, content, notify_type, link, send_mail=send_mail)
 
 
-def notify_all(title: str, content: str = '', type: str = 'system',
+def notify_all(title: str, content: str = '', notify_type: str = 'system',
                link: str = None, send_mail: bool = True):
     """给所有用户发通知"""
     user_ids = [u.id for u in User.query.all()]
-    notify_many(user_ids, title, content, type, link, send_mail=send_mail)
+    notify_many(user_ids, title, content, notify_type, link, send_mail=send_mail)

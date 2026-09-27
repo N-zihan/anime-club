@@ -846,8 +846,8 @@ def prepare_group_round_data(contest, phase):
     parts = phase.split('_')
     try:
         round_num = int(parts[2])
-    except (IndexError, ValueError):
-        raise ValueError(f"无法解析小组轮次: {phase}")
+    except (IndexError, ValueError) as exc:
+        raise ValueError(f"无法解析小组轮次: {phase}") from exc
 
     groups_female = contest.config.get('female_groups', [])
     groups_male = contest.config.get('male_groups', [])

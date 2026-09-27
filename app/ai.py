@@ -129,7 +129,7 @@ def _build_qualifying_prompt(contest: Contest) -> str:
     lines.append(f"赛事：{contest.title}")
     lines.append(f"候选角色数：{total_candidates}")
     lines.append("当前票数排名：")
-    for i, (cid, name, votes) in enumerate(top, 1):
+    for i, (_, name, votes) in enumerate(top, 1):
         medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"{i}.")
         lines.append(f"  {medal} {name}：{votes}票")
 
@@ -168,7 +168,7 @@ def _build_group_prompt(contest: Contest, phase: str, extra_data: dict) -> str:
 
     # 构建分组信息
     group_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-    for idx, group in enumerate(groups[:8]):  # 最多8组
+    for idx, _ in enumerate(groups[:8]):  # 最多8组
         if idx >= len(group_names):
             break
         group_name = group_names[idx]
@@ -392,7 +392,7 @@ def generate_prediction(contest_id: int, extra_data: dict = None) -> tuple:
         lines.append(f"赛事：{contest.title}")
         lines.append(f"状态：{contest.status}")
         lines.append("\n海选票数前10名：")
-        for i, (cid, name, votes) in enumerate(top, 1):
+        for i, (_, name, votes) in enumerate(top, 1):
             lines.append(f"  {i}. {name}：{votes}票")
 
         prompt = f"""

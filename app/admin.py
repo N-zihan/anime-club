@@ -608,7 +608,7 @@ def admin_nomination_approve(nomination_id):
         nomination.user_id,
         f'你的提名「{nomination.name}」已通过',
         '角色已进入候选池，快去看看吧！',
-        type='audit',
+        notify_type='audit',
         link=url_for('public.contest_detail', contest_id=contest.id)
     )
     db.session.commit()
@@ -627,7 +627,7 @@ def admin_nomination_reject(nomination_id):
         nomination.user_id,
         f'你的提名「{nomination.name}」被拒绝',
         '如有疑问请联系管理员。',
-        type='audit',
+        notify_type='audit',
     )
     db.session.commit()
     flash(f'已拒绝提名: {nomination.name}', 'warning')
@@ -653,7 +653,7 @@ def admin_notification_send():
         content = request.form.get('content')
         if title:
             from .notify import notify_all
-            notify_all(title, content, type='system')
+            notify_all(title, content, notify_type='system')
             db.session.commit()
             flash('通知已发送给全体社员', 'success')
             return redirect(url_for('admin.admin_notification_send'))

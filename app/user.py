@@ -30,12 +30,11 @@ from sqlalchemy import func
 from .config import AVATAR_MAX_SIZE
 from .models import db, User, Message, AnimeResource, Notification
 from .utils import allowed_file, compress_image, get_or_404
+from .auth import send_verification_email, send_welcome_email
 
 user_bp = Blueprint('user', __name__)
 
 # ---------- 发邮件函数（复用 auth 的） ----------
-from .auth import send_verification_email, send_welcome_email
-
 
 @user_bp.route('/profile', methods=['GET', 'POST'])
 def profile():

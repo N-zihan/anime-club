@@ -168,7 +168,7 @@ def add_reply(message_id):
                 target_user_id,
                 f'{nickname} 回复了你',
                 content[:50] + ('...' if len(content) > 50 else ''),
-                type='reply',
+                notify_type='reply',
                 link=url_for('public.board')
             )
             db.session.commit()
@@ -326,9 +326,7 @@ def contest_detail(contest_id):
         # 小组赛：传入分组数据和票数
         if group_round_results:
             female_groups = group_round_results.get('female', [])
-            male_groups = group_round_results.get('male', [])
             female_ranking = overall_ranking_female if overall_ranking_female else []
-            male_ranking = overall_ranking_male if overall_ranking_male else []
 
             # 构建女组数据
             female_group_data = []
@@ -997,8 +995,6 @@ def ai_predict(contest_id):
 
 @public_bp.route('/manifest.json')
 def manifest():
-    import os
-    from flask import jsonify
     club_name = os.getenv('CLUB_NAME', '动漫社')
     return jsonify({
         "name": club_name,
