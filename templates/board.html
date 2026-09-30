@@ -58,7 +58,7 @@
                         <!-- 针对本条回复的回复表单（隐藏） -->
                         <form action="{{ url_for('public.add_reply', message_id=reply.message_id) }}" class="reply-form"
                               id="reply-form-{{ reply.id }}" method="POST"
-                              onsubmit="this.querySelector('.reply-submit').disabled = true;" style="display: none;">
+                              onsubmit="this.querySelector('.reply-submit').disabled = true; this.querySelector('textarea').disabled = true;" style="display: none;">
                             <input name="parent_reply_id" type="hidden" value="{{ reply.id }}">
                             <div class="reply-input-row">
                                 <textarea name="content" placeholder="写下你的回复..." required rows="2"></textarea>
@@ -94,7 +94,7 @@
             <!-- 留言级别的回复表单（回复主评论，默认隐藏） -->
             <form action="{{ url_for('public.add_reply', message_id=msg.id) }}" class="reply-form"
                   id="reply-form-msg-{{ msg.id }}" method="POST"
-                  onsubmit="this.querySelector('.reply-submit').disabled = true;" style="display: none;">
+                  onsubmit="this.querySelector('.reply-submit').disabled = true; this.querySelector('textarea').disabled = true;" style="display: none;">
                 <input name="parent_reply_id" type="hidden" value="">
                 <div class="reply-input-row">
                     <textarea name="content" placeholder="写下你的回复..." required rows="2"></textarea>
@@ -119,7 +119,7 @@
 
 <div class="new-message-section">
     <h3>发表新留言</h3>
-    <form class="new-message-form" method="POST" onsubmit="this.querySelector('.new-msg-submit').disabled = true;">
+    <form class="new-message-form" method="POST" onsubmit="this.querySelector('.new-msg-submit').disabled = true; this.querySelector('textarea').disabled = true;">
         <textarea id="content" name="content" placeholder="分享你的想法..." required rows="3"></textarea>
         <button class="new-msg-submit" type="submit">
             <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
