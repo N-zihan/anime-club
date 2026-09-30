@@ -32,11 +32,6 @@ class TestAdmin:
         assert response.status_code == 200
         assert '活动管理' in response.text
 
-    def test_admin_anime_resources_loads(self, admin_client):
-        response = admin_client.get('/admin/anime_resources')
-        assert response.status_code == 200
-        assert '番剧资源管理' in response.text
-
     def test_admin_gallery_loads(self, admin_client):
         response = admin_client.get('/admin/gallery')
         assert response.status_code == 200

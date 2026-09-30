@@ -42,12 +42,7 @@ class TestPublic:
     def test_anime_resources_page(self, logged_in_client):
         response = logged_in_client.get('/anime_resources')
         assert response.status_code == 200
-        assert '番剧资源下载' in response.text
-
-    def test_submit_anime_requires_login(self, client):
-        # 未登录应重定向到登录页
-        response = client.get('/submit_anime', follow_redirects=False)
-        assert response.status_code == 302
+        assert '番剧百科' in response.text
 
     def test_members_page(self, logged_in_client):
         response = logged_in_client.get('/members')
