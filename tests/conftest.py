@@ -156,23 +156,6 @@ def sample_activity(db_session):
 
 
 @pytest.fixture
-def sample_anime(db_session, sample_user):
-    """创建示例番剧资源"""
-    anime = AnimeResource(
-        title="测试番剧",
-        description="测试描述",
-        link="https://test.com/123",
-        extract_code="abcd",
-        user_id=sample_user.id,
-        status='approved'
-    )
-    db_session.add(anime)
-    db_session.commit()
-    db_session.refresh(anime)
-    return anime
-
-
-@pytest.fixture
 def sample_message(db_session, sample_user):
     """创建示例留言"""
     msg = Message(

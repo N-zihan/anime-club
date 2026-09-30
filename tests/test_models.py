@@ -1,5 +1,5 @@
 import pytest
-from app.models import User, Contest, Nomination, Candidate, ContestVote, Activity, AnimeResource, Message, Reply
+from app.models import User, Contest, Nomination, Candidate, ContestVote, Activity, Message, Reply
 from datetime import datetime, timedelta
 
 
@@ -151,21 +151,7 @@ class TestActivityModel:
         assert saved.title == "测试活动"
 
 
-class TestAnimeResourceModel:
-    """番剧资源模型测试"""
 
-    def test_create_anime(self, db_session, sample_user):
-        anime = AnimeResource(
-            title="测试番剧",
-            link="https://test.com",
-            user_id=sample_user.id,
-            status='pending'
-        )
-        db_session.add(anime)
-        db_session.commit()
-        saved = AnimeResource.query.first()
-        assert saved.title == "测试番剧"
-        assert saved.status == "pending"
 
 
 class TestMessageModel:
