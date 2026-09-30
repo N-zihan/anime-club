@@ -34,7 +34,52 @@ from .auth import send_verification_email, send_welcome_email
 
 user_bp = Blueprint('user', __name__)
 
-# ---------- 发邮件函数（复用 auth 的） ----------
+@user_bp.route('/welcome', methods=['GET', 'POST'])
+def welcome():
+    """新用户引导：设置头像"""
+    if not session.get('user_id'):
+        return redirect(url_for('auth.login'))
+
+    user = db.session.get(User, session['user_id'])
+    if not user:
+        session.clear()
+        return redirect(url_for('auth.login'))
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        # 跳过
+        if action == 'skip':
+            session['avatar_setup_done'] = True
+            return redirect(url_for('public.index'))
+
+        # 上传头像
+        if 'avatar' in request.files:
+            file = request.files['avatar']
+            if file and allowed_file(file.filename):
+                if request.content_length and request.content_length > AVATAR_MAX_SIZE:
+                    flash('头像文件不能超过2MB', 'danger')
+                    return redirect(url_for('user.welcome'))
+                try:
+                    raw_data = file.read()
+                    compressed = compress_image(raw_data, max_size=(200, 200), quality=80)
+                except Exception:
+                    flash('图片格式无效或已损坏', 'danger')
+                    return redirect(url_for('user.welcome'))
+
+                user.avatar = compressed
+                user.avatar_mime = 'image/jpeg'
+                db.session.commit()
+                session['avatar_setup_done'] = True
+                flash('头像设置成功！', 'success')
+                return redirect(url_for('public.index'))
+            else:
+                flash('不支持的文件类型（支持 png, jpg, jpeg, gif）', 'danger')
+                return redirect(url_for('user.welcome'))
+
+        return redirect(url_for('user.welcome'))
+
+    return render_template('welcome.html', user=user)
 
 @user_bp.route('/profile', methods=['GET', 'POST'])
 def profile():

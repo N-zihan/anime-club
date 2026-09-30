@@ -23,9 +23,10 @@
                 <img src="{{ url_for('user.get_avatar', user_id=user.id) }}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2px solid var(--border-color);">
                 <form method="POST" enctype="multipart/form-data" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                     <input type="hidden" name="action" value="change_avatar">
-                    <input type="file" name="avatar" accept="image/*" required style="font-size:14px; background: var(--bg-input); color: var(--text-primary); border:1px solid var(--border-color); border-radius:4px; padding:4px;">
+                    <input type="file" name="avatar" accept="image/*" required data-compress-upload style="font-size:14px; background: var(--bg-input); color: var(--text-primary); border:1px solid var(--border-color); border-radius:4px; padding:4px;">
                     <button type="submit" style="padding:6px 16px; background:#1e2a3a; color:white; border:none; border-radius:6px; cursor:pointer;">上传</button>
                 </form>
+                <small class="compress-hint" style="display:none; color: var(--text-muted); margin-top:6px;"></small>
             </div>
             <small style="color: var(--text-muted); display:block; margin-top:8px;">支持 png, jpg, jpeg, gif，不超过2MB</small>
         </div>

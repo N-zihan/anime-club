@@ -258,6 +258,11 @@ def login():
                 session.pop('show_bind_prompt', None)
 
             flash('登录成功', 'success')
+
+            # 新用户没头像 → 去设置头像页
+            if not user.avatar and not session.get('avatar_setup_done'):
+                return redirect(url_for('user.welcome'))
+
             return redirect(url_for('public.index'))
         else:
             flash('用户名或密码错误', 'danger')
