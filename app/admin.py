@@ -72,11 +72,10 @@ def admin_entry():
     role = session.get('user_role')
     if role == 'owner':
         return redirect(url_for('admin.dashboard'))
-    elif role == 'staff':
+    if role == 'staff':
         return redirect(url_for('admin.staff_dashboard'))
-    else:
-        flash('你没有管理权限', 'danger')
-        return redirect(url_for('public.index'))
+    flash('你没有管理权限', 'danger')
+    return redirect(url_for('public.index'))
 
 
 # ---------- 站长后台 ----------
@@ -652,7 +651,7 @@ def admin_notification_send():
         title = request.form.get('title')
         content = request.form.get('content')
         if title:
-            from .notify import notify_all
+            from .notify import notify_all # pylint: disable=import-outside-toplevel
             notify_all(title, content, notify_type='system')
             db.session.commit()
             flash('通知已发送给全体社员', 'success')

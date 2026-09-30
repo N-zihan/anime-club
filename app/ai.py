@@ -19,11 +19,11 @@ from .models import Contest, Candidate, ContestVote, db
 logger = logging.getLogger(__name__)
 
 # 延迟初始化客户端
-_client = None
+_client = None # pylint: disable=invalid-name
 
 
 def get_client():
-    global _client
+    global _client # pylint: disable=global-statement
     if _client is None:
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
@@ -38,7 +38,7 @@ def get_client():
 # 内存缓存
 _cache: Dict[str, Dict[str, Any]] = {}
 CACHE_ENABLED = os.getenv('AI_CACHE_ENABLED', 'true').lower() == 'true'
-CACHE_TTL = int(os.getenv('AI_CACHE_TTL', 3600))
+CACHE_TTL = int(os.getenv('AI_CACHE_TTL', '3600'))
 
 
 def _get_cache_key(contest_id: int, phase: str, mode: str, round_info: str = '') -> str:
@@ -86,16 +86,15 @@ def _build_commentary_prompt(contest: Contest, phase: str, phase_name: str, extr
     """根据阶段构建不同的 prompt"""
     if phase == 'nomination':
         return _build_nomination_prompt(contest)
-    elif phase == 'qualifying':
+    if phase == 'qualifying':
         return _build_qualifying_prompt(contest)
-    elif phase in ['group_round_1', 'group_round_2', 'group_round_3']:
+    if phase in ['group_round_1', 'group_round_2', 'group_round_3']:
         return _build_group_prompt(contest, phase, extra_data)
-    elif phase in ['knockout_16', 'knockout_8', 'knockout_4', 'final_vote']:
+    if phase in ['knockout_16', 'knockout_8', 'knockout_4', 'final_vote']:
         return _build_knockout_prompt(contest, phase, extra_data)
-    elif phase == 'final_result':
+    if phase == 'final_result':
         return _build_final_prompt(contest)
-    else:
-        return _build_generic_prompt(contest, phase_name)
+    return _build_generic_prompt(contest, phase_name)
 
 
 def _build_nomination_prompt(contest: Contest) -> str:
@@ -151,7 +150,7 @@ def _build_qualifying_prompt(contest: Contest) -> str:
 """
 
 
-def _build_group_prompt(contest: Contest, phase: str, extra_data: dict) -> str:
+def _build_group_prompt(contest: Contest, _phase: str, extra_data: dict) -> str:
     """小组赛阶段 prompt"""
     if not extra_data:
         return "小组赛数据加载中，请稍后再看 AI 分析。"
@@ -367,11 +366,11 @@ def generate_commentary(contest_id: int, phase: str, extra_data: dict = None, fo
         return True, content, None
 
     except Exception as e:
-        logger.error(f"AI 解说生成失败: {e}", exc_info=True)
+        logger.error("AI 解说生成失败: %s", e, exc_info=True)
         return False, None, str(e)
 
 
-def generate_prediction(contest_id: int, extra_data: dict = None) -> tuple:
+def generate_prediction(contest_id: int, _extra_data: dict = None) -> tuple:
     """生成赛事预测"""
     try:
         contest = db.session.get(Contest, contest_id)
@@ -425,5 +424,5 @@ def generate_prediction(contest_id: int, extra_data: dict = None) -> tuple:
         return True, content, None
 
     except Exception as e:
-        logger.error(f"AI 预测生成失败: {e}", exc_info=True)
+        logger.error("AI 预测生成失败: %s", e, exc_info=True)
         return False, None, str(e)

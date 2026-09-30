@@ -68,7 +68,7 @@ def about():
 @public_bp.route('/about/history')
 def history():
     """网站发展史页面"""
-    from .changelog import get_all_commits
+    from .changelog import get_all_commits # pylint: disable=import-outside-toplevel
     commits = get_all_commits()
     return render_template('history.html', commits=commits)
 
@@ -609,7 +609,7 @@ def qualifying_vote_submit(contest_id):
         flash(f'{"女组" if gender == "female" else "男组"}总票数不能超过15票', 'danger')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
-    for cid, weight in votes_data.items():
+    for _, weight in votes_data.items():
         if weight > QUALIFYING_MAX_PER_CANDIDATE:
             flash(f'{"女组" if gender == "female" else "男组"}每个角色最多只能投3票', 'danger')
             return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
@@ -640,8 +640,7 @@ def qualifying_vote_submit(contest_id):
     flash(f'{"女组" if gender == "female" else "男组"}投票成功！', 'success')
     if gender == 'female':
         return redirect(url_for('public.qualifying_vote_female', contest_id=contest.id))
-    else:
-        return redirect(url_for('public.qualifying_vote_male', contest_id=contest.id))
+    return redirect(url_for('public.qualifying_vote_male', contest_id=contest.id))
 
 
 # ========== 小组赛投票 ==========
@@ -833,8 +832,7 @@ def group_vote_submit(contest_id):
     flash(f'第{round_number}轮{"女组" if gender == "female" else "男组"}投票成功！', 'success')
     if gender == 'female':
         return redirect(url_for('public.group_vote_female', contest_id=contest.id))
-    else:
-        return redirect(url_for('public.group_vote_male', contest_id=contest.id))
+    return redirect(url_for('public.group_vote_male', contest_id=contest.id))
 
 
 # ========== 淘汰赛 ==========
@@ -977,8 +975,7 @@ def knockout_vote_submit(contest_id):
     flash(f'{round_name}{"女组" if gender == "female" else "男组"}投票成功！', 'success')
     if gender == 'female':
         return redirect(url_for('public.knockout_vote_female', contest_id=contest.id))
-    else:
-        return redirect(url_for('public.knockout_vote_male', contest_id=contest.id))
+    return redirect(url_for('public.knockout_vote_male', contest_id=contest.id))
 
 
 # ========== API ==========
@@ -1079,28 +1076,28 @@ def service_worker():
 
 
 # 错误处理器
-def page_not_found(e):
+def page_not_found(_e):
     return render_template('404.html'), 404
 
 
-def internal_server_error(e):
+def internal_server_error(_e):
     return render_template('500.html'), 500
 
 
-def forbidden(e):
+def forbidden(_e):
     return render_template('403.html'), 403
 
 
 @public_bp.app_errorhandler(405)
-def method_not_allowed(e):
+def method_not_allowed(_e):
     return render_template('405.html'), 405
 
 
 @public_bp.app_errorhandler(400)
-def bad_request(e):
+def bad_request(_e):
     return render_template('400.html'), 400
 
 
 @public_bp.app_errorhandler(413)
-def request_entity_too_large(e):
+def request_entity_too_large(_e):
     return render_template('413.html'), 413

@@ -31,16 +31,16 @@ load_dotenv()
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 
-_supabase_client: Client | None = None
+_supabase_client: Client | None = None # pylint: disable=invalid-name
 
 
 def get_supabase() -> Client:
     """懒加载获取 Supabase 客户端，仅在首次调用时初始化"""
-    global _supabase_client
+    global _supabase_client # pylint: disable=global-statement
     if _supabase_client is None:
         # 测试环境返回 Mock 客户端
         if os.getenv('TESTING') == '1':
-            from unittest.mock import MagicMock
+            from unittest.mock import MagicMock # pylint: disable=import-outside-toplevel
             _supabase_client = MagicMock()
             return _supabase_client
         if not SUPABASE_URL or not SUPABASE_KEY:

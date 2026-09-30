@@ -128,41 +128,39 @@ def calc_phase(contest, now, times):
     if contest.status == 'group_stage':
         if now <= times['group_round_1_end']:
             return 'group_round_1'
-        elif now <= times['group_round_1_result_end']:
+        if now <= times['group_round_1_result_end']:
             return 'group_round_1_result'
-        elif now <= times['group_round_2_end']:
+        if now <= times['group_round_2_end']:
             return 'group_round_2'
-        elif now <= times['group_round_2_result_end']:
+        if now <= times['group_round_2_result_end']:
             return 'group_round_2_result'
-        elif now <= times['group_round_3_end']:
+        if now <= times['group_round_3_end']:
             return 'group_round_3'
-        elif now <= times['group_round_3_result_end']:
+        if now <= times['group_round_3_result_end']:
             return 'group_round_3_result'
-        else:
-            return 'group_round_3_result'
+        return 'group_round_3_result'
 
     if contest.status == 'knockout':
         if now <= times['knockout_16_end']:
             return 'knockout_16'
-        elif now <= times['knockout_16_result_end']:
+        if now <= times['knockout_16_result_end']:
             return 'knockout_16_result'
-        elif now <= times['knockout_8_end']:
+        if now <= times['knockout_8_end']:
             return 'knockout_8'
-        elif now <= times['knockout_8_result_end']:
+        if now <= times['knockout_8_result_end']:
             return 'knockout_8_result'
-        elif now <= times['knockout_4_end']:
+        if now <= times['knockout_4_end']:
             return 'knockout_4'
-        elif now <= times['knockout_4_result_end']:
+        if now <= times['knockout_4_result_end']:
             return 'knockout_4_result'
-        elif now <= times['final_vote_end']:
+        if now <= times['final_vote_end']:
             return 'final_vote'
-        elif now <= times['final_result_end']:
+        if now <= times['final_result_end']:
             return 'final_result'
-        else:
-            if contest.status != 'closed':
-                contest.status = 'closed'
-                db.session.commit()
-            return 'closed'
+        if contest.status != 'closed':
+            contest.status = 'closed'
+            db.session.commit()
+        return 'closed'
 
     open_at = contest.open_at
     if not open_at:
@@ -170,47 +168,46 @@ def calc_phase(contest, now, times):
 
     if now < open_at:
         return 'not_started'
-    elif now <= times['nomination_end']:
+    if now <= times['nomination_end']:
         return 'nomination'
-    elif now <= times['review_end']:
+    if now <= times['review_end']:
         return 'review'
-    elif now <= times['qualifying_vote_end']:
+    if now <= times['qualifying_vote_end']:
         return 'qualifying'
-    elif now <= times['qualifying_end']:
+    if now <= times['qualifying_end']:
         return 'qualifying_result'
-    elif now <= times['group_round_1_end']:
+    if now <= times['group_round_1_end']:
         return 'group_round_1'
-    elif now <= times['group_round_1_result_end']:
+    if now <= times['group_round_1_result_end']:
         return 'group_round_1_result'
-    elif now <= times['group_round_2_end']:
+    if now <= times['group_round_2_end']:
         return 'group_round_2'
-    elif now <= times['group_round_2_result_end']:
+    if now <= times['group_round_2_result_end']:
         return 'group_round_2_result'
-    elif now <= times['group_round_3_end']:
+    if now <= times['group_round_3_end']:
         return 'group_round_3'
-    elif now <= times['group_round_3_result_end']:
+    if now <= times['group_round_3_result_end']:
         return 'group_round_3_result'
-    elif now <= times['knockout_16_end']:
+    if now <= times['knockout_16_end']:
         return 'knockout_16'
-    elif now <= times['knockout_16_result_end']:
+    if now <= times['knockout_16_result_end']:
         return 'knockout_16_result'
-    elif now <= times['knockout_8_end']:
+    if now <= times['knockout_8_end']:
         return 'knockout_8'
-    elif now <= times['knockout_8_result_end']:
+    if now <= times['knockout_8_result_end']:
         return 'knockout_8_result'
-    elif now <= times['knockout_4_end']:
+    if now <= times['knockout_4_end']:
         return 'knockout_4'
-    elif now <= times['knockout_4_result_end']:
+    if now <= times['knockout_4_result_end']:
         return 'knockout_4_result'
-    elif now <= times['final_vote_end']:
+    if now <= times['final_vote_end']:
         return 'final_vote'
-    elif now <= times['final_result_end']:
+    if now <= times['final_result_end']:
         return 'final_result'
-    else:
-        if contest.status != 'closed':
-            contest.status = 'closed'
-            db.session.commit()
-        return 'closed'
+    if contest.status != 'closed':
+        contest.status = 'closed'
+        db.session.commit()
+    return 'closed'
 
 
 # ============================================================
@@ -572,7 +569,7 @@ def get_match_winner(contest, match, gender, sub_round):
 
     if c1_votes > c2_votes:
         return match['candidate1']
-    elif c2_votes > c1_votes:
+    if c2_votes > c1_votes:
         return match['candidate2']
 
     if gender == 'female':
@@ -704,7 +701,7 @@ def run_final_ranking(contest):
     male_candidates = contest.candidates.filter_by(gender='male').filter(
         Candidate.stage.in_(['knockout', 'champion'])).all()
 
-    def get_final_ranking(candidates, gender):
+    def get_final_ranking(_candidates, gender):
         round16_key = 'knockout_matches_female_round16' if gender == 'female' else 'knockout_matches_male_round16'
         round8_key = 'knockout_matches_female_round8' if gender == 'female' else 'knockout_matches_male_round8'
         round4_key = 'knockout_matches_female_round4' if gender == 'female' else 'knockout_matches_male_round4'

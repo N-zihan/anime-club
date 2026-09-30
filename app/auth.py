@@ -42,7 +42,7 @@ CLUB_NAME = os.getenv('CLUB_NAME', '动漫社')
 MAIL_USERNAME = os.getenv('MAIL_USERNAME')
 MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
 SMTP_HOST = os.getenv('SMTP_HOST', 'smtp.qq.com')
-SMTP_PORT = int(os.getenv('SMTP_PORT', 465))
+SMTP_PORT = int(os.getenv('SMTP_PORT', '465'))
 SMTP_USE_SSL = os.getenv('SMTP_USE_SSL', 'true').lower() == 'true'
 EMAIL_PATTERN = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
@@ -73,7 +73,7 @@ def send_email(to_email, subject, body, is_html=False):
 
 def _email_html(title, content, link=None):
     """延迟导入 notify 里的统一邮件模板，避免循环依赖"""
-    from .notify import _build_email_html
+    from .notify import _build_email_html # pylint: disable=import-outside-toplevel
     return _build_email_html(title, content, link)
 
 
@@ -133,7 +133,7 @@ def register():
             return redirect(url_for('auth.register'))
 
         # 验证QQ号
-        if not qq.isdigit() or not (5 <= len(qq) <= 12):
+        if not qq.isdigit() or not 5 <= len(qq) <= 12:
             flash('QQ号必须是5-12位数字', 'danger')
             return redirect(url_for('auth.register'))
 
@@ -264,9 +264,8 @@ def login():
                 return redirect(url_for('user.welcome'))
 
             return redirect(url_for('public.index'))
-        else:
-            flash('用户名或密码错误', 'danger')
-            return render_template('login.html', username=username)
+        flash('用户名或密码错误', 'danger')
+        return render_template('login.html', username=username)
     return render_template('login.html', username=username)
 
 

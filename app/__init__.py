@@ -53,7 +53,7 @@ def create_app():
     # ==========================================
 
     # 数据库配置
-    DATABASE_URL = os.getenv('DATABASE_URL')
+    DATABASE_URL = os.getenv('DATABASE_URL') # pylint: disable=invalid-name
     if not DATABASE_URL:
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
     else:
@@ -81,7 +81,7 @@ def create_app():
     app.register_error_handler(500, internal_server_error)
     app.register_error_handler(403, forbidden)
 
-    CLUB_NAME = os.getenv('CLUB_NAME', '动漫社')
+    CLUB_NAME = os.getenv('CLUB_NAME', '动漫社') # pylint: disable=invalid-name
 
     @app.context_processor
     def inject_club_name():
@@ -97,7 +97,7 @@ def create_app():
         }
 
     @app.errorhandler(CSRFError)
-    def handle_csrf_error(e):
+    def handle_csrf_error(_e):
         flash('页面已过期，请重新登录', 'warning')
         session.clear()
         return redirect(url_for('auth.login'))
@@ -139,6 +139,7 @@ def create_app():
         ]
         if not session.get('user_id') and request.endpoint not in public_routes and request.endpoint != 'static':
             return redirect(url_for('auth.login'))
+        return None
 
     # 版本号
     app.config['APP_VERSION'] = os.getenv('APP_VERSION', 'dev')
@@ -151,7 +152,7 @@ def create_app():
     def inject_user():
         role = session.get('user_role')
         is_admin = role in ('owner', 'staff')
-        return dict(is_admin=is_admin)
+        return {'is_admin': is_admin}
 
     # ====== 自动注入 CSRF token 到所有模板 ======
     @app.context_processor

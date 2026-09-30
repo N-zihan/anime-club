@@ -73,9 +73,8 @@ def welcome():
                 session['avatar_setup_done'] = True
                 flash('头像设置成功！', 'success')
                 return redirect(url_for('public.index'))
-            else:
-                flash('不支持的文件类型（支持 png, jpg, jpeg, gif）', 'danger')
-                return redirect(url_for('user.welcome'))
+            flash('不支持的文件类型（支持 png, jpg, jpeg, gif）', 'danger')
+            return redirect(url_for('user.welcome'))
 
         return redirect(url_for('user.welcome'))
 
@@ -187,20 +186,19 @@ def change_password():
         if not user.check_password(old):
             flash('原密码错误', 'danger')
             return redirect(url_for('user.change_password'))
-        elif new != confirm:
+        if new != confirm:
             flash('两次输入的新密码不一致', 'danger')
             return redirect(url_for('user.change_password'))
-        elif len(new) < 6:
+        if len(new) < 6:
             flash('新密码至少6位', 'danger')
             return redirect(url_for('user.change_password'))
-        elif new == old:
+        if new == old:
             flash('新密码不能与原密码相同', 'danger')
             return redirect(url_for('user.change_password'))
-        else:
-            user.set_password(new)
-            db.session.commit()
-            flash('密码修改成功', 'success')
-            return redirect(url_for('user.profile'))
+        user.set_password(new)
+        db.session.commit()
+        flash('密码修改成功', 'success')
+        return redirect(url_for('user.profile'))
 
     return render_template('change_password.html', user=user)
 
