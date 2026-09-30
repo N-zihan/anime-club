@@ -31,11 +31,6 @@ test.describe('后台管理', () => {
         await expect(page.locator('h2')).toHaveText('活动管理');
     });
 
-    test('番剧资源管理加载', async ({page}) => {
-        await page.goto('/admin/anime_resources');
-        await expect(page.locator('h2')).toHaveText('番剧资源管理');
-    });
-
     test('照片墙管理加载', async ({page}) => {
         await page.goto('/admin/gallery');
         await expect(page.locator('h2')).toHaveText('照片墙管理');

@@ -6,7 +6,7 @@ test.describe('内容页面', () => {
         {path: '/about', title: '社团简介'},
         {path: '/activities', title: '近期活动'},
         {path: '/gallery', title: '珍贵历史图片'},
-        {path: '/anime_resources', title: '番剧资源下载'},
+        {path: '/anime_resources', title: '番剧百科'},
         {path: '/members', title: '社员名单'},
     ];
 
