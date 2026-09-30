@@ -45,6 +45,17 @@
     — 没有更多了 —
 </div>
 
+<!-- 番剧详情模态框 -->
+<div id="animeModal"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99999; align-items:flex-start; justify-content:center; padding:40px 20px; overflow-y:auto;"
+     onclick="if(event.target===this) closeAnimeModal()">
+    <div style="background: var(--bg-card); border-radius:16px; max-width:680px; width:100%; padding:28px 28px 24px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <button onclick="closeAnimeModal()"
+                style="position:absolute; top:14px; right:18px; background:none; border:none; font-size:1.6rem; color: var(--text-muted); cursor:pointer; line-height:1; z-index:1;">×</button>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
 <script>
 (function () {
     const grid = document.getElementById('animeGrid');
@@ -86,7 +97,10 @@
             ? '<div style="font-size:0.75rem; color: var(--text-muted); margin-bottom:6px;">' + escapeHtml(a.original_name) + '</div>'
             : '';
 
-        return '<div style="background: var(--bg-card); border:1px solid var(--border-color); border-radius:12px; overflow:hidden;">' +
+        return '<div onclick="openAnimeModal(' + a.id + ')" ' +
+               'style="cursor:pointer; background: var(--bg-card); border:1px solid var(--border-color); border-radius:12px; overflow:hidden; transition: transform 0.15s, box-shadow 0.2s;" ' +
+               'onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 20px rgba(0,0,0,0.1)\';" ' +
+               'onmouseout="this.style.transform=\'\'; this.style.boxShadow=\'\';">' +
             cover +
             '<div style="padding:12px 14px;">' +
                 '<div style="font-weight:600; color: var(--text-primary); margin-bottom:4px; line-height:1.4;">' + escapeHtml(a.name) + '</div>' +
@@ -191,6 +205,103 @@
             resetAndLoad();
         }
     });
+
+    // ===== 模态框 =====
+    async function openAnimeModal(id) {
+        const modal = document.getElementById('animeModal');
+        const content = document.getElementById('modalContent');
+
+        content.innerHTML = '<div style="text-align:center; padding:60px 0; color: var(--text-muted);">正在加载...</div>';
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        let d;
+        try {
+            const res = await fetch('/api/anime/detail/' + id);
+            if (!res.ok) throw new Error('not found');
+            d = await res.json();
+        } catch (e) {
+            content.innerHTML = '<div style="text-align:center; padding:60px 0; color: var(--text-muted);">加载失败，请稍后重试</div>';
+            return;
+        }
+
+        const coverSrc = d.cover
+            ? '/api/anime/cover?url=' + encodeURIComponent(d.cover)
+            : '';
+        const coverHtml = coverSrc
+            ? '<img src="' + coverSrc + '" alt="' + escapeHtml(d.name) + '" ' +
+              'style="width:200px; height:280px; object-fit:cover; border-radius:12px; flex-shrink:0; background: var(--bg-code);">'
+            : '<div style="width:200px; height:280px; background: var(--bg-code); border-radius:12px; flex-shrink:0;"></div>';
+
+        const scoreHtml = d.score
+            ? '<div style="font-size:1.6rem; color:#f39c12; font-weight:700; line-height:1;">★ ' + d.score + '</div>' +
+              (d.total ? '<div style="font-size:0.75rem; color: var(--text-muted); margin-top:2px;">' + d.total + ' 人评分</div>' : '')
+            : '<div style="color: var(--text-muted);">暂无评分</div>';
+
+        const meta = [];
+        if (d.rank) meta.push('排名 #' + d.rank);
+        if (d.eps) meta.push(d.eps + ' 集');
+        if (d.date) meta.push(d.date);
+        if (d.platform) meta.push(d.platform);
+        const metaHtml = meta.length
+            ? '<div style="font-size:0.85rem; color: var(--text-secondary); margin-top:12px; line-height:1.7;">' + meta.join(' · ') + '</div>'
+            : '';
+
+        const staffHtml = d.staff && d.staff.length
+            ? '<div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">' +
+              '<div style="font-size:0.8rem; color: var(--text-muted); margin-bottom:8px;">制作阵容</div>' +
+              d.staff.map(function (s) {
+                  return '<div style="font-size:0.85rem; line-height:1.8; color: var(--text-primary);">' +
+                      '<span style="color: var(--text-muted); display:inline-block; min-width:80px;">' + escapeHtml(s.key) + '</span>' +
+                      escapeHtml(s.value) +
+                  '</div>';
+              }).join('') +
+              '</div>'
+            : '';
+
+        const summaryHtml = d.summary
+            ? '<div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">' +
+              '<div style="font-size:0.8rem; color: var(--text-muted); margin-bottom:8px;">简介</div>' +
+              '<div style="color: var(--text-primary); font-size:0.9rem; line-height:1.8; white-space:pre-wrap;">' + escapeHtml(d.summary) + '</div>' +
+              '</div>'
+            : '';
+
+        const html =
+            '<div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">' +
+                coverHtml +
+                '<div style="flex:1; min-width:220px;">' +
+                    '<h2 style="margin:0 0 6px 0; color: var(--text-primary); font-size:1.3rem; line-height:1.3;">' + escapeHtml(d.name) + '</h2>' +
+                    (d.original_name && d.original_name !== d.name
+                        ? '<div style="color: var(--text-muted); font-size:0.85rem; margin-bottom:14px;">' + escapeHtml(d.original_name) + '</div>'
+                        : '') +
+                    scoreHtml +
+                    metaHtml +
+                '</div>' +
+            '</div>' +
+            staffHtml +
+            summaryHtml +
+            '<div style="margin-top:22px; text-align:right;">' +
+                '<a href="https://bgm.tv/subject/' + d.id + '" target="_blank" rel="noopener" ' +
+                   'style="display:inline-block; padding:10px 24px; background:#1e2a3a; color:#fff; text-decoration:none; border-radius:24px; font-size:0.9rem;">' +
+                   '在 Bangumi 看评论 →' +
+                '</a>' +
+            '</div>';
+
+        content.innerHTML = html;
+    }
+
+    function closeAnimeModal() {
+        document.getElementById('animeModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAnimeModal();
+    });
+
+    // onclick 需要挂到 window 上才能访问
+    window.openAnimeModal = openAnimeModal;
+    window.closeAnimeModal = closeAnimeModal;
 
     // 首次加载
     loadPage();

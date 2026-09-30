@@ -85,3 +85,52 @@ def search_subjects(keyword, offset=0, limit=PAGE_SIZE):
     except Exception as e:
         print(f'Bangumi 搜索失败: {e}')
         return [], 0
+
+
+def get_subject_detail(subject_id):
+    """拉取单个条目的完整详情"""
+    try:
+        res = requests.get(
+            f'https://api.bgm.tv/v0/subjects/{subject_id}',
+            headers=HEADERS,
+            timeout=8,
+        )
+        d = res.json()
+        if not isinstance(d, dict) or d.get('id') is None:
+            return None
+
+        images = d.get('images') or {}
+        rating = d.get('rating') or {}
+
+        # 从 infobox 提取制作人员
+        staff_keys = ('导演', '原作', '脚本', '系列构成', '分镜', '演出',
+                      '音乐', '人物设定', '美术监督', '动画制作', '制作')
+        staff = []
+        for item in (d.get('infobox') or []):
+            key = item.get('key')
+            if key in staff_keys:
+                val = item.get('value')
+                if isinstance(val, list):
+                    val = '、'.join(
+                        str(v.get('v', v)) if isinstance(v, dict) else str(v)
+                        for v in val
+                    )
+                staff.append({'key': key, 'value': val})
+
+        return {
+            'id': d.get('id'),
+            'name': d.get('name_cn') or d.get('name') or '',
+            'original_name': d.get('name') or '',
+            'summary': (d.get('summary') or '').strip(),
+            'cover': images.get('large') or images.get('common') or '',
+            'score': rating.get('score') or 0,
+            'rank': rating.get('rank') or 0,
+            'total': rating.get('total') or 0,
+            'date': d.get('date') or '',
+            'eps': d.get('eps') or d.get('total_episodes') or 0,
+            'platform': d.get('platform') or '',
+            'staff': staff,
+        }
+    except Exception as e:
+        print(f'Bangumi 详情拉取失败: {e}')
+        return None

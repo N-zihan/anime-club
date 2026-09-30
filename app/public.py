@@ -16,7 +16,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
-from .bangumi import get_subjects, search_subjects
+from .bangumi import get_subjects, search_subjects, get_subject_detail
 from .ai import generate_commentary, generate_prediction
 from .config import (
     NOMINATION_LIMIT,
@@ -260,6 +260,15 @@ def api_anime_search():
         offset = 0
     items, total = search_subjects(keyword, offset=offset)
     return jsonify({'items': items, 'total': total})
+
+
+@public_bp.route('/api/anime/detail/<int:subject_id>')
+def api_anime_detail(subject_id):
+    """拉取单个番剧的完整详情"""
+    d = get_subject_detail(subject_id)
+    if not d:
+        return jsonify({'error': 'Not found'}), 404
+    return jsonify(d)
 
 
 @public_bp.route('/members')
