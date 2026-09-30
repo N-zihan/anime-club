@@ -100,10 +100,22 @@ def board():
         nickname = session.get('username', '匿名')
         content = request.form.get('content')
         if content:
+            # 防重复提交：同一用户 5 秒内发相同内容，直接忽略
+            user_id = session.get('user_id')
+            if user_id:
+                cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(seconds=5)
+                duplicate = Message.query.filter(
+                    Message.user_id == user_id,
+                    Message.content == content,
+                    Message.timestamp >= cutoff
+                ).first()
+                if duplicate:
+                    return redirect(url_for('public.board'))
+
             msg = Message(
                 nickname=nickname,
                 content=content,
-                user_id=session.get('user_id')
+                user_id=user_id
             )
             db.session.add(msg)
             db.session.commit()
@@ -144,11 +156,24 @@ def add_reply(message_id):
     parent_reply_id = request.form.get('parent_reply_id')
 
     if content:
+        user_id = session.get('user_id')
+
+        # 防重复提交：同一用户 5 秒内发相同内容到同一留言，忽略
+        cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(seconds=5)
+        duplicate = Reply.query.filter(
+            Reply.user_id == user_id,
+            Reply.message_id == message_id,
+            Reply.content == content,
+            Reply.timestamp >= cutoff
+        ).first()
+        if duplicate:
+            return redirect(url_for('public.board'))
+
         reply = Reply(
             nickname=nickname,
             content=content,
             message_id=message_id,
-            user_id=session.get('user_id'),
+            user_id=user_id,
             parent_reply_id=int(parent_reply_id) if parent_reply_id else None
         )
         db.session.add(reply)
