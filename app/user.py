@@ -28,7 +28,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from sqlalchemy import func
 
 from .config import AVATAR_MAX_SIZE
-from .models import db, User, Message, AnimeResource, Notification
+from .models import db, User, Message, Notification
 from .utils import allowed_file, compress_image, get_or_404
 from .auth import send_verification_email, send_welcome_email
 
@@ -279,9 +279,7 @@ def user_profile():
     messages = Message.query.filter_by(user_id=user.id).order_by(Message.timestamp.desc()).limit(10).all()
     for msg in messages:
         msg.timestamp = msg.timestamp + timedelta(hours=8)
-    anime = AnimeResource.query.filter_by(user_id=user.id, status='approved').order_by(
-        AnimeResource.upload_time.desc()).all()
-    return render_template('user_profile.html', user=user, messages=messages, anime=anime)
+    return render_template('user_profile.html', user=user, messages=messages)
 
 
 # ---------- 头像 ----------

@@ -15,6 +15,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
+from .bangumi import get_subjects, search_subjects
 from .ai import generate_commentary, generate_prediction
 from .config import (
     NOMINATION_LIMIT,
@@ -30,7 +31,7 @@ from .contest_engine import (
     run_knockout_advance, run_final_ranking,
     prepare_group_round_data
 )
-from .models import db, User, Activity, Photo, AnimeResource, Message, Reply, Contest, Nomination, ContestVote
+from .models import db, User, Activity, Photo, Message, Reply, Contest, Nomination, ContestVote
 from .utils import get_supabase, compress_image, get_or_404
 from .notify import notify
 
@@ -202,35 +203,35 @@ def add_reply(message_id):
 
 @public_bp.route('/anime_resources')
 def anime_resources():
-    resources = AnimeResource.query.filter_by(status='approved').order_by(AnimeResource.upload_time.desc()).all()
-    return render_template('anime_resources.html', resources=resources)
+    """番剧百科（数据来自 Bangumi）"""
+    return render_template('anime_guide.html')
 
 
-@public_bp.route('/submit_anime', methods=['GET', 'POST'])
-def submit_anime():
-    if not session.get('user_id'):
-        return redirect(url_for('auth.login'))
-    if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
-        link = request.form.get('link')
-        extract_code = request.form.get('extract_code')
-        if not title or not link:
-            flash('标题和链接不能为空', 'danger')
-            return redirect(url_for('public.submit_anime'))
-        new_resource = AnimeResource(
-            title=title,
-            description=description,
-            link=link,
-            extract_code=extract_code,
-            user_id=session.get('user_id'),
-            status='pending'
-        )
-        db.session.add(new_resource)
-        db.session.commit()
-        flash('提交成功，等待管理员审核', 'success')
-        return redirect(url_for('public.anime_resources'))
-    return render_template('submit_anime.html')
+@public_bp.route('/api/anime/list')
+def api_anime_list():
+    """分页拉取番剧列表"""
+    try:
+        offset = int(request.args.get('offset', 0))
+        sort = request.args.get('sort', 'rank')
+    except ValueError:
+        offset = 0
+        sort = 'rank'
+    items = get_subjects(offset=offset, sort=sort)
+    return jsonify({'items': items})
+
+
+@public_bp.route('/api/anime/search')
+def api_anime_search():
+    """搜索番剧"""
+    keyword = (request.args.get('q') or '').strip()
+    if not keyword:
+        return jsonify({'items': [], 'total': 0})
+    try:
+        offset = int(request.args.get('offset', 0))
+    except ValueError:
+        offset = 0
+    items, total = search_subjects(keyword, offset=offset)
+    return jsonify({'items': items, 'total': total})
 
 
 @public_bp.route('/members')

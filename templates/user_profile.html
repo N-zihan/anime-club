@@ -39,22 +39,5 @@
         <p style="color: var(--text-muted);">该用户还没有发表过留言</p>
         {% endif %}
     </div>
-
-    <!-- 该用户推荐的番剧 -->
-    <div style="background: var(--bg-card); border-radius: 24px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid var(--border-color);">
-        <h3 style="color: var(--text-primary);">推荐的番剧</h3>
-        {% if anime %}
-        <ul style="list-style: none; padding: 0;">
-            {% for a in anime %}
-            <li style="border-bottom: 1px solid var(--border-color); padding: 12px 0;">
-                <strong style="color: var(--text-primary);">{{ a.title }}</strong>
-                <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">{{ a.description or '暂无描述' }}</p>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p style="color: var(--text-muted);">该用户还没有推荐过番剧</p>
-        {% endif %}
-    </div>
 </div>
 {% endblock %}

@@ -27,7 +27,7 @@ from flask import send_file
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
-from .models import (db, User, Activity, Photo, AnimeResource, Message, Reply,
+from .models import (db, User, Activity, Photo, Message, Reply,
                      Contest, Nomination, Candidate, ContestVote, Notification)
 from .utils import get_supabase, allowed_file, compress_image, get_or_404
 from .notify import notify
@@ -240,71 +240,6 @@ def admin_gallery_delete(photo_id):
 
     flash('照片已删除', 'success')
     return redirect(url_for('admin.admin_gallery'))
-
-
-# ---------- 番剧资源管理 ----------
-@admin_bp.route('/admin/anime_resources')
-@admin_required
-def admin_anime_resources():
-    pending = AnimeResource.query.filter_by(status='pending').order_by(AnimeResource.upload_time.desc()).all()
-    approved = AnimeResource.query.filter_by(status='approved').order_by(AnimeResource.upload_time.desc()).all()
-    return render_template('admin_anime_resources.html', pending_resources=pending, approved_resources=approved)
-
-
-@admin_bp.route('/admin/anime_resources/approve/<int:id>', methods=['POST'])
-@admin_required
-def approve_anime_resource(id):
-    resource = get_or_404(AnimeResource, id)
-    resource.status = 'approved'
-    db.session.commit()
-    flash('已通过审核', 'success')
-    return redirect(url_for('admin.admin_anime_resources'))
-
-
-@admin_bp.route('/admin/anime_resources/reject/<int:id>', methods=['POST'])
-@admin_required
-def reject_anime_resource(id):
-    resource = get_or_404(AnimeResource, id)
-    db.session.delete(resource)
-    db.session.commit()
-    flash('已拒绝并删除', 'warning')
-    return redirect(url_for('admin.admin_anime_resources'))
-
-
-@admin_bp.route('/admin/anime_resources/delete/<int:id>', methods=['POST'])
-@admin_required
-def admin_anime_resources_delete(id):
-    resource = get_or_404(AnimeResource, id)
-    db.session.delete(resource)
-    db.session.commit()
-    flash('已删除', 'success')
-    return redirect(url_for('admin.admin_anime_resources'))
-
-
-@admin_bp.route('/admin/anime_resources/add', methods=['GET', 'POST'])
-@admin_required
-def admin_anime_resources_add():
-    if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
-        link = request.form.get('link')
-        extract_code = request.form.get('extract_code')
-        if not title or not link:
-            flash('标题和链接不能为空', 'danger')
-            return redirect(url_for('admin.admin_anime_resources_add'))
-        resource = AnimeResource(
-            title=title,
-            description=description,
-            link=link,
-            extract_code=extract_code,
-            user_id=session.get('user_id'),  # 管理员添加时，以当前登录用户为提交人
-            status='approved'
-        )
-        db.session.add(resource)
-        db.session.commit()
-        flash('资源添加成功', 'success')
-        return redirect(url_for('admin.admin_anime_resources'))
-    return render_template('admin_anime_resources_add.html')
 
 
 # ---------- 用户管理 ----------

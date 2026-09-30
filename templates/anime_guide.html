@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}番剧百科{% endblock %}
+{% block content %}
+
+<h2>番剧百科</h2>
+<p style="color: var(--text-secondary); font-size:0.9rem; margin-bottom:20px;">
+    数据来源：Bangumi 番组计划
+</p>
+
+<!-- 搜索栏 -->
+<div style="display:flex; gap:8px; margin-bottom:24px; max-width:500px;">
+    <input type="text" id="searchInput" placeholder="搜索番剧..."
+           autocomplete="off"
+           style="flex:1; padding:10px 16px; border:1px solid var(--border-color); border-radius:24px; font-size:0.95rem; background: var(--bg-input); color: var(--text-primary);">
+    <button type="button" id="searchBtn"
+            style="padding:10px 20px; background:#1e2a3a; color:#fff; border:none; border-radius:24px; cursor:pointer; font-size:0.9rem;">
+        搜索
+    </button>
+    <button type="button" id="clearBtn"
+            style="display:none; padding:10px 20px; background: var(--bg-code); color: var(--text-primary); border:1px solid var(--border-color); border-radius:24px; cursor:pointer; font-size:0.9rem;">
+        返回
+    </button>
+</div>
+
+<div id="status" style="text-align:center; color: var(--text-muted); padding:20px 0; display:none;"></div>
+
+<div id="animeGrid"
+     style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:20px;">
+</div>
+
+<div id="loadMore"
+     style="text-align:center; padding:30px 0; color: var(--text-muted); font-size:0.9rem; display:none;">
+    正在加载...
+</div>
+
+<div id="theEnd"
+     style="text-align:center; padding:30px 0; color: var(--text-muted); font-size:0.85rem; display:none;">
+    — 没有更多了 —
+</div>
+
+<script>
+(function () {
+    const grid = document.getElementById('animeGrid');
+    const statusEl = document.getElementById('status');
+    const loadMoreEl = document.getElementById('loadMore');
+    const theEndEl = document.getElementById('theEnd');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    let offset = 0;
+    let keyword = '';
+    let loading = false;
+    let hasMore = true;
+
+    function escapeHtml(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function cardHtml(a) {
+        const cover = a.cover
+            ? '<img src="' + escapeHtml(a.cover) + '" alt="' + escapeHtml(a.name) + '" loading="lazy" ' +
+              'style="width:100%; height:260px; object-fit:cover; display:block;">'
+            : '<div style="width:100%; height:260px; background: var(--bg-code);"></div>';
+        const score = a.score
+            ? '<span style="color:#f39c12; font-weight:600;">★ ' + a.score + '</span>'
+            : '<span style="color: var(--text-muted);">暂无评分</span>';
+        const rank = a.rank
+            ? '<div style="font-size:0.75rem; color: var(--text-muted); margin-top:4px;">Bangumi 排名 #' + a.rank + '</div>'
+            : '';
+        const original = (a.original_name && a.original_name !== a.name)
+            ? '<div style="font-size:0.75rem; color: var(--text-muted); margin-bottom:6px;">' + escapeHtml(a.original_name) + '</div>'
+            : '';
+
+        return '<div style="background: var(--bg-card); border:1px solid var(--border-color); border-radius:12px; overflow:hidden;">' +
+            cover +
+            '<div style="padding:12px 14px;">' +
+                '<div style="font-weight:600; color: var(--text-primary); margin-bottom:4px; line-height:1.4;">' + escapeHtml(a.name) + '</div>' +
+                original +
+                '<div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; margin-top:8px;">' +
+                    score +
+                    '<span style="color: var(--text-muted);">' + escapeHtml(a.date) + '</span>' +
+                '</div>' +
+                rank +
+            '</div>' +
+        '</div>';
+    }
+
+    function appendItems(items) {
+        items.forEach(function (a) {
+            grid.insertAdjacentHTML('beforeend', cardHtml(a));
+        });
+    }
+
+    function loadPage() {
+        if (loading || !hasMore) return;
+        loading = true;
+        loadMoreEl.style.display = 'block';
+        loadMoreEl.textContent = '正在加载...';
+
+        let url;
+        if (keyword) {
+            url = '/api/anime/search?q=' + encodeURIComponent(keyword) + '&offset=' + offset;
+        } else {
+            url = '/api/anime/list?offset=' + offset;
+        }
+
+        fetch(url)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                const items = data.items || [];
+                appendItems(items);
+                offset += items.length;
+
+                if (items.length < 25) {
+                    hasMore = false;
+                    loadMoreEl.style.display = 'none';
+                    if (offset > 0) theEndEl.style.display = 'block';
+                } else {
+                    loadMoreEl.style.display = 'none';
+                }
+            })
+            .catch(function () {
+                loadMoreEl.textContent = '加载失败，请稍后重试';
+            })
+            .finally(function () {
+                loading = false;
+            });
+    }
+
+    function resetAndLoad() {
+        offset = 0;
+        hasMore = true;
+        loading = false;
+        grid.innerHTML = '';
+        theEndEl.style.display = 'none';
+        statusEl.style.display = 'none';
+        loadPage();
+    }
+
+    // 滚动监听
+    window.addEventListener('scroll', function () {
+        if (loading || !hasMore) return;
+        const scrollBottom = window.innerHeight + window.scrollY;
+        if (scrollBottom < document.body.offsetHeight - 300) return;
+        loadPage();
+    });
+
+    // 搜索
+    searchBtn.addEventListener('click', function () {
+        const q = searchInput.value.trim();
+        if (!q) return;
+        keyword = q;
+        clearBtn.style.display = 'inline-block';
+        resetAndLoad();
+    });
+
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchBtn.click();
+        }
+    });
+
+    // 返回浏览模式
+    clearBtn.addEventListener('click', function () {
+        keyword = '';
+        searchInput.value = '';
+        clearBtn.style.display = 'none';
+        resetAndLoad();
+    });
+
+    // 首次加载
+    loadPage();
+})();
+</script>
+
+{% endblock %}

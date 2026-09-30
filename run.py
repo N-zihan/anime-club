@@ -11,12 +11,12 @@
 
 生产环境建议使用 gunicorn 或其他 WSGI 服务器启动：
     gunicorn run:app
-
-注意：开发模式下 debug=False，如需调试请手动修改。
 """
 
 import os
 from datetime import datetime, timedelta
+
+from sqlalchemy import inspect, text
 
 from app import create_app, db
 from app.models import User, Contest, Candidate
@@ -24,11 +24,66 @@ from app.utils import get_supabase
 
 app = create_app()
 
+
+def ensure_columns():
+    """对比 models.py 定义和数据库实际结构，自动补齐缺失的列。
+    只加列，不改类型、不删列（那些操作仍需手动处理）。
+    """
+    inspector = inspect(db.engine)
+    dialect = db.engine.dialect
+    existing_tables = set(inspector.get_table_names())
+
+    for table_name, table in db.metadata.tables.items():
+        if table_name not in existing_tables:
+            # 新表交给 create_all 处理
+            continue
+
+        existing_cols = {c['name'] for c in inspector.get_columns(table_name)}
+
+        for column in table.columns:
+            col_name = column.name
+            if col_name in existing_cols:
+                continue
+            # 主键列不存在的情况不可能发生（表建好就一定有主键）
+            if column.primary_key:
+                continue
+
+            col_type = column.type.compile(dialect=dialect)
+            ddl = f'ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}'
+
+            # nullable 和 default
+            if not column.nullable:
+                # 已有数据时加非空列需要默认值，这里只做尽力而为
+                if column.default is not None and column.default.arg is not None:
+                    default_val = column.default.arg
+                    if callable(default_val):
+                        default_val = default_val()
+                    if isinstance(default_val, str):
+                        ddl += f" DEFAULT '{default_val}'"
+                    elif isinstance(default_val, bool):
+                        ddl += f" DEFAULT {str(default_val).upper()}"
+                    else:
+                        ddl += f' DEFAULT {default_val}'
+
+            try:
+                db.session.execute(text(ddl))
+                print(f'已添加列: {table_name}.{col_name} ({col_type})')
+            except Exception as e:
+                print(f'添加列 {table_name}.{col_name} 失败: {e}')
+                db.session.rollback()
+
+    db.session.commit()
+
+
 with app.app_context():
     supabase = get_supabase()
     # -------- 创建数据库表 --------
     db.create_all()
     print("数据库表检查完成")
+
+    # ====== 自动补齐缺失的列 ======
+    ensure_columns()
+    # =============================
 
     # ====== 测试环境自动创建测试数据 ======
     if os.getenv('TESTING') == '1':
