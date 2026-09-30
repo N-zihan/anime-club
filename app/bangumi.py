@@ -39,9 +39,11 @@ def get_subjects(offset=0, limit=PAGE_SIZE, sort='rank'):
             timeout=8,
         )
         data = res.json()
-        if not isinstance(data, list):
+        # /v0/subjects 返回 Paged 格式：{"data": [...], "total": N}
+        items = data.get('data') if isinstance(data, dict) else data
+        if not isinstance(items, list):
             return []
-        return [_format_item(x) for x in data]
+        return [_format_item(x) for x in items]
     except Exception as e:
         print(f'Bangumi 拉取失败: {e}')
         return []

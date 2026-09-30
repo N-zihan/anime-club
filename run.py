@@ -49,7 +49,7 @@ def ensure_columns():
                 continue
 
             col_type = column.type.compile(dialect=dialect)
-            ddl = f'ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}'
+            ddl = f'ALTER TABLE "{table_name}" ADD COLUMN "{col_name}" {col_type}'
 
             # nullable 和 default
             if not column.nullable:
@@ -157,7 +157,7 @@ with app.app_context():
             else:
                 existing_bucket_names.append(getattr(b, 'name', None))
 
-        required_buckets = ['photos', 'contest_images']
+        required_buckets = ['photos', 'contest_images', 'avatars']
 
         for bucket in required_buckets:
             if bucket not in existing_bucket_names:

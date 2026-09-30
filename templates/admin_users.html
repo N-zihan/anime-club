@@ -28,7 +28,7 @@
     <tr>
         <td>{{ user.id }}</td>
         <td>
-            <img alt="{{ user.username }}" src="{{ url_for('user.get_avatar', user_id=user.id) }}"
+            <img alt="{{ user.username }}" src="{{ avatar_url(user) }}"
                  style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
         </td>
         <td><strong>{{ user.username }}</strong></td>

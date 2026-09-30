@@ -154,6 +154,21 @@ def create_app():
         is_admin = role in ('owner', 'staff')
         return {'is_admin': is_admin}
 
+    @app.context_processor
+    def inject_avatar_helper():
+        def avatar_url(user):
+            if user and getattr(user, 'avatar_url', None):
+                return user.avatar_url
+            if user:
+                return url_for('user.get_avatar', user_id=user.id)
+            return ("data:image/svg+xml;utf8,"
+                    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'>"
+                    "<rect width='40' height='40' fill='%23cbd5e1'/>"
+                    "<circle cx='20' cy='15' r='7' fill='white'/>"
+                    "<ellipse cx='20' cy='33' rx='12' ry='9' fill='white'/>"
+                    "</svg>")
+        return {'avatar_url': avatar_url}
+
     # ====== 自动注入 CSRF token 到所有模板 ======
     @app.context_processor
     def inject_csrf_token():

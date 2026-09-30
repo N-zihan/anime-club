@@ -9,9 +9,10 @@
 """
 import os
 import uuid
+import requests
 from datetime import timedelta, datetime, timezone
 
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory, Response
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory, Response, abort
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -36,6 +37,11 @@ from .utils import get_supabase, compress_image, get_or_404
 from .notify import notify
 
 public_bp = Blueprint('public', __name__)
+# Bangumi 图片服务器需要的请求头
+HEADERS_FOR_IMAGE = {
+    'User-Agent': 'Mozilla/5.0 (compatible; nanyi-anime-club/1.0)',
+    'Referer': 'https://bgm.tv/',
+}
 
 
 def _calc_current_phase(contest):
@@ -207,14 +213,36 @@ def anime_resources():
     return render_template('anime_guide.html')
 
 
+@public_bp.route('/api/anime/cover')
+def api_anime_cover():
+    """代理 Bangumi 封面图，走 Vercel CDN 缓存"""
+    from urllib.parse import unquote
+    url = unquote(request.args.get('url', ''))
+
+    # 白名单校验，防止 SSRF
+    if not url.startswith('https://lain.bgm.tv/'):
+        abort(404)
+
+    try:
+        res = requests.get(url, headers=HEADERS_FOR_IMAGE, timeout=8)
+        return Response(
+            res.content,
+            mimetype=res.headers.get('Content-Type', 'image/jpeg'),
+            headers={'Cache-Control': 'public, max-age=604800, s-maxage=604800'},
+        )
+    except Exception:
+        abort(404)
+
+
 @public_bp.route('/api/anime/list')
 def api_anime_list():
     """分页拉取番剧列表"""
     try:
         offset = int(request.args.get('offset', 0))
-        sort = request.args.get('sort', 'rank')
     except ValueError:
         offset = 0
+    sort = request.args.get('sort', 'rank')
+    if sort not in ('rank', 'date'):
         sort = 'rank'
     items = get_subjects(offset=offset, sort=sort)
     return jsonify({'items': items})

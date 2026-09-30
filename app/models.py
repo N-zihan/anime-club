@@ -24,6 +24,7 @@ class User(db.Model):
     registered_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc) + timedelta(hours=8))
     avatar = db.Column(db.LargeBinary, nullable=True)
     avatar_mime = db.Column(db.String(50), nullable=True)
+    avatar_url = db.Column(db.String(500), nullable=True)
     is_staff = db.Column(db.Boolean, default=False)
     is_owner = db.Column(db.Boolean, default=False)
     reset_token = db.Column(db.String(64), nullable=True)
@@ -64,18 +65,6 @@ class Reply(db.Model):
 
     parent_reply_id = db.Column(db.Integer, db.ForeignKey('reply.id'), nullable=True)
     parent_reply = db.relationship('Reply', remote_side=[id], backref=db.backref('children', lazy='dynamic'))
-
-
-class AnimeResource(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(200))
-    link = db.Column(db.String(500), nullable=False)
-    extract_code = db.Column(db.String(50))
-    upload_time = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    user = db.relationship('User', backref='anime_resources')
-    status = db.Column(db.String(20), default='pending')
 
 
 class Photo(db.Model):

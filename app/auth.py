@@ -29,7 +29,7 @@ from sqlalchemy.exc import IntegrityError
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
-from .models import db, User, Nomination, ContestVote, Message, Reply, AnimeResource, Notification
+from .models import db, User, Nomination, ContestVote, Message, Reply, Notification
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -295,7 +295,6 @@ def delete_account():
         # 4. 提名 / 投票 / 番剧推荐 / 通知
         Nomination.query.filter_by(user_id=user.id).delete()
         ContestVote.query.filter_by(user_id=user.id).delete()
-        AnimeResource.query.filter_by(user_id=user.id).delete()
         Notification.query.filter_by(user_id=user.id).delete()
         # 5. 最后删用户
         db.session.delete(user)

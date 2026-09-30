@@ -29,7 +29,7 @@ from sqlalchemy import func
 
 from .config import AVATAR_MAX_SIZE
 from .models import db, User, Message, Notification
-from .utils import allowed_file, compress_image, get_or_404
+from .utils import allowed_file, compress_image, get_or_404, upload_avatar_to_storage
 from .auth import send_verification_email, send_welcome_email
 
 user_bp = Blueprint('user', __name__)
@@ -62,14 +62,21 @@ def welcome():
                     return redirect(url_for('user.welcome'))
                 try:
                     raw_data = file.read()
-                    compressed = compress_image(raw_data, max_size=(200, 200), quality=80)
+                    compressed = compress_image(raw_data, max_size=(150, 150), quality=75)
                 except Exception:
                     flash('图片格式无效或已损坏', 'danger')
                     return redirect(url_for('user.welcome'))
 
-                user.avatar = compressed
-                user.avatar_mime = 'image/jpeg'
-                db.session.commit()
+                try:
+                    url = upload_avatar_to_storage(user.id, compressed)
+                    user.avatar_url = url
+                    user.avatar = compressed
+                    user.avatar_mime = 'image/jpeg'
+                    db.session.commit()
+                except Exception as e:
+                    flash(f'头像上传失败: {e}', 'danger')
+                    return redirect(url_for('user.welcome'))
+
                 session['avatar_setup_done'] = True
                 flash('头像设置成功！', 'success')
                 return redirect(url_for('public.index'))
@@ -105,10 +112,15 @@ def profile():
                         except Exception:
                             flash('图片格式无效或已损坏', 'danger')
                             return redirect(url_for('user.profile'))
-                        user.avatar = compressed
-                        user.avatar_mime = 'image/jpeg'
-                        db.session.commit()
-                        flash('头像更新成功', 'success')
+                        try:
+                            url = upload_avatar_to_storage(user.id, compressed)
+                            user.avatar_url = url
+                            user.avatar = compressed
+                            user.avatar_mime = 'image/jpeg'
+                            db.session.commit()
+                            flash('头像更新成功', 'success')
+                        except Exception as e:
+                            flash(f'头像上传失败: {e}', 'danger')
                 else:
                     flash('不支持的文件类型（支持 png, jpg, jpeg, gif）', 'danger')
             return redirect(url_for('user.profile'))
@@ -285,14 +297,21 @@ def user_profile():
 # ---------- 头像 ----------
 @user_bp.route('/avatar/<int:user_id>')
 def get_avatar(user_id):
+    """头像兜底路由：新头像走 Storage 重定向，老头像从数据库返回"""
     user = get_or_404(User, user_id)
+
+    # 新头像：重定向到 Storage CDN
+    if user.avatar_url:
+        return redirect(user.avatar_url)
+
+    # 老头像：从数据库返回（等待迁移）
     if user.avatar and user.avatar_mime:
         response = Response(user.avatar, mimetype=user.avatar_mime)
     else:
         default = base64.b64decode(
             'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
         response = Response(default, mimetype='image/png')
-    response.headers['Cache-Control'] = 'public, max-age=86400'
+    response.headers['Cache-Control'] = 'public, max-age=86400, s-maxage=86400'
     return response
 
 

@@ -46,9 +46,9 @@ KNOCKOUT_SIZE = 16  # 淘汰赛人数
 # 图片上传限制
 # ============================================================
 AVATAR_MAX_SIZE = 2 * 1024 * 1024  # 头像最大 2MB
-PHOTO_COMPRESS_SIZE = (1200, 1200)  # 照片墙压缩尺寸
+PHOTO_COMPRESS_SIZE = (900, 900)  # 照片墙压缩尺寸
 NOMINATION_IMAGE_SIZE = (400, 400)  # 提名图片压缩尺寸
-COMPRESS_QUALITY = 85  # JPEG 压缩品质
+COMPRESS_QUALITY = 75  # JPEG 压缩品质
 
 # ============================================================
 # PWA 配置

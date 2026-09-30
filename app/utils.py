@@ -18,6 +18,7 @@
 
 import io
 import os
+import uuid
 
 from PIL import Image
 from dotenv import load_dotenv
@@ -88,3 +89,15 @@ def get_or_404(model, ident):
     if obj is None:
         abort(404)
     return obj
+
+
+def upload_avatar_to_storage(user_id, image_data):
+    """上传头像到 Supabase Storage，返回公开 URL"""
+    supabase = get_supabase()
+    filename = f"user_{user_id}_{uuid.uuid4().hex[:8]}.jpg"
+    supabase.storage.from_('avatars').upload(
+        filename,
+        image_data,
+        file_options={"content-type": "image/jpeg"}
+    )
+    return supabase.storage.from_('avatars').get_public_url(filename)

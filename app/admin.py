@@ -280,10 +280,7 @@ def admin_delete_user(user_id):
     # 5. 删除该用户的通知
     Notification.query.filter_by(user_id=user.id).delete()
 
-    # 6. 删除该用户的番剧推荐
-    AnimeResource.query.filter_by(user_id=user.id).delete()
-
-    # 7. 最后删除用户
+    # 6. 最后删除用户
     db.session.delete(user)
     db.session.commit()
 

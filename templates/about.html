@@ -14,7 +14,7 @@
     <div class="member-card"
          style="border: 2px solid gold; box-shadow: 0 0 20px rgba(255,215,0,0.2); max-width: 250px; width: 100%;">
         <div class="member-avatar">
-            <img alt="{{ owner.username }}" src="{{ url_for('user.get_avatar', user_id=owner.id) }}"
+            <img alt="{{ owner.username }}" src="{{ avatar_url(owner) }}"
                  style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid gold;">
         </div>
         <div class="member-info">
@@ -33,7 +33,7 @@
     {% for member in staff %}
     <div class="member-card {% if member.is_owner %}owner-card{% endif %}">
         <div class="member-avatar">
-            <img alt="{{ member.username }}" src="{{ url_for('user.get_avatar', user_id=member.id) }}"
+            <img alt="{{ member.username }}" src="{{ avatar_url(member) }}"
                  style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid {% if member.is_owner %}gold{% else %}#e2e8f0{% endif %};">
         </div>
         <div class="member-info">
