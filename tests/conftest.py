@@ -20,7 +20,7 @@ os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
 
 # 现在可以正常导入 app 模块
 from app import create_app
-from app.models import db, User, Contest, Candidate, Nomination, ContestVote, Activity, AnimeResource, Message
+from app.models import db, User, Contest, Candidate, Nomination, ContestVote, Activity, Message
 
 
 @pytest.fixture
