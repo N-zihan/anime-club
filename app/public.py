@@ -242,7 +242,7 @@ def api_anime_list():
     except ValueError:
         offset = 0
     sort = request.args.get('sort', 'rank')
-    if sort not in ('rank', 'date'):
+    if sort not in ('rank', 'heat', 'score', 'date'):
         sort = 'rank'
     items = get_subjects(offset=offset, sort=sort)
     return jsonify({'items': items})

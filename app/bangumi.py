@@ -31,21 +31,40 @@ def _format_item(item):
 
 def get_subjects(offset=0, limit=PAGE_SIZE, sort='rank'):
     """分页获取番剧列表（type=2 表示动画）"""
+    if sort in ('rank', 'date'):
+        # 老接口
+        try:
+            res = requests.get(
+                'https://api.bgm.tv/v0/subjects',
+                params={'type': 2, 'sort': sort, 'limit': limit, 'offset': offset},
+                headers=HEADERS,
+                timeout=8,
+            )
+            data = res.json()
+            items = data.get('data') if isinstance(data, dict) else data
+            if not isinstance(items, list):
+                return []
+            return [_format_item(x) for x in items]
+        except Exception as e:
+            print(f'Bangumi 拉取失败: {e}')
+            return []
+
+    # 搜索接口（heat / score）
     try:
-        res = requests.get(
-            'https://api.bgm.tv/v0/subjects',
-            params={'type': 2, 'sort': sort, 'limit': limit, 'offset': offset},
-            headers=HEADERS,
+        res = requests.post(
+            'https://api.bgm.tv/v0/search/subjects',
+            params={'limit': limit, 'offset': offset},
+            json={'keyword': '', 'filter': {'type': [2]}, 'sort': sort},
+            headers={**HEADERS, 'Content-Type': 'application/json'},
             timeout=8,
         )
         data = res.json()
-        # /v0/subjects 返回 Paged 格式：{"data": [...], "total": N}
-        items = data.get('data') if isinstance(data, dict) else data
+        items = data.get('data') if isinstance(data, dict) else None
         if not isinstance(items, list):
             return []
         return [_format_item(x) for x in items]
     except Exception as e:
-        print(f'Bangumi 拉取失败: {e}')
+        print(f'Bangumi 搜索失败: {e}')
         return []
 
 

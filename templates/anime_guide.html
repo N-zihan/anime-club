@@ -7,11 +7,11 @@
     数据来源：Bangumi 番组计划
 </p>
 
-<!-- 搜索栏 -->
-<div style="display:flex; gap:8px; margin-bottom:24px; max-width:500px;">
+<!-- 搜索栏 + 排序 -->
+<div style="display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; align-items:center;">
     <input type="text" id="searchInput" placeholder="搜索番剧..."
            autocomplete="off"
-           style="flex:1; padding:10px 16px; border:1px solid var(--border-color); border-radius:24px; font-size:0.95rem; background: var(--bg-input); color: var(--text-primary);">
+           style="flex:1; min-width:220px; padding:10px 16px; border:1px solid var(--border-color); border-radius:24px; font-size:0.95rem; background: var(--bg-input); color: var(--text-primary);">
     <button type="button" id="searchBtn"
             style="padding:10px 20px; background:#1e2a3a; color:#fff; border:none; border-radius:24px; cursor:pointer; font-size:0.9rem;">
         搜索
@@ -20,6 +20,13 @@
             style="display:none; padding:10px 20px; background: var(--bg-code); color: var(--text-primary); border:1px solid var(--border-color); border-radius:24px; cursor:pointer; font-size:0.9rem;">
         返回
     </button>
+    <select id="sortSelect"
+            style="padding:10px 14px; border:1px solid var(--border-color); border-radius:24px; background: var(--bg-input); color: var(--text-primary); font-size:0.9rem; cursor:pointer;">
+        <option value="rank">按排名</option>
+        <option value="heat">按热度</option>
+        <option value="score">按评分</option>
+        <option value="date">按发售日期</option>
+    </select>
 </div>
 
 <div id="status" style="text-align:center; color: var(--text-muted); padding:20px 0; display:none;"></div>
@@ -47,9 +54,11 @@
     const searchInput = document.getElementById('searchInput');
     const searchBtn = document.getElementById('searchBtn');
     const clearBtn = document.getElementById('clearBtn');
+    const sortSelect = document.getElementById('sortSelect');
 
     let offset = 0;
     let keyword = '';
+    let sort = 'rank';
     let loading = false;
     let hasMore = true;
 
@@ -60,9 +69,12 @@
     }
 
     function cardHtml(a) {
-        const cover = a.cover
-            ? '<img src="' + escapeHtml(a.cover) + '" alt="' + escapeHtml(a.name) + '" loading="lazy" ' +
-              'style="width:100%; height:260px; object-fit:cover; display:block;">'
+        const coverSrc = a.cover
+            ? '/api/anime/cover?url=' + encodeURIComponent(a.cover)
+            : '';
+        const cover = coverSrc
+            ? '<img src="' + coverSrc + '" alt="' + escapeHtml(a.name) + '" loading="lazy" ' +
+              'style="width:100%; height:260px; object-fit:cover; display:block; background: var(--bg-code);">'
             : '<div style="width:100%; height:260px; background: var(--bg-code);"></div>';
         const score = a.score
             ? '<span style="color:#f39c12; font-weight:600;">★ ' + a.score + '</span>'
@@ -104,7 +116,7 @@
         if (keyword) {
             url = '/api/anime/search?q=' + encodeURIComponent(keyword) + '&offset=' + offset;
         } else {
-            url = '/api/anime/list?offset=' + offset;
+            url = '/api/anime/list?offset=' + offset + '&sort=' + encodeURIComponent(sort);
         }
 
         fetch(url)
@@ -170,6 +182,14 @@
         searchInput.value = '';
         clearBtn.style.display = 'none';
         resetAndLoad();
+    });
+
+    // 排序切换
+    sortSelect.addEventListener('change', function () {
+        sort = this.value;
+        if (!keyword) {
+            resetAndLoad();
+        }
     });
 
     // 首次加载
