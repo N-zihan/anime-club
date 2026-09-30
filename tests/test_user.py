@@ -66,13 +66,16 @@ class TestUserExtra:
             'action': 'change_avatar',
             'avatar': (BytesIO(b'fake image data'), 'test.jpg')
         }
-        with patch('app.user.compress_image', return_value=b'compressed'):
+        fake_url = 'https://fake.supabase.co/avatars/test.jpg'
+        with patch('app.user.compress_image', return_value=b'compressed'), \
+                patch('app.user.upload_avatar_to_storage', return_value=fake_url):
             resp = logged_in_client.post('/profile', data=data, content_type='multipart/form-data',
                                          follow_redirects=True)
             from app.models import User
             user = db_session.get(User, sample_user.id)
             assert user.avatar is not None
             assert user.avatar_mime == 'image/jpeg'
+            assert user.avatar_url == fake_url
             assert resp.status_code == 200
 
     def test_change_avatar_invalid_file(self, logged_in_client, sample_user, db_session):
