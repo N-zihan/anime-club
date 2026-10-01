@@ -87,8 +87,15 @@
 
 <style>
 /* ===== 桌面默认尺寸 ===== */
-#kanban-img { width: 120px; }
-#kanban-bubble { font-size: 0.85rem; max-width: 220px; padding: 10px 16px; }
+#kanban-img {
+    width: 120px !important;
+    height: auto !important;
+}
+#kanban-bubble {
+    font-size: 0.85rem !important;
+    max-width: 220px !important;
+    padding: 10px 16px !important;
+}
 
 @keyframes kanban-breathe {
     0%, 100% { transform: translateY(0); }
@@ -101,13 +108,22 @@
 
 /* ===== 手机端覆盖 ===== */
 @media (max-width: 700px) {
-    #kanban-img { width: 180px !important; }
-    #kanban-bubble { font-size: 1rem; max-width: 270px; padding: 12px 18px; }
-    #kanban-bubble-wrap > div:nth-child(2) { right: 20px; }
+    #kanban-img {
+        width: 180px !important;
+        height: auto !important;
+    }
+    #kanban-bubble {
+        font-size: 1rem !important;
+        max-width: 270px !important;
+        padding: 12px 18px !important;
+    }
+    #kanban-bubble-wrap > div:nth-child(2) {
+        right: 20px !important;
+    }
 }
 
-[data-theme="dark"] #kanban-bubble { background:#334155; color:#e2e8f0; }
-[data-theme="dark"] #kanban-bubble-wrap > div:nth-child(2) { background:#334155; }
+[data-theme="dark"] #kanban-bubble { background: #334155 !important; color: #e2e8f0 !important; }
+[data-theme="dark"] #kanban-bubble-wrap > div:nth-child(2) { background: #334155 !important; }
 </style>
 
 <script>
@@ -287,11 +303,25 @@
     });
     bubble.addEventListener('click', next);
 
-    // ========== 拉数据 ==========
+    // ========== 是否该主动弹欢迎语 ==========
+    function isReload() {
+        try {
+            const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+            if (nav) return nav.type === 'reload';
+            return performance.navigation && performance.navigation.type === 1;
+        } catch (e) {
+            return false;
+        }
+    }
+
     function fromEntry() {
+        // 刷新 → 不弹
+        if (isReload()) return false;
+
         const ref = document.referrer;
-        if (!ref) return true;
-        if (ref.indexOf(location.origin) !== 0) return true;
+        if (!ref) return true;                              // 直接输入网址 / 外部链接
+        if (ref.indexOf(location.origin) !== 0) return true; // 站外来源
+
         const entryPaths = ['/', '/login', '/register', '/forgot_password', '/reset_password'];
         try {
             const path = new URL(ref).pathname;
