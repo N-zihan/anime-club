@@ -1,9 +1,8 @@
 // 缓存的版本号——每次更新缓存时修改这个版本号
 const CACHE_VERSION = 'v1';
 const CACHE_STATIC = `anime-club-static-${CACHE_VERSION}`;
-const CACHE_DYNAMIC = `anime-club-dynamic-${CACHE_VERSION}`;
 
-// 只预缓存静态资源（动态页面走 network-first）
+// 只预缓存静态资源
 const STATIC_URLS = [
     '/static/css/style.css',
     '/static/images/icon-192.png',
@@ -25,9 +24,7 @@ self.addEventListener('activate', (event) => {
         caches.keys().then((names) => {
             return Promise.all(
                 names.map((name) => {
-                    if (name.startsWith('anime-club-') &&
-                        name !== CACHE_STATIC &&
-                        name !== CACHE_DYNAMIC) {
+                    if (name.startsWith('anime-club-') && name !== CACHE_STATIC) {
                         return caches.delete(name);
                     }
                 })
@@ -36,7 +33,7 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// 拦截请求
+// 拦截请求：只处理静态资源，动态页面一律交给浏览器
 self.addEventListener('fetch', (event) => {
     const { request } = event;
 
@@ -48,45 +45,21 @@ self.addEventListener('fetch', (event) => {
     // 只处理同源
     if (url.origin !== self.location.origin) return;
 
-    // 静态资源：cache-first
-    if (url.pathname.startsWith('/static/') || url.pathname === '/favicon.ico') {
-        event.respondWith(
-            caches.match(request).then((cached) => {
-                if (cached) return cached;
-                return fetch(request).then((response) => {
-                    if (response.ok) {
-                        const clone = response.clone();
-                        caches.open(CACHE_STATIC).then((cache) => cache.put(request, clone));
-                    }
-                    return response;
-                });
-            })
-        );
+    // 只有静态资源走 SW；其他一律放过，让浏览器自己处理
+    if (!url.pathname.startsWith('/static/') && url.pathname !== '/favicon.ico') {
         return;
     }
 
-    // 动态页面：network-first，失败时 fallback 到缓存
-    // 动态页面：network-first，失败时 fallback 到缓存，再失败给离线提示
     event.respondWith(
-        fetch(request).then((response) => {
-            if (response.ok) {
-                const clone = response.clone();
-                caches.open(CACHE_DYNAMIC).then((cache) => cache.put(request, clone));
-            }
-            return response;
-        }).catch(() => caches.match(request).then(
-            (cached) => cached || new Response(
-                '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">'
-                + '<meta name="viewport" content="width=device-width,initial-scale=1">'
-                + '<title>离线</title></head><body style="font-family:sans-serif;'
-                + 'text-align:center;padding:80px 20px;color:#334155;">'
-                + '<h1>暂时离线</h1><p>网络好像断了，恢复后刷新页面即可。</p>'
-                + '</body></html>',
-                {
-                    status: 503,
-                    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        caches.match(request).then((cached) => {
+            if (cached) return cached;
+            return fetch(request).then((response) => {
+                if (response.ok) {
+                    const clone = response.clone();
+                    caches.open(CACHE_STATIC).then((cache) => cache.put(request, clone));
                 }
-            )
-        ))
+                return response;
+            });
+        })
     );
 });
