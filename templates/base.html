@@ -144,23 +144,17 @@
     restorePosition();
     window.addEventListener('resize', clampPosition);
 
-    // ===== 拖拽逻辑 =====
+        // ===== 拖拽 + 点击判定 =====
     let dragging = false;
     let moved = false;
     let startX = 0, startY = 0;
     let startLeft = 0, startTop = 0;
 
-    function getPoint(e) {
-        if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        return { x: e.clientX, y: e.clientY };
-    }
-
     function onStart(e) {
-        if (e.button !== undefined && e.button !== 0) return; // 只处理左键
-        const p = getPoint(e);
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
         const rect = kanban.getBoundingClientRect();
-        startX = p.x;
-        startY = p.y;
+        startX = e.clientX;
+        startY = e.clientY;
         startLeft = rect.left;
         startTop = rect.top;
         dragging = true;
@@ -170,9 +164,8 @@
 
     function onMove(e) {
         if (!dragging) return;
-        const p = getPoint(e);
-        const dx = p.x - startX;
-        const dy = p.y - startY;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
         if (!moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) moved = true;
         if (!moved) return;
 
@@ -190,10 +183,10 @@
         kanban.style.top = newTop + 'px';
         kanban.style.right = 'auto';
         kanban.style.bottom = 'auto';
-        if (e.cancelable) e.preventDefault();
+        e.preventDefault();
     }
 
-    function onEnd() {
+    function onEnd(_e) {
         if (!dragging) return;
         dragging = false;
         img.style.cursor = 'grab';
@@ -201,9 +194,17 @@
             const rect = kanban.getBoundingClientRect();
             try {
                 localStorage.setItem(POS_KEY, JSON.stringify({ left: rect.left, top: rect.top }));
-            } catch (e) { /* 忽略 */ }
+            } catch (err) { /* 忽略 */ }
+        } else {
+            // 没移动 → 视为点击 → 换句
+            next();
         }
     }
+
+    img.addEventListener('pointerdown', onStart);
+    img.addEventListener('pointermove', onMove);
+    img.addEventListener('pointerup', onEnd);
+    img.addEventListener('pointercancel', onEnd);
 
     img.addEventListener('mousedown', onStart);
     document.addEventListener('mousemove', onMove);
@@ -266,12 +267,6 @@
         .catch(() => {
             chitchat = ['欢迎来到动漫社！'];
         });
-
-    // 点击（非拖拽）才换句
-    img.addEventListener('click', function () {
-        if (moved) return;  // 拖拽结束时不算点击
-        next();
-    });
     bubble.addEventListener('click', next);
 })();
 </script>
