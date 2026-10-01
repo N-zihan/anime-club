@@ -260,7 +260,7 @@ def login():
             flash('登录成功', 'success')
 
             # 新用户没头像 → 去设置头像页
-            if not user.avatar and not session.get('avatar_setup_done'):
+            if not user.avatar_url and not session.get('avatar_setup_done'):
                 return redirect(url_for('user.welcome'))
 
             return redirect(url_for('public.index'))

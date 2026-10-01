@@ -70,8 +70,6 @@ def welcome():
                 try:
                     url = upload_avatar_to_storage(user.id, compressed)
                     user.avatar_url = url
-                    user.avatar = compressed
-                    user.avatar_mime = 'image/jpeg'
                     db.session.commit()
                 except Exception as e:
                     flash(f'头像上传失败: {e}', 'danger')
@@ -115,8 +113,6 @@ def profile():
                         try:
                             url = upload_avatar_to_storage(user.id, compressed)
                             user.avatar_url = url
-                            user.avatar = compressed
-                            user.avatar_mime = 'image/jpeg'
                             db.session.commit()
                             flash('头像更新成功', 'success')
                         except Exception as e:
@@ -297,20 +293,15 @@ def user_profile():
 # ---------- 头像 ----------
 @user_bp.route('/avatar/<int:user_id>')
 def get_avatar(user_id):
-    """头像兜底路由：新头像走 Storage 重定向，老头像从数据库返回"""
+    """头像兜底路由"""
     user = get_or_404(User, user_id)
 
-    # 新头像：重定向到 Storage CDN
     if user.avatar_url:
         return redirect(user.avatar_url)
 
-    # 老头像：从数据库返回（等待迁移）
-    if user.avatar and user.avatar_mime:
-        response = Response(user.avatar, mimetype=user.avatar_mime)
-    else:
-        default = base64.b64decode(
-            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
-        response = Response(default, mimetype='image/png')
+    default = base64.b64decode(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
+    response = Response(default, mimetype='image/png')
     response.headers['Cache-Control'] = 'public, max-age=86400, s-maxage=86400'
     return response
 

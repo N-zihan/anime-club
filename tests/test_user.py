@@ -73,8 +73,6 @@ class TestUserExtra:
                                          follow_redirects=True)
             from app.models import User
             user = db_session.get(User, sample_user.id)
-            assert user.avatar is not None
-            assert user.avatar_mime == 'image/jpeg'
             assert user.avatar_url == fake_url
             assert resp.status_code == 200
 
@@ -87,7 +85,7 @@ class TestUserExtra:
         from app.models import User
         user = db_session.get(User, sample_user.id)
         # 头像未被修改（仍为 None）
-        assert user.avatar is None
+        assert user.avatar_url is None
         assert resp.status_code == 200
 
     def test_change_username_conflict(self, logged_in_client, sample_user, db_session):
