@@ -135,6 +135,24 @@
     const bubble = document.getElementById('kanban-bubble');
     if (!kanban || !img || !wrap || !bubble) return;
 
+        // ===== 强制响应式尺寸（绕过 CSS 优先级）=====
+    function applyKanbanSize() {
+        const isMobile = window.innerWidth <= 700;
+        if (isMobile) {
+            img.style.setProperty('width', '180px', 'important');
+            bubble.style.setProperty('font-size', '1rem', 'important');
+            bubble.style.setProperty('max-width', '270px', 'important');
+            bubble.style.setProperty('padding', '12px 18px', 'important');
+        } else {
+            img.style.setProperty('width', '120px', 'important');
+            bubble.style.setProperty('font-size', '0.85rem', 'important');
+            bubble.style.setProperty('max-width', '220px', 'important');
+            bubble.style.setProperty('padding', '10px 16px', 'important');
+        }
+    }
+    applyKanbanSize();
+    window.addEventListener('resize', applyKanbanSize);
+
     // ========== 位置恢复 ==========
     function clampPosition() {
         const rect = kanban.getBoundingClientRect();
