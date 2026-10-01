@@ -87,8 +87,12 @@
                 <td>{{ n.gender }}</td>
                 <td>{{ n.user.username }}</td>
                 <td style="text-align:center;">
-                    <a class="btn-edit" href="{{ url_for('admin.admin_nomination_approve', nomination_id=n.id) }}">通过</a>
-                    <a class="btn-delete" href="{{ url_for('admin.admin_nomination_reject', nomination_id=n.id) }}">拒绝</a>
+                    <form method="POST" action="{{ url_for('admin.admin_nomination_approve', nomination_id=n.id) }}" style="display:inline;">
+                        <button type="submit" class="btn-edit">通过</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin.admin_nomination_reject', nomination_id=n.id) }}" style="display:inline;">
+                        <button type="submit" class="btn-delete">拒绝</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}
