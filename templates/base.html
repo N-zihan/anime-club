@@ -73,30 +73,19 @@
             min-height:1.5em; cursor:pointer; position:relative;
             animation:bubble-float 2.5s ease-in-out infinite;">
         </div>
-        <div style="
+        <div id="kanban-tail" style="
             position:absolute; bottom:-6px; right:24px; width:12px; height:12px;
             background:white; transform:rotate(45deg);
             box-shadow:4px 4px 8px rgba(0,0,0,0.06);"></div>
     </div>
     <img id="kanban-img" src="{{ url_for('static', filename='images/kanban.png') }}"
          alt="看板娘" draggable="false"
-         style="height:auto; display:block; cursor:grab; pointer-events:auto;
+         style="display:block; cursor:grab; pointer-events:auto;
                 filter:drop-shadow(0 4px 12px rgba(0,0,0,0.15));
                 animation:kanban-breathe 3s ease-in-out infinite; touch-action:none;">
 </div>
 
 <style>
-/* ===== 桌面默认尺寸 ===== */
-#kanban-img {
-    width: 120px !important;
-    height: auto !important;
-}
-#kanban-bubble {
-    font-size: 0.85rem !important;
-    max-width: 220px !important;
-    padding: 10px 16px !important;
-}
-
 @keyframes kanban-breathe {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-4px); }
@@ -105,53 +94,42 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-3px); }
 }
-
-/* ===== 手机端覆盖 ===== */
-@media (max-width: 700px) {
-    #kanban-img {
-        width: 180px !important;
-        height: auto !important;
-    }
-    #kanban-bubble {
-        font-size: 1rem !important;
-        max-width: 270px !important;
-        padding: 12px 18px !important;
-    }
-    #kanban-bubble-wrap > div:nth-child(2) {
-        right: 20px !important;
-    }
-}
-
-[data-theme="dark"] #kanban-bubble { background: #334155 !important; color: #e2e8f0 !important; }
-[data-theme="dark"] #kanban-bubble-wrap > div:nth-child(2) { background: #334155 !important; }
+[data-theme="dark"] #kanban-bubble { background:#334155; color:#e2e8f0; }
+[data-theme="dark"] #kanban-tail { background:#334155; }
 </style>
 
 <script>
 (function () {
     const POS_KEY = 'kanban_pos';
+    const GREET_KEY = 'kanban_greeted';
     const kanban = document.getElementById('kanban');
     const img = document.getElementById('kanban-img');
     const wrap = document.getElementById('kanban-bubble-wrap');
     const bubble = document.getElementById('kanban-bubble');
+    const tail = document.getElementById('kanban-tail');
     if (!kanban || !img || !wrap || !bubble) return;
 
-        // ===== 强制响应式尺寸（绕过 CSS 优先级）=====
-    function applyKanbanSize() {
+    // ========== 尺寸：全部由 JS 控制 ==========
+    function applySize() {
         const isMobile = window.innerWidth <= 700;
         if (isMobile) {
             img.style.setProperty('width', '180px', 'important');
+            img.style.setProperty('height', 'auto', 'important');
             bubble.style.setProperty('font-size', '1rem', 'important');
             bubble.style.setProperty('max-width', '270px', 'important');
             bubble.style.setProperty('padding', '12px 18px', 'important');
+            tail.style.setProperty('right', '20px', 'important');
         } else {
             img.style.setProperty('width', '120px', 'important');
+            img.style.setProperty('height', 'auto', 'important');
             bubble.style.setProperty('font-size', '0.85rem', 'important');
             bubble.style.setProperty('max-width', '220px', 'important');
             bubble.style.setProperty('padding', '10px 16px', 'important');
+            tail.style.setProperty('right', '24px', 'important');
         }
     }
-    applyKanbanSize();
-    window.addEventListener('resize', applyKanbanSize);
+    applySize();
+    window.addEventListener('resize', applySize);
 
     // ========== 位置恢复 ==========
     function clampPosition() {
@@ -180,12 +158,12 @@
                 kanban.style.bottom = 'auto';
                 clampPosition();
             }
-        } catch (e) { /* 忽略 */ }
+        } catch (e) {}
     }
     restorePosition();
     window.addEventListener('resize', clampPosition);
 
-    // ========== 气泡状态 ==========
+    // ========== 气泡 ==========
     let facts = [];
     let chitchat = ['欢迎来到动漫社！'];
     let lastChitchatIdx = -1;
@@ -301,7 +279,7 @@
             const rect = kanban.getBoundingClientRect();
             try {
                 localStorage.setItem(POS_KEY, JSON.stringify({ left: rect.left, top: rect.top }));
-            } catch (e) { /* 忽略 */ }
+            } catch (e) {}
         }
     }
 
@@ -321,40 +299,17 @@
     });
     bubble.addEventListener('click', next);
 
-    // ========== 是否该主动弹欢迎语 ==========
-    function isReload() {
-        try {
-            const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-            if (nav) return nav.type === 'reload';
-            return performance.navigation && performance.navigation.type === 1;
-        } catch (e) {
-            return false;
-        }
-    }
-
-    function fromEntry() {
-        // 刷新 → 不弹
-        if (isReload()) return false;
-
-        const ref = document.referrer;
-        if (!ref) return true;                              // 直接输入网址 / 外部链接
-        if (ref.indexOf(location.origin) !== 0) return true; // 站外来源
-
-        const entryPaths = ['/', '/login', '/register', '/forgot_password', '/reset_password'];
-        try {
-            const path = new URL(ref).pathname;
-            return entryPaths.indexOf(path) !== -1;
-        } catch (e) {
-            return false;
-        }
-    }
-
+    // ========== 欢迎语：本次会话只弹一次 ==========
     fetch('/api/kanban/lines')
         .then(r => r.json())
         .then(data => {
             facts = data.facts || [];
             chitchat = data.chitchat || ['欢迎来到动漫社！'];
-            if (fromEntry() && facts.length) {
+
+            // sessionStorage：同一个标签页内只弹一次
+            // 新标签页 / 关掉重开 → 再弹一次
+            if (!sessionStorage.getItem(GREET_KEY) && facts.length) {
+                sessionStorage.setItem(GREET_KEY, '1');
                 setTimeout(() => showBubble(facts.shift()), 800);
             }
         })
