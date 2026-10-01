@@ -59,37 +59,41 @@
 <div class="card-form" style="max-width:100%;">
     <h3>待审核提名</h3>
     {% if nominations %}
-    <table class="admin-table">
-        <thead>
-        <tr>
-            <th>角色名</th>
-            <th>作品名</th>
-            <th>性别</th>
-            <th>提名者</th>
-            <th>操作</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for n in nominations %}
-        <tr>
-            <td>{{ n.name }}</td>
-            <td>{{ n.source }}</td>
-            <td>{{ n.gender }}</td>
-            <td>{{ n.user.username }}</td>
-            <td>
-                <form method="POST" action="{{ url_for('admin.admin_nomination_approve', nomination_id=n.id) }}"
-                      style="display:inline;">
-                    <button type="submit" class="btn-edit">通过</button>
-                </form>
-                <form method="POST" action="{{ url_for('admin.admin_nomination_reject', nomination_id=n.id) }}"
-                      style="display:inline;">
-                    <button type="submit" class="btn-delete">拒绝</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th style="width:80px;">图片</th>
+                <th>角色名</th>
+                <th>作品名</th>
+                <th>性别</th>
+                <th>提名者</th>
+                <th style="text-align:center;">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for n in nominations %}
+            <tr>
+                <td>
+                    {% if n.image_url %}
+                    <img src="{{ n.image_url }}" alt="{{ n.name }}" loading="lazy"
+                         onclick="window.open(this.src, '_blank')"
+                         style="width:60px; height:60px; object-fit:cover; border-radius:8px; cursor:pointer; border:1px solid var(--border-color);">
+                    {% else %}
+                    <span style="color:#94a3b8; font-size:0.8rem;">无图</span>
+                    {% endif %}
+                </td>
+                <td>{{ n.name }}</td>
+                <td>{{ n.source }}</td>
+                <td>{{ n.gender }}</td>
+                <td>{{ n.user.username }}</td>
+                <td style="text-align:center;">
+                    <a class="btn-edit" href="{{ url_for('admin.admin_nomination_approve', nomination_id=n.id) }}">通过</a>
+                    <a class="btn-delete" href="{{ url_for('admin.admin_nomination_reject', nomination_id=n.id) }}">拒绝</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     {% else %}
     <p style="color:#94a3b8;">暂无待审核提名</p>
     {% endif %}
