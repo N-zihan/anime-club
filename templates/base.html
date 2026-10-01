@@ -78,14 +78,16 @@
             background:white; transform:rotate(45deg);
             box-shadow:4px 4px 8px rgba(0,0,0,0.06);"></div>
     </div>
-        <img id="kanban-img" src="{{ url_for('static', filename='images/kanban.png') }}"
+    <img id="kanban-img" src="{{ url_for('static', filename='images/kanban.png') }}"
          alt="看板娘" draggable="false"
-         style="width:120px; height:auto; display:block; cursor:grab; pointer-events:auto;
+         style="height:auto; display:block; cursor:grab; pointer-events:auto;
                 filter:drop-shadow(0 4px 12px rgba(0,0,0,0.15));
                 animation:kanban-breathe 3s ease-in-out infinite; touch-action:none;">
 </div>
 
 <style>
+#kanban-img { width: 120px; }
+
 @keyframes kanban-breathe {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-4px); }
