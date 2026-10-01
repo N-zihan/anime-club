@@ -60,7 +60,7 @@
 {% set kanban_hidden = ['auth.login', 'auth.register', 'auth.forgot_password', 'auth.forgot_password_bind', 'auth.reset_password', 'auth.forgot_bind_send_code', 'auth.forgot_bind_verify'] %}
 {% if request.endpoint not in kanban_hidden %}
 <!-- 看板娘 -->
-<div id="kanban" style="position:fixed; right:20px; bottom:20px; z-index:900; pointer-events:none;">
+<div id="kanban" style="position:fixed; right:20px; bottom:20px; z-index:900; pointer-events:none; user-select:none;">
     <div id="kanban-bubble-wrap" style="
         position:absolute; bottom:100%; right:0; margin-bottom:12px;
         opacity:0; transform:scale(0.6); transform-origin:bottom right;
@@ -79,10 +79,10 @@
             box-shadow:4px 4px 8px rgba(0,0,0,0.06);"></div>
     </div>
     <img id="kanban-img" src="{{ url_for('static', filename='images/kanban.png') }}"
-         alt="看板娘"
-         style="width:120px; height:auto; display:block; cursor:pointer; pointer-events:auto;
+         alt="看板娘" draggable="false"
+         style="width:120px; height:auto; display:block; cursor:grab; pointer-events:auto;
                 filter:drop-shadow(0 4px 12px rgba(0,0,0,0.15));
-                animation:kanban-breathe 3s ease-in-out infinite;">
+                animation:kanban-breathe 3s ease-in-out infinite; touch-action:none;">
 </div>
 
 <style>
@@ -95,7 +95,6 @@
     50% { transform: translateY(-3px); }
 }
 @media (max-width: 700px) {
-    #kanban { right:10px; bottom:10px; }
     #kanban-img { width:80px; }
     #kanban-bubble { font-size:0.75rem; max-width:160px; padding:8px 12px; }
     #kanban-bubble-wrap > div:nth-child(2) { right:16px; }
@@ -106,28 +105,120 @@
 
 <script>
 (function () {
+    const POS_KEY = 'kanban_pos';
+    const kanban = document.getElementById('kanban');
     const img = document.getElementById('kanban-img');
     const wrap = document.getElementById('kanban-bubble-wrap');
     const bubble = document.getElementById('kanban-bubble');
-    if (!img || !wrap || !bubble) return;
+    if (!kanban || !img) return;
 
+    // ===== 位置恢复 =====
+    function clampPosition() {
+        const rect = kanban.getBoundingClientRect();
+        let left = rect.left;
+        let top = rect.top;
+        const maxLeft = window.innerWidth - rect.width - 4;
+        const maxTop = window.innerHeight - rect.height - 4;
+        if (left < 4) left = 4;
+        if (top < 4) top = 4;
+        if (left > maxLeft) left = maxLeft;
+        if (top > maxTop) top = maxTop;
+        kanban.style.left = left + 'px';
+        kanban.style.top = top + 'px';
+        kanban.style.right = 'auto';
+        kanban.style.bottom = 'auto';
+    }
+
+    function restorePosition() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(POS_KEY) || 'null');
+            if (saved && typeof saved.left === 'number' && typeof saved.top === 'number') {
+                kanban.style.left = saved.left + 'px';
+                kanban.style.top = saved.top + 'px';
+                kanban.style.right = 'auto';
+                kanban.style.bottom = 'auto';
+                clampPosition();
+            }
+        } catch (e) { /* 忽略 */ }
+    }
+    restorePosition();
+    window.addEventListener('resize', clampPosition);
+
+    // ===== 拖拽逻辑 =====
+    let dragging = false;
+    let moved = false;
+    let startX = 0, startY = 0;
+    let startLeft = 0, startTop = 0;
+
+    function getPoint(e) {
+        if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        return { x: e.clientX, y: e.clientY };
+    }
+
+    function onStart(e) {
+        if (e.button !== undefined && e.button !== 0) return; // 只处理左键
+        const p = getPoint(e);
+        const rect = kanban.getBoundingClientRect();
+        startX = p.x;
+        startY = p.y;
+        startLeft = rect.left;
+        startTop = rect.top;
+        dragging = true;
+        moved = false;
+        img.style.cursor = 'grabbing';
+    }
+
+    function onMove(e) {
+        if (!dragging) return;
+        const p = getPoint(e);
+        const dx = p.x - startX;
+        const dy = p.y - startY;
+        if (!moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) moved = true;
+        if (!moved) return;
+
+        let newLeft = startLeft + dx;
+        let newTop = startTop + dy;
+        const rect = kanban.getBoundingClientRect();
+        const maxLeft = window.innerWidth - rect.width - 4;
+        const maxTop = window.innerHeight - rect.height - 4;
+        if (newLeft < 4) newLeft = 4;
+        if (newTop < 4) newTop = 4;
+        if (newLeft > maxLeft) newLeft = maxLeft;
+        if (newTop > maxTop) newTop = maxTop;
+
+        kanban.style.left = newLeft + 'px';
+        kanban.style.top = newTop + 'px';
+        kanban.style.right = 'auto';
+        kanban.style.bottom = 'auto';
+        if (e.cancelable) e.preventDefault();
+    }
+
+    function onEnd() {
+        if (!dragging) return;
+        dragging = false;
+        img.style.cursor = 'grab';
+        if (moved) {
+            const rect = kanban.getBoundingClientRect();
+            try {
+                localStorage.setItem(POS_KEY, JSON.stringify({ left: rect.left, top: rect.top }));
+            } catch (e) { /* 忽略 */ }
+        }
+    }
+
+    img.addEventListener('mousedown', onStart);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+
+    img.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+    document.addEventListener('touchcancel', onEnd);
+
+    // ===== 气泡逻辑 =====
     let lines = [];
     let idx = 0;
     let typingTimer = null;
     let hideTimer = null;
-
-    function fromEntry() {
-        const ref = document.referrer;
-        if (!ref) return true;
-        if (ref.indexOf(location.origin) !== 0) return true;
-        const entryPaths = ['/', '/login', '/register', '/forgot_password', '/reset_password'];
-        try {
-            const path = new URL(ref).pathname;
-            return entryPaths.indexOf(path) !== -1;
-        } catch (e) {
-            return false;
-        }
-    }
 
     function hide() {
         wrap.style.opacity = '0';
@@ -169,22 +260,35 @@
         show(lines[idx]);
     }
 
+    function fromEntry() {
+        const ref = document.referrer;
+        if (!ref) return true;
+        if (ref.indexOf(location.origin) !== 0) return true;
+        const entryPaths = ['/', '/login', '/register', '/forgot_password', '/reset_password'];
+        try {
+            const path = new URL(ref).pathname;
+            return entryPaths.indexOf(path) !== -1;
+        } catch (e) {
+            return false;
+        }
+    }
+
     fetch('/api/kanban/lines')
         .then(r => r.json())
         .then(data => {
             lines = data.lines || ['欢迎来到动漫社！'];
-            if (fromEntry()) {
-                setTimeout(() => show(lines[0]), 800);
-            }
+            if (fromEntry()) setTimeout(() => show(lines[0]), 800);
         })
         .catch(() => {
             lines = ['欢迎来到动漫社！'];
-            if (fromEntry()) {
-                setTimeout(() => show(lines[0]), 800);
-            }
+            if (fromEntry()) setTimeout(() => show(lines[0]), 800);
         });
 
-    img.addEventListener('click', next);
+    // 点击（非拖拽）才换句
+    img.addEventListener('click', function () {
+        if (moved) return;  // 拖拽结束时不算点击
+        next();
+    });
     bubble.addEventListener('click', next);
 })();
 </script>
