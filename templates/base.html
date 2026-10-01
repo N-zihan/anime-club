@@ -215,49 +215,30 @@
     document.addEventListener('touchcancel', onEnd);
 
     // ===== 气泡逻辑 =====
-    let lines = [];
-    let idx = 0;
+        let facts = [];
+    let chitchat = [];
+    let lastChitchatIdx = -1;
     let typingTimer = null;
     let hideTimer = null;
 
-    function hide() {
-        wrap.style.opacity = '0';
-        wrap.style.transform = 'scale(0.6)';
-    }
-
-    function typeText(text) {
-        clearTimeout(typingTimer);
-        clearTimeout(hideTimer);
-        bubble.textContent = '';
-        let i = 0;
-        (function tick() {
-            if (i <= text.length) {
-                bubble.textContent = text.slice(0, i);
-                i++;
-                typingTimer = setTimeout(tick, 40);
-            } else {
-                hideTimer = setTimeout(hide, 8000);
-            }
-        })();
-    }
-
-    function show(text) {
-        clearTimeout(typingTimer);
-        clearTimeout(hideTimer);
-        wrap.style.opacity = '0';
-        wrap.style.transform = 'scale(0.6)';
-        bubble.textContent = '';
-        setTimeout(() => {
-            wrap.style.opacity = '1';
-            wrap.style.transform = 'scale(1)';
-            typeText(text);
-        }, 200);
+    function randomChitchat() {
+        if (!chitchat.length) return '……';
+        if (chitchat.length === 1) return chitchat[0];
+        let i;
+        do {
+            i = Math.floor(Math.random() * chitchat.length);
+        } while (i === lastChitchatIdx);
+        lastChitchatIdx = i;
+        return chitchat[i];
     }
 
     function next() {
-        if (!lines.length) return;
-        idx = (idx + 1) % lines.length;
-        show(lines[idx]);
+        // 有真实数据台词 → 先轮着说；说完了 → 随机抽闲聊
+        if (facts.length) {
+            show(facts.shift());
+        } else {
+            show(randomChitchat());
+        }
     }
 
     function fromEntry() {
@@ -273,15 +254,17 @@
         }
     }
 
-    fetch('/api/kanban/lines')
+        fetch('/api/kanban/lines')
         .then(r => r.json())
         .then(data => {
-            lines = data.lines || ['欢迎来到动漫社！'];
-            if (fromEntry()) setTimeout(() => show(lines[0]), 800);
+            facts = data.facts || [];
+            chitchat = data.chitchat || ['欢迎来到动漫社！'];
+            if (fromEntry() && facts.length) {
+                setTimeout(() => show(facts.shift()), 800);
+            }
         })
         .catch(() => {
-            lines = ['欢迎来到动漫社！'];
-            if (fromEntry()) setTimeout(() => show(lines[0]), 800);
+            chitchat = ['欢迎来到动漫社！'];
         });
 
     // 点击（非拖拽）才换句
