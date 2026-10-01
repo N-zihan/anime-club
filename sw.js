@@ -1,5 +1,5 @@
 // 缓存的版本号——每次更新缓存时修改这个版本号
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_STATIC = `anime-club-static-${CACHE_VERSION}`;
 
 // 只预缓存静态资源
