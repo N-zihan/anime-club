@@ -67,9 +67,9 @@
         transition:opacity 0.25s, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         pointer-events:auto;">
         <div id="kanban-bubble" style="
-            background:white; color:#1e2a3a; padding:12px 18px;
-            border-radius:16px; font-size:1rem; line-height:1.5;
-            box-shadow:0 6px 20px rgba(0,0,0,0.15); max-width:270px;
+            background:white; color:#1e2a3a; padding:10px 16px;
+            border-radius:16px; font-size:0.85rem; line-height:1.5;
+            box-shadow:0 6px 20px rgba(0,0,0,0.15); max-width:220px;
             min-height:1.5em; cursor:pointer; position:relative;
             animation:bubble-float 2.5s ease-in-out infinite;">
         </div>
@@ -78,9 +78,9 @@
             background:white; transform:rotate(45deg);
             box-shadow:4px 4px 8px rgba(0,0,0,0.06);"></div>
     </div>
-    <img id="kanban-img" src="{{ url_for('static', filename='images/kanban.png') }}"
+        <img id="kanban-img" src="{{ url_for('static', filename='images/kanban.png') }}"
          alt="看板娘" draggable="false"
-         style="width:180px; height:auto; display:block; cursor:grab; pointer-events:auto;
+         style="width:120px; height:auto; display:block; cursor:grab; pointer-events:auto;
                 filter:drop-shadow(0 4px 12px rgba(0,0,0,0.15));
                 animation:kanban-breathe 3s ease-in-out infinite; touch-action:none;">
 </div>
@@ -95,8 +95,9 @@
     50% { transform: translateY(-3px); }
 }
 @media (max-width: 700px) {
-    #kanban-bubble { font-size:0.8rem; max-width:180px; padding:8px 12px; }
-    #kanban-bubble-wrap > div:nth-child(2) { right:16px; }
+    #kanban-img { width:180px; }
+    #kanban-bubble { font-size:1rem; max-width:270px; padding:12px 18px; }
+    #kanban-bubble-wrap > div:nth-child(2) { right:20px; }
 }
 [data-theme="dark"] #kanban-bubble { background:#334155; color:#e2e8f0; }
 [data-theme="dark"] #kanban-bubble-wrap > div:nth-child(2) { background:#334155; }
