@@ -238,9 +238,14 @@ def send_register_code():
 def login():
     username = ''
     if request.method == 'POST':
-        username = request.form.get('username', '')
+        login_id = request.form.get('username', '').strip()
+        username = login_id
         password = request.form.get('password', '')
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter(
+            (User.username == login_id) |
+            (User.qq == login_id) |
+            (User.email == login_id)
+        ).first()
         if user and user.check_password(password):
             session['user_id'] = user.id
             session['username'] = user.username
