@@ -171,6 +171,12 @@
         <div><strong>{{ c.name }}</strong></div>
         <div style="font-size:0.85rem; color: var(--text-secondary);">{{ c.source }}</div>
         <div style="font-size:0.8rem; color: var(--text-muted);">女</div>
+        {% if c.description %}
+        <div style="font-size:0.78rem; color: var(--text-secondary); margin-top:6px; line-height:1.5;
+                    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">
+            {{ c.description }}
+        </div>
+        {% endif %}
         <div style="font-size:0.7rem; color: var(--text-muted); margin-top:4px;">
             状态：
             {% if c.stage == 'champion' %}
@@ -213,6 +219,12 @@
         <div><strong>{{ c.name }}</strong></div>
         <div style="font-size:0.85rem; color: var(--text-secondary);">{{ c.source }}</div>
         <div style="font-size:0.8rem; color: var(--text-muted);">男</div>
+        {% if c.description %}
+        <div style="font-size:0.78rem; color: var(--text-secondary); margin-top:6px; line-height:1.5;
+                    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">
+            {{ c.description }}
+        </div>
+        {% endif %}
         <div style="font-size:0.7rem; color: var(--text-muted); margin-top:4px;">
             状态：
             {% if c.stage == 'champion' %}
