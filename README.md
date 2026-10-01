@@ -109,6 +109,7 @@
 ├── .env.example                            # 环境变量模板（填写好后删除 .example 后缀使用）
 ├── .gitignore                              # Git 忽略规则
 ├── .python-version                         # Python 版本指定
+├── init.py                                 # 手动运维文件
 ├── LICENSE                                 # MIT 许可证
 ├── package.json                            # Node.js 构建配置
 ├── pytest.ini                              # Pytest 配置
@@ -161,29 +162,7 @@ MAIL_PASSWORD=SMTP邮箱授权码
 ```
 
 > API_key从[siliconflow](https://cloud.siliconflow.cn)获取
-
-运行：
-
-```bash
-python run.py
-```
-
-访问 http://127.0.0.1:5000
-
-测试：
-
-```bash
-# 后端测试
-pytest -v
-
-# 前端 E2E 测试
-npm test
-```
-
-## 部署准备
-
-如果打算把网站部署到公网，就需要两个服务：Supabase（数据库）和 Vercel（网站托管）
-
+ 
 ### Supabase：创建数据库
 
 1. 访问 [Supabase](https://supabase.com) 注册账号，点击 **New project**
@@ -218,6 +197,27 @@ API Keys 在同一页面的 **Project API keys** 区域获取：
 
 > `service_role` 密钥权限极高，仅供后端使用，切勿泄露或提交到代码仓库。
 
+运行：
+
+```bash
+python init.py
+python run.py
+```
+
+访问 http://127.0.0.1:5000
+
+测试：
+
+```bash
+# 后端测试
+pytest -v
+
+# 前端 E2E 测试
+npm test
+```
+
+## 部署准备
+
 ### Vercel：部署网站
 
 1. 创建仓库，推送代码至你的仓库
@@ -237,9 +237,9 @@ API Keys 在同一页面的 **Project API keys** 区域获取：
 ## 项目状态
 
 - 核心功能完整
-- 后端测试：131 个用例全部通过
+- 后端测试：128 个用例全部通过
 - 前端测试：27 个用例，23 通过，4 跳过（投票流程依赖数据，暂不阻塞 CI）
-- Pylint 评分 8.99/10
+- Pylint 评分 9.22/10
 - 已部署至生产环境
 
 ## 许可证
