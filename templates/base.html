@@ -110,9 +110,9 @@
     const img = document.getElementById('kanban-img');
     const wrap = document.getElementById('kanban-bubble-wrap');
     const bubble = document.getElementById('kanban-bubble');
-    if (!kanban || !img) return;
+    if (!kanban || !img || !wrap || !bubble) return;
 
-    // ===== 位置恢复 =====
+    // ========== 位置恢复 ==========
     function clampPosition() {
         const rect = kanban.getBoundingClientRect();
         let left = rect.left;
@@ -144,17 +144,82 @@
     restorePosition();
     window.addEventListener('resize', clampPosition);
 
-        // ===== 拖拽 + 点击判定 =====
+    // ========== 气泡状态 ==========
+    let facts = [];
+    let chitchat = ['欢迎来到动漫社！'];
+    let lastChitchatIdx = -1;
+    let typingTimer = null;
+    let hideTimer = null;
+
+    function hideBubble() {
+        wrap.style.opacity = '0';
+        wrap.style.transform = 'scale(0.6)';
+    }
+
+    function typeText(text) {
+        clearTimeout(typingTimer);
+        clearTimeout(hideTimer);
+        bubble.textContent = '';
+        let i = 0;
+        (function tick() {
+            if (i <= text.length) {
+                bubble.textContent = text.slice(0, i);
+                i++;
+                typingTimer = setTimeout(tick, 40);
+            } else {
+                hideTimer = setTimeout(hideBubble, 8000);
+            }
+        })();
+    }
+
+    function showBubble(text) {
+        clearTimeout(typingTimer);
+        clearTimeout(hideTimer);
+        wrap.style.opacity = '0';
+        wrap.style.transform = 'scale(0.6)';
+        bubble.textContent = '';
+        setTimeout(() => {
+            wrap.style.opacity = '1';
+            wrap.style.transform = 'scale(1)';
+            typeText(text);
+        }, 200);
+    }
+
+    function randomChitchat() {
+        if (!chitchat.length) return '……';
+        if (chitchat.length === 1) return chitchat[0];
+        let i;
+        do {
+            i = Math.floor(Math.random() * chitchat.length);
+        } while (i === lastChitchatIdx);
+        lastChitchatIdx = i;
+        return chitchat[i];
+    }
+
+    function next() {
+        if (facts.length) {
+            showBubble(facts.shift());
+        } else {
+            showBubble(randomChitchat());
+        }
+    }
+
+    // ========== 拖拽 ==========
     let dragging = false;
     let moved = false;
-    let startX = 0, startY = 0;
-    let startLeft = 0, startTop = 0;
+    let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+    function getPoint(e) {
+        if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        return { x: e.clientX, y: e.clientY };
+    }
 
     function onStart(e) {
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (e.button !== undefined && e.button !== 0) return;
+        const p = getPoint(e);
         const rect = kanban.getBoundingClientRect();
-        startX = e.clientX;
-        startY = e.clientY;
+        startX = p.x;
+        startY = p.y;
         startLeft = rect.left;
         startTop = rect.top;
         dragging = true;
@@ -164,8 +229,9 @@
 
     function onMove(e) {
         if (!dragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
+        const p = getPoint(e);
+        const dx = p.x - startX;
+        const dy = p.y - startY;
         if (!moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) moved = true;
         if (!moved) return;
 
@@ -183,10 +249,10 @@
         kanban.style.top = newTop + 'px';
         kanban.style.right = 'auto';
         kanban.style.bottom = 'auto';
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
     }
 
-    function onEnd(_e) {
+    function onEnd() {
         if (!dragging) return;
         dragging = false;
         img.style.cursor = 'grab';
@@ -194,17 +260,9 @@
             const rect = kanban.getBoundingClientRect();
             try {
                 localStorage.setItem(POS_KEY, JSON.stringify({ left: rect.left, top: rect.top }));
-            } catch (err) { /* 忽略 */ }
-        } else {
-            // 没移动 → 视为点击 → 换句
-            next();
+            } catch (e) { /* 忽略 */ }
         }
     }
-
-    img.addEventListener('pointerdown', onStart);
-    img.addEventListener('pointermove', onMove);
-    img.addEventListener('pointerup', onEnd);
-    img.addEventListener('pointercancel', onEnd);
 
     img.addEventListener('mousedown', onStart);
     document.addEventListener('mousemove', onMove);
@@ -215,33 +273,14 @@
     document.addEventListener('touchend', onEnd);
     document.addEventListener('touchcancel', onEnd);
 
-    // ===== 气泡逻辑 =====
-        let facts = [];
-    let chitchat = [];
-    let lastChitchatIdx = -1;
-    let typingTimer = null;
-    let hideTimer = null;
+    // ========== 点击 ==========
+    img.addEventListener('click', function () {
+        if (moved) return;
+        next();
+    });
+    bubble.addEventListener('click', next);
 
-    function randomChitchat() {
-        if (!chitchat.length) return '……';
-        if (chitchat.length === 1) return chitchat[0];
-        let i;
-        do {
-            i = Math.floor(Math.random() * chitchat.length);
-        } while (i === lastChitchatIdx);
-        lastChitchatIdx = i;
-        return chitchat[i];
-    }
-
-    function next() {
-        // 有真实数据台词 → 先轮着说；说完了 → 随机抽闲聊
-        if (facts.length) {
-            show(facts.shift());
-        } else {
-            show(randomChitchat());
-        }
-    }
-
+    // ========== 拉数据 ==========
     function fromEntry() {
         const ref = document.referrer;
         if (!ref) return true;
@@ -255,19 +294,18 @@
         }
     }
 
-        fetch('/api/kanban/lines')
+    fetch('/api/kanban/lines')
         .then(r => r.json())
         .then(data => {
             facts = data.facts || [];
             chitchat = data.chitchat || ['欢迎来到动漫社！'];
             if (fromEntry() && facts.length) {
-                setTimeout(() => show(facts.shift()), 800);
+                setTimeout(() => showBubble(facts.shift()), 800);
             }
         })
         .catch(() => {
             chitchat = ['欢迎来到动漫社！'];
         });
-    bubble.addEventListener('click', next);
 })();
 </script>
 {% endif %}
