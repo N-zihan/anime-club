@@ -1123,58 +1123,59 @@ def api_kanban_lines():
 
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
 
-    if _kanban_cache['lines'] and _kanban_cache['expires'] > now:
-        return jsonify(_kanban_cache['lines'])
+    # 缓存部分：公共数据（不含用户名）
+    if not (_kanban_cache['lines'] and _kanban_cache['expires'] > now):
+        facts = []
 
-    facts = []
+        total = User.query.count()
+        if total:
+            facts.append(f'社团已有 {total} 位社员～')
 
-    if session.get('username'):
-        facts.append(f'欢迎回来，{session["username"]}！')
+        contest = Contest.query.filter(
+            Contest.status.in_(['open', 'group_stage', 'knockout']),
+            Contest.open_at <= now,
+            Contest.close_at >= now
+        ).order_by(Contest.created_at.desc()).first()
+        if contest:
+            facts.append(f'《{contest.title}》正在进行中！')
 
-    total = User.query.count()
-    if total:
-        facts.append(f'社团已有 {total} 位社员～')
+        msg = Message.query.order_by(Message.timestamp.desc()).first()
+        if msg:
+            snippet = msg.content[:20] + ('…' if len(msg.content) > 20 else '')
+            facts.append(f'{msg.nickname}：{snippet}')
 
-    contest = Contest.query.filter(
-        Contest.status.in_(['open', 'group_stage', 'knockout']),
-        Contest.open_at <= now,
-        Contest.close_at >= now
-    ).order_by(Contest.created_at.desc()).first()
-    if contest:
-        facts.append(f'《{contest.title}》正在进行中！')
+        chitchat = [
+            '今天也要元气满满哦～',
+            '你有多久没看番了？',
+            '群里有人冒泡了吗？',
+            '猜猜我几岁？',
+            '网站最近更新了哦～',
+            '要不要去看看照片墙？',
+            '留言板有人在等你哦～',
+            '听说番剧百科很好玩',
+            '社长今天也辛苦了',
+            '摸鱼中……勿扰',
+            '我是不是站得太久了？',
+            '有没有那种，好看又短的番',
+            '今天天气真好啊～',
+            '啊，突然想吃草莓蛋糕',
+            '你点我干嘛，我很忙的（其实不忙）',
+            '刚在后台看到有人上传照片了',
+            '本周新番有人追吗？',
+            '别看了，去发个留言吧',
+            '第一次来吗？随便逛逛～',
+            '我不困，我只是在打盹',
+        ]
 
-    msg = Message.query.order_by(Message.timestamp.desc()).first()
-    if msg:
-        snippet = msg.content[:20] + ('…' if len(msg.content) > 20 else '')
-        facts.append(f'{msg.nickname}：{snippet}')
+        _kanban_cache['lines'] = {'facts': facts, 'chitchat': chitchat}
+        _kanban_cache['expires'] = now + timedelta(minutes=5)
 
-    chitchat = [
-        '今天也要元气满满哦～',
-        '你有多久没看番了？',
-        '群里有人冒泡了吗？',
-        '猜猜我几岁？',
-        '网站最近更新了哦～',
-        '要不要去看看照片墙？',
-        '留言板有人在等你哦～',
-        '听说番剧百科很好玩',
-        '社长今天也辛苦了',
-        '摸鱼中……勿扰',
-        '我是不是站得太久了？',
-        '有没有那种，好看又短的番',
-        '今天天气真好啊～',
-        '啊，突然想吃草莓蛋糕',
-        '你点我干嘛，我很忙的（其实不忙）',
-        '刚在后台看到有人上传照片了',
-        '本周新番有人追吗？',
-        '别看了，去发个留言吧',
-        '第一次来吗？随便逛逛～',
-        '我不困，我只是在打盹',
-    ]
+    # 每次实时拼装：把"欢迎回来 XXX"放在最前
+    payload = dict(_kanban_cache['lines'])
+    username = session.get('username')
+    if username:
+        payload['facts'] = [f'欢迎回来，{username}！'] + list(payload['facts'])
 
-    payload = {'facts': facts, 'chitchat': chitchat}
-
-    _kanban_cache['lines'] = payload
-    _kanban_cache['expires'] = now + timedelta(minutes=5)
     return jsonify(payload)
 
 
