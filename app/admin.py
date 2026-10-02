@@ -552,16 +552,21 @@ def admin_nomination_approve(nomination_id):
 def admin_nomination_reject(nomination_id):
     nomination = get_or_404(Nomination, nomination_id)
     contest_id = nomination.contest_id
-    nomination.status = 'rejected'
+    user_id = nomination.user_id
+    name = nomination.name
+
+    # 直接删除，释放名额、放开名字
+    db.session.delete(nomination)
     db.session.commit()
+
     notify(
-        nomination.user_id,
-        f'你的提名「{nomination.name}」被拒绝',
-        '如有疑问请联系管理员。',
+        user_id,
+        f'你的提名「{name}」被拒绝',
+        '名额已退回，可以重新提名其他角色。',
         notify_type='audit',
     )
     db.session.commit()
-    flash(f'已拒绝提名: {nomination.name}', 'warning')
+    flash(f'已拒绝提名: {name}', 'warning')
     return redirect(url_for('admin.admin_contest_edit', contest_id=contest_id))
 
 
