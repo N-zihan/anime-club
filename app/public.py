@@ -250,7 +250,6 @@ def api_anime_list():
 
 @public_bp.route('/api/anime/search')
 def api_anime_search():
-    """搜索番剧"""
     keyword = (request.args.get('q') or '').strip()
     if not keyword:
         return jsonify({'items': [], 'total': 0})
@@ -258,7 +257,10 @@ def api_anime_search():
         offset = int(request.args.get('offset', 0))
     except ValueError:
         offset = 0
-    items, total = search_subjects(keyword, offset=offset)
+    sort = request.args.get('sort', 'match')
+    if sort not in ('match', 'heat', 'rank', 'score'):
+        sort = 'match'
+    items, total = search_subjects(keyword, offset=offset, sort=sort)
     return jsonify({'items': items, 'total': total})
 
 

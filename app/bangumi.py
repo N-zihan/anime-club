@@ -68,13 +68,16 @@ def get_subjects(offset=0, limit=PAGE_SIZE, sort='rank'):
         return []
 
 
-def search_subjects(keyword, offset=0, limit=PAGE_SIZE):
+def search_subjects(keyword, offset=0, limit=PAGE_SIZE, sort='match'):
     """搜索番剧，返回 (结果列表, 总数)"""
+    # Bangumi 搜索接口只支持 match/heat/rank/score
+    if sort not in ('match', 'heat', 'rank', 'score'):
+        sort = 'match'
     try:
         res = requests.post(
             'https://api.bgm.tv/v0/search/subjects',
             params={'limit': limit, 'offset': offset},
-            json={'keyword': keyword, 'filter': {'type': [2]}, 'sort': 'match'},
+            json={'keyword': keyword, 'filter': {'type': [2]}, 'sort': sort},
             headers={**HEADERS, 'Content-Type': 'application/json'},
             timeout=8,
         )

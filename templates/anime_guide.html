@@ -127,8 +127,11 @@
         loadMoreEl.textContent = '正在加载...';
 
         let url;
+        // loadPage 里，搜索 URL 带上 sort
         if (keyword) {
-            url = '/api/anime/search?q=' + encodeURIComponent(keyword) + '&offset=' + offset;
+            url = '/api/anime/search?q=' + encodeURIComponent(keyword)
+                + '&offset=' + offset
+                + '&sort=' + encodeURIComponent(sort);
         } else {
             url = '/api/anime/list?offset=' + offset + '&sort=' + encodeURIComponent(sort);
         }
@@ -201,9 +204,7 @@
     // 排序切换
     sortSelect.addEventListener('change', function () {
         sort = this.value;
-        if (!keyword) {
-            resetAndLoad();
-        }
+        resetAndLoad();
     });
 
     // ===== 模态框 =====
