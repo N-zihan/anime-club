@@ -575,6 +575,18 @@ def admin_nomination_reject(nomination_id):
 def admin_candidate_delete(candidate_id):
     candidate = get_or_404(Candidate, candidate_id)
     contest_id = candidate.contest_id
+    nomination = candidate.nomination
+
+    # 如果有关联的提名，撤回它的"已通过"状态，并通知用户
+    if nomination:
+        notify(
+            nomination.user_id,
+            f'你的提名「{nomination.name}」已被移除',
+            '名额已退回。',
+            notify_type='audit',
+        )
+        db.session.delete(nomination)
+
     db.session.delete(candidate)
     db.session.commit()
     flash('已从候选池移除该角色', 'success')
