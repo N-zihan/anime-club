@@ -104,13 +104,15 @@ def _build_commentary_prompt(contest: Contest, phase: str, phase_name: str, extr
 
 def _build_nomination_prompt(contest: Contest) -> str:
     """提名期 prompt"""
-    from .models import Nomination
+    from .models import Nomination, Candidate
 
-    approved = contest.nominations.filter_by(status='approved').count()
-    pending = contest.nominations.filter_by(status='pending').count()
+    # 用户数：从提名表去重统计（这个没错）
     user_count = db.session.query(Nomination.user_id).filter_by(
         contest_id=contest.id
     ).distinct().count()
+
+    # 角色数：直接从候选池统计，不依赖提名状态
+    candidate_count = Candidate.query.filter_by(contest_id=contest.id).count()
 
     return f"""
 你是萌战解说员，正在解说"提名期"。
@@ -119,13 +121,12 @@ def _build_nomination_prompt(contest: Contest) -> str:
 
 【数据统计】（请严格按以下措辞表述，不要改变单位）
 - 已提交提名的用户数：{user_count} 人
-- 已通过审核的角色数：{approved} 个
-- 待审核的角色数：{pending} 个
+- 候选角色数：{candidate_count} 个
 
 请用热情活泼的语气，生成一段 80-100 字的提名期战报。
 要点：
 - 提到"已有 {user_count} 位社员参与了提名"
-- 提到"目前已有 {approved} 个角色通过审核"
+- 提到"目前候选池已有 {candidate_count} 个角色"
 - 鼓励大家积极提名
 - 语气要有"赛事即将开始"的期待感
 - 注意区分"用户"和"角色"两个词，不要说反
@@ -134,14 +135,13 @@ def _build_nomination_prompt(contest: Contest) -> str:
 
 def _build_review_prompt(contest: Contest) -> str:
     """审核期 prompt"""
-    from .models import Nomination
+    from .models import Nomination, Candidate
 
-    approved = contest.nominations.filter_by(status='approved').count()
-    pending = contest.nominations.filter_by(status='pending').count()
-    rejected = contest.nominations.filter_by(status='rejected').count()
     user_count = db.session.query(Nomination.user_id).filter_by(
         contest_id=contest.id
     ).distinct().count()
+    candidate_count = Candidate.query.filter_by(contest_id=contest.id).count()
+    pending = contest.nominations.filter_by(status='pending').count()
 
     return f"""
 你是萌战解说员，正在解说"审核期"。
@@ -150,16 +150,15 @@ def _build_review_prompt(contest: Contest) -> str:
 
 【数据统计】（请严格按以下措辞表述）
 - 参与提名的用户数：{user_count} 人
-- 已通过审核的角色数：{approved} 个
+- 候选角色数：{candidate_count} 个
 - 待审核的角色数：{pending} 个
-- 被拒绝的角色数：{rejected} 个
 
 请生成一段 80-100 字的审核期战报。
 要点：
 - 说明管理员正在审核提名
-- 提到目前的审核进度（{approved} 个已通过，{pending} 个待审核）
+- 提到"目前候选池已有 {candidate_count} 个角色"
 - 语气轻松，让用户稍安勿躁
-- 注意区分"用户"和"角色"，不要说反
+- 注意区分"用户"和"角色"
 """
 
 
