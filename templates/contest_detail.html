@@ -10,7 +10,7 @@
 </div>
 {% elif phase == 'review' %}
 <div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
-    当前为 <strong>审核期</strong>，管理员正在审核提名，请稍候
+    当前为 <strong>审核期</strong>，管理员正在审核提名，截止 {{ review_end.strftime('%Y年%m月%d日 %H:%M') if review_end else '未设置' }}
 </div>
 {% elif phase == 'qualifying' %}
 <div style="padding:10px 16px; border-radius:8px; margin-bottom:16px; border-left:4px solid #2196f3; background: var(--bg-card);">
@@ -463,6 +463,8 @@
             <strong style="color: var(--text-primary);">
                 {% if phase == 'nomination' %}
                     {{ nomination_end.strftime('%Y年%m月%d日 %H:%M') if nomination_end else '未设置' }}
+                {% elif phase == 'review' %}
+                    {{ review_end.strftime('%Y年%m月%d日 %H:%M') if review_end else '未设置' }}
                 {% elif phase == 'qualifying' %}
                     {{ qualifying_vote_end.strftime('%Y年%m月%d日 %H:%M') if qualifying_vote_end else '未设置' }}
                 {% elif phase == 'qualifying_result' %}

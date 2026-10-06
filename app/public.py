@@ -450,6 +450,7 @@ def contest_detail(contest_id):
                            phase=phase,
                            user_nomination_count=user_nomination_count,
                            nomination_end=times['nomination_end'],
+                           review_end=times['review_end'],
                            qualifying_vote_end=times['qualifying_vote_end'],
                            qualifying_end=times['qualifying_end'],
                            group_round_1_end=times['group_round_1_end'],
