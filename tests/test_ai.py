@@ -216,7 +216,8 @@ class TestAIIntegration:
             messages = call_args['messages']
             user_message = messages[1]['content']
             assert "测试萌战" in user_message
-            assert "候选角色数：64" in user_message
+            assert "女组" in user_message
+            assert "男组" in user_message
 
 
 # ========== 内部 prompt 构建函数 ==========

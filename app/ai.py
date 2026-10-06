@@ -69,9 +69,12 @@ def _set_cache(key: str, data: str):
     }
 
 
-def _get_qualifying_top_votes(contest_id: int, limit: int = 10) -> list:
-    """获取海选票数前 N 名"""
-    candidates = Candidate.query.filter_by(contest_id=contest_id).all()
+def _get_qualifying_top_votes(contest_id: int, gender: str = None, limit: int = 10) -> list:
+    """获取海选票数前 N 名（可按性别过滤）"""
+    query = Candidate.query.filter_by(contest_id=contest_id)
+    if gender:
+        query = query.filter_by(gender=gender)
+    candidates = query.all()
     result = []
     for c in candidates:
         total = ContestVote.query.filter_by(
@@ -86,6 +89,8 @@ def _build_commentary_prompt(contest: Contest, phase: str, phase_name: str, extr
     """根据阶段构建不同的 prompt"""
     if phase == 'nomination':
         return _build_nomination_prompt(contest)
+    if phase == 'review':
+        return _build_review_prompt(contest)
     if phase == 'qualifying':
         return _build_qualifying_prompt(contest)
     if phase in ['group_round_1', 'group_round_2', 'group_round_3']:
@@ -99,41 +104,88 @@ def _build_commentary_prompt(contest: Contest, phase: str, phase_name: str, extr
 
 def _build_nomination_prompt(contest: Contest) -> str:
     """提名期 prompt"""
-    nominations = contest.nominations.filter_by(status='approved').count()
+    from .models import Nomination
+
+    approved = contest.nominations.filter_by(status='approved').count()
     pending = contest.nominations.filter_by(status='pending').count()
+    user_count = db.session.query(Nomination.user_id).filter_by(
+        contest_id=contest.id
+    ).distinct().count()
+
     return f"""
 你是萌战解说员，正在解说"提名期"。
 
 赛事：{contest.title}
-已通过提名：{nominations} 个角色
-待审核提名：{pending} 个角色
+
+【数据统计】（请严格按以下措辞表述，不要改变单位）
+- 已提交提名的用户数：{user_count} 人
+- 已通过审核的角色数：{approved} 个
+- 待审核的角色数：{pending} 个
 
 请用热情活泼的语气，生成一段 80-100 字的提名期战报。
 要点：
-- 提到提名总数
+- 提到"已有 {user_count} 位社员参与了提名"
+- 提到"目前已有 {approved} 个角色通过审核"
 - 鼓励大家积极提名
 - 语气要有"赛事即将开始"的期待感
+- 注意区分"用户"和"角色"两个词，不要说反
+"""
+
+
+def _build_review_prompt(contest: Contest) -> str:
+    """审核期 prompt"""
+    from .models import Nomination
+
+    approved = contest.nominations.filter_by(status='approved').count()
+    pending = contest.nominations.filter_by(status='pending').count()
+    rejected = contest.nominations.filter_by(status='rejected').count()
+    user_count = db.session.query(Nomination.user_id).filter_by(
+        contest_id=contest.id
+    ).distinct().count()
+
+    return f"""
+你是萌战解说员，正在解说"审核期"。
+
+赛事：{contest.title}
+
+【数据统计】（请严格按以下措辞表述）
+- 参与提名的用户数：{user_count} 人
+- 已通过审核的角色数：{approved} 个
+- 待审核的角色数：{pending} 个
+- 被拒绝的角色数：{rejected} 个
+
+请生成一段 80-100 字的审核期战报。
+要点：
+- 说明管理员正在审核提名
+- 提到目前的审核进度（{approved} 个已通过，{pending} 个待审核）
+- 语气轻松，让用户稍安勿躁
+- 注意区分"用户"和"角色"，不要说反
 """
 
 
 def _build_qualifying_prompt(contest: Contest) -> str:
     """海选投票期 prompt"""
-    top = _get_qualifying_top_votes(contest.id, 8)
-    total_candidates = contest.candidates.count()
+    female_top = _get_qualifying_top_votes(contest.id, gender='female', limit=5)
+    male_top = _get_qualifying_top_votes(contest.id, gender='male', limit=5)
+    female_total = contest.candidates.filter_by(gender='female').count()
+    male_total = contest.candidates.filter_by(gender='male').count()
 
-    if not top:
+    if not female_top and not male_top:
         return "海选投票已开启，但目前还没有票数记录。"
 
-    lines = []
-    lines.append(f"赛事：{contest.title}")
-    lines.append(f"候选角色数：{total_candidates}")
-    lines.append("当前票数排名：")
-    for i, (_, name, votes) in enumerate(top, 1):
-        medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"{i}.")
-        lines.append(f"  {medal} {name}：{votes}票")
+    lines = [f"赛事：{contest.title}"]
 
-    if len(top) < total_candidates:
-        lines.append(f"... 还有 {total_candidates - len(top)} 名选手正在追赶")
+    if female_top:
+        lines.append(f"\n【女组】候选 {female_total} 人，当前票数排名：")
+        for i, (_, name, votes) in enumerate(female_top, 1):
+            medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"{i}.")
+            lines.append(f"  {medal} {name}：{votes}票")
+
+    if male_top:
+        lines.append(f"\n【男组】候选 {male_total} 人，当前票数排名：")
+        for i, (_, name, votes) in enumerate(male_top, 1):
+            medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"{i}.")
+            lines.append(f"  {medal} {name}：{votes}票")
 
     return f"""
 你是萌战解说员，正在解说"海选投票"。
@@ -141,12 +193,12 @@ def _build_qualifying_prompt(contest: Contest) -> str:
 当前数据：
 {chr(10).join(lines)}
 
-请根据以上数据，生成一段 100-150 字的海选战报。
+请根据以上数据，生成一段 120-180 字的海选战报。
 要求：
-1. 提到前3名的角色和票数
+1. 男女组分开评论，各提到前 2-3 名的角色和票数
 2. 指出领先者的优势或追赶者的态势
 3. 语气热情、有紧张感
-4. 不要编造数据
+4. 不要编造数据，不要混淆男女组
 """
 
 
@@ -386,13 +438,20 @@ def generate_prediction(contest_id: int, _extra_data: dict = None) -> tuple:
             return True, cached, None
 
         # 构建预测 prompt
-        top = _get_qualifying_top_votes(contest.id, 10)
-        lines = []
-        lines.append(f"赛事：{contest.title}")
-        lines.append(f"状态：{contest.status}")
-        lines.append("\n海选票数前10名：")
-        for i, (_, name, votes) in enumerate(top, 1):
-            lines.append(f"  {i}. {name}：{votes}票")
+        female_top = _get_qualifying_top_votes(contest.id, gender='female', limit=10)
+        male_top = _get_qualifying_top_votes(contest.id, gender='male', limit=10)
+
+        lines = [f"赛事：{contest.title}", f"状态：{contest.status}"]
+
+        if female_top:
+            lines.append("\n【女组】海选票数前10名：")
+            for i, (_, name, votes) in enumerate(female_top, 1):
+                lines.append(f"  {i}. {name}：{votes}票")
+
+        if male_top:
+            lines.append("\n【男组】海选票数前10名：")
+            for i, (_, name, votes) in enumerate(male_top, 1):
+                lines.append(f"  {i}. {name}：{votes}票")
 
         prompt = f"""
 你是萌战预测专家。
