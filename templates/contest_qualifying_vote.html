@@ -49,7 +49,7 @@
 </form>
 
 <script>
-    (function () {
+        (function () {
         const MAX_CANDIDATES = 5;
         const MAX_VOTES = 15;
         const MAX_PER_CANDIDATE = 3;
@@ -59,27 +59,19 @@
         let usedCandidates = 0;
         let usedVotes = 0;
 
-        const cards = document.querySelectorAll('.candidate-card');
-        cards.forEach(card => {
+        // 初始化：把已有投票填进去
+        document.querySelectorAll('.candidate-card').forEach(card => {
             const cid = parseInt(card.dataset.candidateId);
-            voteCounts[cid] = userVotes[cid] || 0;
-
-            const countSpan = card.querySelector('.vote-count');
-            const hiddenInput = card.querySelector('.vote-input');
-            if (countSpan) countSpan.textContent = voteCounts[cid];
-            if (hiddenInput) hiddenInput.value = voteCounts[cid];
+            const w = userVotes[cid] || 0;
+            voteCounts[cid] = w;
+            card.querySelector('.vote-count').textContent = w;
+            card.querySelector('.vote-input').value = w;
         });
-
-        // 统计已投
-        for (const [id, count] of Object.entries(voteCounts)) {
-            if (count > 0) usedCandidates++;
-            usedVotes += count;
-        }
 
         function updateStats() {
             usedCandidates = 0;
             usedVotes = 0;
-            for (const [id, count] of Object.entries(voteCounts)) {
+            for (const count of Object.values(voteCounts)) {
                 if (count > 0) usedCandidates++;
                 usedVotes += count;
             }
@@ -91,10 +83,8 @@
             const count = voteCounts[cid];
             const card = document.querySelector(`.candidate-card[data-candidate-id="${cid}"]`);
             if (card) {
-                const countSpan = card.querySelector('.vote-count');
-                const hiddenInput = card.querySelector('.vote-input');
-                if (countSpan) countSpan.textContent = count;
-                if (hiddenInput) hiddenInput.value = count;
+                card.querySelector('.vote-count').textContent = count;
+                card.querySelector('.vote-input').value = count;
             }
         }
 
@@ -102,14 +92,17 @@
             const current = voteCounts[cid] || 0;
             const newVal = current + delta;
             if (newVal < 0) return;
-            if (newVal > MAX_PER_CANDIDATE) return;
+            if (newVal > MAX_PER_CANDIDATE) {
+                alert(`每个角色最多只能投 ${MAX_PER_CANDIDATE} 票`);
+                return;
+            }
             if (delta > 0) {
                 if (usedVotes >= MAX_VOTES) {
-                    alert('总票数已达上限（15票）');
+                    alert(`总票数已达上限（${MAX_VOTES} 票）`);
                     return;
                 }
                 if (usedCandidates >= MAX_CANDIDATES && current === 0) {
-                    alert('已达到最多投给5个角色');
+                    alert(`最多只能投给 ${MAX_CANDIDATES} 个角色`);
                     return;
                 }
             }
@@ -119,7 +112,7 @@
         }
 
         document.querySelectorAll('.vote-btn').forEach(btn => {
-            btn.addEventListener('click', function (e) {
+            btn.addEventListener('click', function () {
                 const card = this.closest('.candidate-card');
                 if (!card) return;
                 const cid = parseInt(card.dataset.candidateId);
@@ -129,7 +122,7 @@
             });
         });
 
-        // ========== AJAX 提交 ==========
+        // AJAX 提交
         const form = document.getElementById('voteForm');
         const submitBtn = document.getElementById('submitBtn');
         let isSubmitting = false;
@@ -142,15 +135,7 @@
                 alert('请至少投出1票');
                 return;
             }
-            if (usedVotes > MAX_VOTES) {
-                alert('总票数不能超过15票');
-                return;
-            }
-            if (usedCandidates > MAX_CANDIDATES) {
-                alert('最多只能投给5个角色');
-                return;
-            }
-            if (!confirm('确认提交投票？提交后不可修改')) {
+            if (!confirm('确认提交投票？')) {
                 return;
             }
 
@@ -161,11 +146,10 @@
             const formData = new FormData(form);
             fetch(form.action, {
                 method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
                 body: formData
             })
             .then(res => {
-                // 后端重定向了（成功或已投过）→ 跟着跳
                 if (res.redirected) {
                     window.location.href = res.url;
                     return null;

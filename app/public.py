@@ -637,72 +637,81 @@ def qualifying_vote_submit(contest_id):
         flash('无效的组别', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    # 检查该用户是否已投过该组别
-    existing = ContestVote.query.filter_by(
+    # 1. 读用户已有的投票（这个组别）
+    existing_votes = {}
+    existing_rows = ContestVote.query.filter_by(
         contest_id=contest.id,
         user_id=session.get('user_id'),
         round_number=0,
         gender=gender
-    ).first()
+    ).all()
+    for v in existing_rows:
+        existing_votes[v.candidate_id] = v.weight
 
-    if existing:
-        flash(f'{"女组" if gender == "female" else "男组"}已投过票，不可重复投票', 'warning')
-        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
-
-    votes_data = {}
-    total_votes = 0
-    candidate_count = 0
-
+    # 2. 读本次提交（只算 > 0 的）
+    new_votes = {}
     for key, value in request.form.items():
         if key.startswith('vote_'):
             candidate_id = int(key.split('_')[1])
             weight = int(value) if value else 0
             if weight > 0:
-                votes_data[candidate_id] = weight
-                total_votes += weight
-                candidate_count += 1
+                new_votes[candidate_id] = weight
 
-    if not votes_data:
+    if not new_votes:
         flash('请至少投给一个角色', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    if candidate_count > QUALIFYING_MAX_CANDIDATES:
-        flash(f'{"女组" if gender == "female" else "男组"}最多只能投给5个角色', 'danger')
-        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+    # 3. 合并（已有 + 新增）
+    merged = dict(existing_votes)
+    for cid, w in new_votes.items():
+        merged[cid] = merged.get(cid, 0) + w
 
+    # 4. 校验上限（基于合并后的总量）
+    total_votes = sum(merged.values())
     if total_votes > QUALIFYING_MAX_VOTES:
-        flash(f'{"女组" if gender == "female" else "男组"}总票数不能超过15票', 'danger')
+        flash(f'总票数不能超过 {QUALIFYING_MAX_VOTES} 票（你已投 {sum(existing_votes.values())} 票）', 'danger')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
-    for _, weight in votes_data.items():
+    if len(merged) > QUALIFYING_MAX_CANDIDATES:
+        flash(f'最多只能投给 {QUALIFYING_MAX_CANDIDATES} 个角色', 'danger')
+        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+
+    for _, weight in merged.items():
         if weight > QUALIFYING_MAX_PER_CANDIDATE:
-            flash(f'{"女组" if gender == "female" else "男组"}每个角色最多只能投3票', 'danger')
+            flash(f'每个角色最多只能投 {QUALIFYING_MAX_PER_CANDIDATE} 票', 'danger')
             return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
-    for candidate_id, weight in votes_data.items():
-        vote = ContestVote(
+    # 5. 先删旧记录，再写新记录（保证不重复）
+    ContestVote.query.filter_by(
+        contest_id=contest.id,
+        user_id=session.get('user_id'),
+        round_number=0,
+        gender=gender
+    ).delete()
+
+    for candidate_id, weight in merged.items():
+        db.session.add(ContestVote(
             contest_id=contest.id,
             candidate_id=candidate_id,
             user_id=session.get('user_id'),
             weight=weight,
             round_number=0,
             gender=gender
-        )
-        db.session.add(vote)
+        ))
+
     try:
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify(
-                {'error': True, 'message': f'{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交'}), 400
-        flash(f'{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交', 'warning')
+            return jsonify({'error': True, 'message': '投票冲突，请勿重复提交'}), 400
+        flash('投票冲突，请勿重复提交', 'warning')
         return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return jsonify({'success': True, 'message': '投票成功'})
 
-    flash(f'{"女组" if gender == "female" else "男组"}投票成功！', 'success')
+    flash('投票成功！', 'success')
     if gender == 'female':
         return redirect(url_for('public.qualifying_vote_female', contest_id=contest.id))
     return redirect(url_for('public.qualifying_vote_male', contest_id=contest.id))
