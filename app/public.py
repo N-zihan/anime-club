@@ -566,23 +566,23 @@ def qualifying_vote_female(contest_id):
         flash('暂无女组候选角色', 'warning')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    user_votes = {}
+    existing_votes = {}   # 历史已投（只显示，不能改）
     if session.get('user_id'):
-        existing = ContestVote.query.filter_by(
+        rows = ContestVote.query.filter_by(
             contest_id=contest.id,
             user_id=session.get('user_id'),
             round_number=0,
             gender='female'
         ).all()
-        for v in existing:
-            user_votes[v.candidate_id] = v.weight
+        for v in rows:
+            existing_votes[v.candidate_id] = v.weight
 
     return render_template('contest_qualifying_vote.html',
                            contest=contest,
                            candidates=candidates,
                            phase=_calc_current_phase(contest),
                            gender='female',
-                           user_votes=user_votes)
+                           existing_votes=existing_votes)
 
 
 @public_bp.route('/contest/<int:contest_id>/qualifying/male')
@@ -594,30 +594,28 @@ def qualifying_vote_male(contest_id):
         flash('该赛事未开放', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    # 获取男组候选角色
     candidates = contest.candidates.filter_by(gender='male').all()
     if not candidates:
         flash('暂无男组候选角色', 'warning')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    # 查当前用户已投的票
-    user_votes = {}
+    existing_votes = {}
     if session.get('user_id'):
-        existing = ContestVote.query.filter_by(
+        rows = ContestVote.query.filter_by(
             contest_id=contest.id,
             user_id=session.get('user_id'),
             round_number=0,
             gender='male'
         ).all()
-        for v in existing:
-            user_votes[v.candidate_id] = v.weight
+        for v in rows:
+            existing_votes[v.candidate_id] = v.weight
 
     return render_template('contest_qualifying_vote.html',
                            contest=contest,
                            candidates=candidates,
                            phase=_calc_current_phase(contest),
                            gender='male',
-                           user_votes=user_votes)
+                           existing_votes=existing_votes)
 
 
 @public_bp.route('/contest/<int:contest_id>/qualifying/submit', methods=['POST'])
@@ -635,57 +633,64 @@ def qualifying_vote_submit(contest_id):
 
     gender = request.form.get('gender')
     if gender not in ['female', 'male']:
-        return fail(f'无效的组别（gender={gender}）')
+        return fail(f'无效的组别')
 
-    # 检查是否已投过
-    existing = ContestVote.query.filter_by(
+    # 读历史
+    existing_rows = ContestVote.query.filter_by(
         contest_id=contest.id,
         user_id=session.get('user_id'),
         round_number=0,
         gender=gender
-    ).first()
+    ).all()
+    existing = {v.candidate_id: v.weight for v in existing_rows}
 
-    if existing:
-        return fail('你已经投过票了，不能重复投票')
-
-    # 收集票数
-    votes_data = {}
-    total_votes = 0
-    candidate_count = 0
-
+    # 读本次提交
+    new_votes = {}
     for key, value in request.form.items():
         if key.startswith('vote_'):
-            candidate_id = int(key.split('_')[1])
-            weight = int(value) if value else 0
-            if weight > 0:
-                votes_data[candidate_id] = weight
-                total_votes += weight
-                candidate_count += 1
+            try:
+                cid = int(key.split('_')[1])
+                w = int(value) if value else 0
+                if w > 0:
+                    new_votes[cid] = w
+            except (ValueError, IndexError):
+                pass
 
-    if not votes_data:
-        return fail('请至少投给一个角色')
+    if not new_votes:
+        return fail('请至少给一个角色投票')
 
-    if candidate_count > QUALIFYING_MAX_CANDIDATES:
-        return fail(f'最多只能投给 {QUALIFYING_MAX_CANDIDATES} 个角色（你投了 {candidate_count} 个）')
+    # 合并：历史 + 本次
+    merged = dict(existing)
+    for cid, w in new_votes.items():
+        merged[cid] = merged.get(cid, 0) + w
 
-    if total_votes > QUALIFYING_MAX_VOTES:
-        return fail(f'总票数不能超过 {QUALIFYING_MAX_VOTES} 票（你投了 {total_votes} 票）')
+    # 校验合并后的上限
+    total = sum(merged.values())
+    if total > QUALIFYING_MAX_VOTES:
+        return fail(f'总票数不能超过 {QUALIFYING_MAX_VOTES} 票（已投 {sum(existing.values())} 票，本次 {sum(new_votes.values())} 票，合计 {total}）')
+    if len(merged) > QUALIFYING_MAX_CANDIDATES:
+        return fail(f'最多只能投给 {QUALIFYING_MAX_CANDIDATES} 个角色（已投 {len(existing)} 个，本次 {len(new_votes)} 个，合计 {len(merged)}）')
+    for cid, w in merged.items():
+        if w > QUALIFYING_MAX_PER_CANDIDATE:
+            return fail(f'每个角色最多只能投 {QUALIFYING_MAX_PER_CANDIDATE} 票（角色 {cid} 累计 {w} 票）')
 
-    for _, weight in votes_data.items():
-        if weight > QUALIFYING_MAX_PER_CANDIDATE:
-            return fail(f'每个角色最多只能投 {QUALIFYING_MAX_PER_CANDIDATE} 票')
+    # 覆盖：先删旧，再写合并后的
+    ContestVote.query.filter_by(
+        contest_id=contest.id,
+        user_id=session.get('user_id'),
+        round_number=0,
+        gender=gender
+    ).delete()
 
-    # 写入
-    for candidate_id, weight in votes_data.items():
-        vote = ContestVote(
+    for cid, w in merged.items():
+        db.session.add(ContestVote(
             contest_id=contest.id,
-            candidate_id=candidate_id,
+            candidate_id=cid,
             user_id=session.get('user_id'),
-            weight=weight,
+            weight=w,
             round_number=0,
             gender=gender
-        )
-        db.session.add(vote)
+        ))
 
     try:
         db.session.commit()
@@ -696,7 +701,32 @@ def qualifying_vote_submit(contest_id):
         db.session.rollback()
         return fail(f'写入失败：{type(e).__name__}: {str(e)}')
 
-    return jsonify({'success': True, 'message': '投票成功'})
+    return jsonify({
+        'success': True,
+        'message': f'本次投了 {len(new_votes)} 个角色 {sum(new_votes.values())} 票，累计 {len(merged)} 个角色 {total} 票'
+    })
+
+
+@public_bp.route('/contest/<int:contest_id>/qualifying/reset', methods=['POST'])
+def qualifying_vote_reset(contest_id):
+    if not session.get('user_id'):
+        return jsonify({'success': False, 'message': '未登录'})
+
+    contest = get_or_404(Contest, contest_id)
+
+    gender = request.form.get('gender')
+    if gender not in ['female', 'male']:
+        return jsonify({'success': False, 'message': '无效的组别'})
+
+    deleted = ContestVote.query.filter_by(
+        contest_id=contest.id,
+        user_id=session.get('user_id'),
+        round_number=0,
+        gender=gender
+    ).delete()
+
+    db.session.commit()
+    return jsonify({'success': True, 'message': f'已清空 {deleted} 条投票记录'})
 
 
 # ========== 小组赛投票 ==========

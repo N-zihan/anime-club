@@ -3,26 +3,34 @@
 {% block content %}
 
 {% if phase == 'qualifying' %}
-<!-- ========== 投票期 ========== -->
 <h2>海选投票：{{ contest.title }}</h2>
 <p style="color: var(--text-secondary);">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
 <p style="color: var(--text-secondary);">
-    你共有 <strong>15票</strong>，最多可投给 <strong>5个</strong> 角色，每个角色最多 <strong>3票</strong>
+    每组 <strong>15票</strong>，最多投给 <strong>5个</strong> 角色，每个角色最多 <strong>3票</strong>
 </p>
-<p style="color: #e74c3c; font-size:0.9rem;">提交后不可修改，请谨慎分配</p>
+<p style="color: #94a3b8; font-size:0.85rem;">可以分多次投，每次提交都会累加保存。</p>
 
 <form id="voteForm" method="POST" action="{{ url_for('public.qualifying_vote_submit', contest_id=contest.id) }}">
     <input name="gender" type="hidden" value="{{ gender }}">
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:16px; margin:20px 0;">
         {% for c in candidates %}
+        {% set already = existing_votes.get(c.id, 0) %}
         <div class="candidate-card" data-candidate-id="{{ c.id }}"
-            style="background: var(--bg-card); border-radius:12px; padding:16px; text-align:center; border:1px solid var(--border-color);">
+             data-already="{{ already }}"
+            style="background: var(--bg-card); border-radius:12px; padding:16px; text-align:center; border:1px solid var(--border-color); {% if already >= 3 %}opacity:0.6;{% endif %}">
             {% if c.image_url %}
             <img alt="{{ c.name }}" src="{{ c.image_url }}"
                  style="max-width:80px; max-height:80px; width:auto; height:auto; border-radius:8px; margin-bottom:8px;">
             {% endif %}
             <div><strong style="color: var(--text-primary);">{{ c.name }}</strong></div>
             <div style="font-size:0.85rem; color: var(--text-secondary);">{{ c.source }}</div>
+
+            {% if already > 0 %}
+            <div style="font-size:0.75rem; color:#16a34a; margin-top:6px; font-weight:600;">
+                已投 {{ already }} 票
+            </div>
+            {% endif %}
+
             <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px;">
                 <button class="vote-btn" data-action="decrease"
                         style="background: var(--bg-code); border:1px solid var(--border-color); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem; color: var(--text-primary);" type="button">−</button>
@@ -30,15 +38,16 @@
                 <button class="vote-btn" data-action="increase"
                         style="background:#1e2a3a; color:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;" type="button">+</button>
             </div>
-            <div style="font-size:0.7rem; color: var(--text-muted); margin-top:4px;">最多3票</div>
+            <div style="font-size:0.7rem; color: var(--text-muted); margin-top:4px;">本次投几票</div>
             <input class="vote-input" name="vote_{{ c.id }}" type="hidden" value="0">
         </div>
         {% endfor %}
     </div>
 
     <div style="display:flex; gap:24px; flex-wrap:wrap; background: var(--bg-card); padding:16px 20px; border-radius:12px; margin-top:10px; border:1px solid var(--border-color);">
-        <span style="color: var(--text-primary);">已投角色：<strong id="usedCandidates">0</strong> / 5</span>
-        <span style="color: var(--text-primary);">已用票数：<strong id="usedVotes">0</strong> / 15</span>
+        <span style="color: var(--text-primary);">本次：<strong id="usedCandidates">0</strong> 个角色 / <strong id="usedVotes">0</strong> 票</span>
+        <span style="color: var(--text-muted);">|</span>
+        <span style="color: var(--text-secondary); font-size:0.9rem;">历史已投 {{ existing_votes.values()|sum }} 票</span>
     </div>
 
     <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
@@ -49,23 +58,24 @@
 </form>
 
 <script>
-        (function () {
+    (function () {
         const MAX_CANDIDATES = 5;
         const MAX_VOTES = 15;
         const MAX_PER_CANDIDATE = 3;
 
-        const userVotes = {{ user_votes|tojson }};
+        // 历史数据（只读，用于校验）
+        const existingVotes = {{ existing_votes|tojson }};
+        const existingTotal = Object.values(existingVotes).reduce((a, b) => a + b, 0);
+        const existingCount = Object.keys(existingVotes).length;
+
+        // 本次输入（从 0 开始）
         const voteCounts = {};
         let usedCandidates = 0;
         let usedVotes = 0;
 
-        // 初始化：把已有投票填进去
         document.querySelectorAll('.candidate-card').forEach(card => {
             const cid = parseInt(card.dataset.candidateId);
-            const w = userVotes[cid] || 0;
-            voteCounts[cid] = w;
-            card.querySelector('.vote-count').textContent = w;
-            card.querySelector('.vote-input').value = w;
+            voteCounts[cid] = 0;
         });
 
         function updateStats() {
@@ -81,7 +91,7 @@
 
         function updateDisplay(cid) {
             const count = voteCounts[cid];
-            const card = document.querySelector(`.candidate-card[data-candidate-id="${cid}"]`);
+            const card = document.querySelector('.candidate-card[data-candidate-id="' + cid + '"]');
             if (card) {
                 card.querySelector('.vote-count').textContent = count;
                 card.querySelector('.vote-input').value = count;
@@ -91,21 +101,32 @@
         function changeVote(cid, delta) {
             const current = voteCounts[cid] || 0;
             const newVal = current + delta;
+            const already = existingVotes[cid] || 0;
+
             if (newVal < 0) return;
-            if (newVal > MAX_PER_CANDIDATE) {
-                alert(`每个角色最多只能投 ${MAX_PER_CANDIDATE} 票`);
+
+            // 本次 + 历史不能超过 3
+            if (already + newVal > MAX_PER_CANDIDATE) {
+                alert('该角色已经投了 ' + already + ' 票，本次最多还能投 ' + (MAX_PER_CANDIDATE - already) + ' 票');
                 return;
             }
+
             if (delta > 0) {
-                if (usedVotes >= MAX_VOTES) {
-                    alert(`总票数已达上限（${MAX_VOTES} 票）`);
+                // 本次 + 历史总票数不能超 15
+                if (existingTotal + usedVotes + 1 > MAX_VOTES) {
+                    alert('总票数已达上限（' + MAX_VOTES + ' 票）');
                     return;
                 }
-                if (usedCandidates >= MAX_CANDIDATES && current === 0) {
-                    alert(`最多只能投给 ${MAX_CANDIDATES} 个角色`);
-                    return;
+                // 历史 + 本次角色数不能超 5
+                if (already === 0 && current === 0) {
+                    // 这个角色历史没投，本次也没投 → 新增角色
+                    if (existingCount + usedCandidates >= MAX_CANDIDATES) {
+                        alert('最多只能投给 ' + MAX_CANDIDATES + ' 个角色');
+                        return;
+                    }
                 }
             }
+
             voteCounts[cid] = newVal;
             updateDisplay(cid);
             updateStats();
@@ -116,51 +137,39 @@
                 const card = this.closest('.candidate-card');
                 if (!card) return;
                 const cid = parseInt(card.dataset.candidateId);
-                const action = this.dataset.action;
-                const delta = action === 'increase' ? 1 : -1;
+                const delta = this.dataset.action === 'increase' ? 1 : -1;
                 changeVote(cid, delta);
             });
         });
 
-        // AJAX 提交
+        // ========== 提交 ==========
         const form = document.getElementById('voteForm');
         const submitBtn = document.getElementById('submitBtn');
-        let isSubmitting = false;
+        let submitting = false;
 
-                form.addEventListener('submit', function (e) {
+        form.addEventListener('submit', function (e) {
             e.preventDefault();
-            if (isSubmitting) return;
+            if (submitting) return;
             if (usedVotes === 0) {
-                alert('请至少投出1票');
+                alert('请至少给一个角色投票');
                 return;
             }
-            if (usedVotes > MAX_VOTES) {
-                alert('总票数不能超过15票');
-                return;
-            }
-            if (usedCandidates > MAX_CANDIDATES) {
-                alert('最多只能投给5个角色');
-                return;
-            }
-            if (!confirm('确认提交投票？')) {
-                return;
-            }
+            if (!confirm('确认提交？')) return;
 
-            isSubmitting = true;
+            submitting = true;
             submitBtn.disabled = true;
             submitBtn.textContent = '提交中...';
 
-            const formData = new FormData(form);
             fetch(form.action, {
                 method: 'POST',
                 headers: {'X-Requested-With': 'XMLHttpRequest'},
-                body: formData
+                body: new FormData(form)
             })
             .then(res => res.text().then(text => {
                 try {
                     return JSON.parse(text);
                 } catch (err) {
-                    throw new Error('服务器返回非JSON。HTTP ' + res.status + '，内容：' + text.substring(0, 300));
+                    throw new Error('服务器返回非 JSON（HTTP ' + res.status + '）：' + text.substring(0, 300));
                 }
             }))
             .then(data => {
@@ -171,14 +180,14 @@
                     alert('✗ ' + data.message);
                     submitBtn.disabled = false;
                     submitBtn.textContent = '确认投票';
-                    isSubmitting = false;
+                    submitting = false;
                 }
             })
             .catch(err => {
                 alert('请求异常：' + err.message);
                 submitBtn.disabled = false;
                 submitBtn.textContent = '确认投票';
-                isSubmitting = false;
+                submitting = false;
             });
         });
 
@@ -187,7 +196,6 @@
 </script>
 
 {% elif phase == 'qualifying_result' %}
-<!-- 公示期不变 -->
 <h3>海选结果公示</h3>
 <p style="color: var(--text-secondary);">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
 <p style="color: var(--text-secondary);">以下为海选阶段票数前32名的角色，公示期结束后将进入小组赛。</p>
@@ -255,38 +263,5 @@
 {% endif %}
 
 <p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    (function () {
-        const contestId = {{ contest.id }};
-        {% if session.user_id %}
-        const supabase = window.supabase.createClient(
-            '{{ supabase_url }}',
-            '{{ supabase_anon_key }}'
-        );
-        const channel = supabase
-            .channel('votes-channel')
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'contest_votes',
-                filter: `contest_id=eq.${contestId}`
-            }, (payload) => {
-                fetch(`/api/votes/${payload.new.candidate_id}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        document.querySelectorAll(`[data-candidate-id="${payload.new.candidate_id}"]`).forEach(el => {
-                            const countSpan = el.querySelector('.vote-count');
-                            if (countSpan) {
-                                countSpan.textContent = data.total_votes;
-                            }
-                        });
-                    });
-            })
-            .subscribe();
-        {% endif %}
-    })();
-</script>
 
 {% endblock %}
