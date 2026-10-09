@@ -127,12 +127,19 @@
         const submitBtn = document.getElementById('submitBtn');
         let isSubmitting = false;
 
-        form.addEventListener('submit', function (e) {
+                form.addEventListener('submit', function (e) {
             e.preventDefault();
-
             if (isSubmitting) return;
             if (usedVotes === 0) {
                 alert('请至少投出1票');
+                return;
+            }
+            if (usedVotes > MAX_VOTES) {
+                alert('总票数不能超过15票');
+                return;
+            }
+            if (usedCandidates > MAX_CANDIDATES) {
+                alert('最多只能投给5个角色');
                 return;
             }
             if (!confirm('确认提交投票？')) {
@@ -149,18 +156,26 @@
                 headers: {'X-Requested-With': 'XMLHttpRequest'},
                 body: formData
             })
-            .then(res => {
-                if (res.redirected) {
-                    window.location.href = res.url;
-                    return null;
+            .then(res => res.text().then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch (err) {
+                    throw new Error('服务器返回非JSON。HTTP ' + res.status + '，内容：' + text.substring(0, 300));
                 }
-                return res.json().then(data => {
-                    if (data.error) throw new Error(data.message);
+            }))
+            .then(data => {
+                if (data.success) {
+                    alert('✓ ' + data.message);
                     window.location.reload();
-                });
+                } else {
+                    alert('✗ ' + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '确认投票';
+                    isSubmitting = false;
+                }
             })
             .catch(err => {
-                alert('投票失败：' + (err.message || '请重试'));
+                alert('请求异常：' + err.message);
                 submitBtn.disabled = false;
                 submitBtn.textContent = '确认投票';
                 isSubmitting = false;

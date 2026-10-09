@@ -622,83 +622,81 @@ def qualifying_vote_male(contest_id):
 
 @public_bp.route('/contest/<int:contest_id>/qualifying/submit', methods=['POST'])
 def qualifying_vote_submit(contest_id):
-    def fail(stage, msg):
-        return jsonify({'success': False, 'stage': stage, 'message': msg})
+    def fail(msg):
+        return jsonify({'success': False, 'message': msg})
 
     if not session.get('user_id'):
-        return fail('check_login', '未登录')
+        return fail('未登录')
 
     contest = get_or_404(Contest, contest_id)
+
     if contest.status != 'open':
-        return fail('check_status', f'赛事状态是 "{contest.status}"，不是 open')
+        return fail(f'赛事未开放（当前状态：{contest.status}）')
 
     gender = request.form.get('gender')
     if gender not in ['female', 'male']:
-        return fail('check_gender', f'gender 字段是 "{gender}"')
+        return fail(f'无效的组别（gender={gender}）')
 
-    new_votes = {}
-    for key, value in request.form.items():
-        if key.startswith('vote_'):
-            try:
-                cid = int(key[5:])
-                w = int(value) if value else 0
-                if w > 0:
-                    new_votes[cid] = w
-            except (ValueError, IndexError):
-                pass
-
-    if not new_votes:
-        return fail('check_empty', '没有收到任何票')
-
-    # 校验上限：合并"已有 + 本次"
-    existing_rows = ContestVote.query.filter_by(
+    # 检查是否已投过
+    existing = ContestVote.query.filter_by(
         contest_id=contest.id,
         user_id=session.get('user_id'),
         round_number=0,
         gender=gender
-    ).all()
-    existing = {v.candidate_id: v.weight for v in existing_rows}
+    ).first()
 
-    merged = dict(existing)
-    for cid, w in new_votes.items():
-        merged[cid] = max(existing.get(cid, 0), w)  # 取较大值，不减少
+    if existing:
+        return fail('你已经投过票了，不能重复投票')
 
-    total = sum(merged.values())
-    if total > QUALIFYING_MAX_VOTES:
-        return fail('check_total', f'总票数 {total} 超过 {QUALIFYING_MAX_VOTES}（已有 {sum(existing.values())} 票）')
-    if len(merged) > QUALIFYING_MAX_CANDIDATES:
-        return fail('check_candidates', f'投给 {len(merged)} 个角色，超过 {QUALIFYING_MAX_CANDIDATES}')
-    for cid, w in merged.items():
-        if w > QUALIFYING_MAX_PER_CANDIDATE:
-            return fail('check_per_candidate', f'角色 {cid} 被投了 {w} 票，超过 {QUALIFYING_MAX_PER_CANDIDATE}')
+    # 收集票数
+    votes_data = {}
+    total_votes = 0
+    candidate_count = 0
 
-    # upsert：不删除，只更新或新增
-    for cid, w in merged.items():
-        if cid in existing:
-            # 找到已有记录，更新
-            row = next(r for r in existing_rows if r.candidate_id == cid)
-            row.weight = w
-        else:
-            # 新增
-            db.session.add(ContestVote(
-                contest_id=contest.id,
-                candidate_id=cid,
-                user_id=session.get('user_id'),
-                weight=w,
-                round_number=0,
-                gender=gender
-            ))
+    for key, value in request.form.items():
+        if key.startswith('vote_'):
+            candidate_id = int(key.split('_')[1])
+            weight = int(value) if value else 0
+            if weight > 0:
+                votes_data[candidate_id] = weight
+                total_votes += weight
+                candidate_count += 1
+
+    if not votes_data:
+        return fail('请至少投给一个角色')
+
+    if candidate_count > QUALIFYING_MAX_CANDIDATES:
+        return fail(f'最多只能投给 {QUALIFYING_MAX_CANDIDATES} 个角色（你投了 {candidate_count} 个）')
+
+    if total_votes > QUALIFYING_MAX_VOTES:
+        return fail(f'总票数不能超过 {QUALIFYING_MAX_VOTES} 票（你投了 {total_votes} 票）')
+
+    for _, weight in votes_data.items():
+        if weight > QUALIFYING_MAX_PER_CANDIDATE:
+            return fail(f'每个角色最多只能投 {QUALIFYING_MAX_PER_CANDIDATE} 票')
+
+    # 写入
+    for candidate_id, weight in votes_data.items():
+        vote = ContestVote(
+            contest_id=contest.id,
+            candidate_id=candidate_id,
+            user_id=session.get('user_id'),
+            weight=weight,
+            round_number=0,
+            gender=gender
+        )
+        db.session.add(vote)
 
     try:
         db.session.commit()
+    except IntegrityError as e:
+        db.session.rollback()
+        return fail(f'数据库冲突：{str(e)}')
     except Exception as e:
         db.session.rollback()
-        return fail('commit', f'提交失败：{type(e).__name__}: {e}')
+        return fail(f'写入失败：{type(e).__name__}: {str(e)}')
 
-    return jsonify({
-        'success': True,
-        'message': f'投票成功，共 {len(merged)} 个角色 {total} 票'
-    })
+    return jsonify({'success': True, 'message': '投票成功'})
 
 
 # ========== 小组赛投票 ==========
