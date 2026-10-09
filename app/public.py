@@ -561,17 +561,28 @@ def qualifying_vote_female(contest_id):
         flash('该赛事未开放', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    # 获取女组候选角色
     candidates = contest.candidates.filter_by(gender='female').all()
     if not candidates:
         flash('暂无女组候选角色', 'warning')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
+    user_votes = {}
+    if session.get('user_id'):
+        existing = ContestVote.query.filter_by(
+            contest_id=contest.id,
+            user_id=session.get('user_id'),
+            round_number=0,
+            gender='female'
+        ).all()
+        for v in existing:
+            user_votes[v.candidate_id] = v.weight
+
     return render_template('contest_qualifying_vote.html',
                            contest=contest,
                            candidates=candidates,
                            phase=_calc_current_phase(contest),
-                           gender='female')
+                           gender='female',
+                           user_votes=user_votes)
 
 
 @public_bp.route('/contest/<int:contest_id>/qualifying/male')
@@ -589,11 +600,24 @@ def qualifying_vote_male(contest_id):
         flash('暂无男组候选角色', 'warning')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
+    # 查当前用户已投的票
+    user_votes = {}
+    if session.get('user_id'):
+        existing = ContestVote.query.filter_by(
+            contest_id=contest.id,
+            user_id=session.get('user_id'),
+            round_number=0,
+            gender='male'
+        ).all()
+        for v in existing:
+            user_votes[v.candidate_id] = v.weight
+
     return render_template('contest_qualifying_vote.html',
                            contest=contest,
                            candidates=candidates,
                            phase=_calc_current_phase(contest),
-                           gender='male')
+                           gender='male',
+                           user_votes=user_votes)
 
 
 @public_bp.route('/contest/<int:contest_id>/qualifying/submit', methods=['POST'])
@@ -695,14 +719,34 @@ def group_vote_female(contest_id):
         flash('当前不可投票', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    # 获取女组分组数据
     groups = contest.config.get('female_groups', []) if contest.config else []
     if not groups:
         flash('女组分组尚未生成', 'warning')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    # 获取所有候选角色（用于显示名字）
     candidates = {c.id: c for c in contest.candidates.all()}
+
+    # 算当前轮次
+    now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
+    times = calc_stage_times(contest.open_at)
+    round_number = None
+    if now <= times['group_round_1_end']:
+        round_number = 1
+    elif now <= times['group_round_2_end']:
+        round_number = 2
+    elif now <= times['group_round_3_end']:
+        round_number = 3
+
+    # 查用户已投的对决（用 "组_场" 作 key）
+    voted_matches = []
+    if session.get('user_id') and round_number:
+        existing = ContestVote.query.filter_by(
+            contest_id=contest.id,
+            user_id=session.get('user_id'),
+            round_number=round_number,
+            gender='female'
+        ).all()
+        voted_matches = [f'{v.group_index}_{v.match_index}' for v in existing]
 
     return render_template('contest_group_vote.html',
                            contest=contest,
@@ -710,7 +754,8 @@ def group_vote_female(contest_id):
                            candidates=candidates,
                            phase=_calc_current_phase(contest),
                            gender='female',
-                           round_type='group')
+                           round_type='group',
+                           voted_matches=voted_matches)
 
 
 @public_bp.route('/contest/<int:contest_id>/group/male')
@@ -730,13 +775,36 @@ def group_vote_male(contest_id):
 
     candidates = {c.id: c for c in contest.candidates.all()}
 
+    # 算当前轮次
+    now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
+    times = calc_stage_times(contest.open_at)
+    round_number = None
+    if now <= times['group_round_1_end']:
+        round_number = 1
+    elif now <= times['group_round_2_end']:
+        round_number = 2
+    elif now <= times['group_round_3_end']:
+        round_number = 3
+
+    # 查用户已投的对决（用 "组_场" 作 key）
+    voted_matches = []
+    if session.get('user_id') and round_number:
+        existing = ContestVote.query.filter_by(
+            contest_id=contest.id,
+            user_id=session.get('user_id'),
+            round_number=round_number,
+            gender='male'
+        ).all()
+        voted_matches = [f'{v.group_index}_{v.match_index}' for v in existing]
+
     return render_template('contest_group_vote.html',
                            contest=contest,
                            groups=groups,
                            candidates=candidates,
                            phase=_calc_current_phase(contest),
                            gender='male',
-                           round_type='group')
+                           round_type='group',
+                           voted_matches=voted_matches)
 
 
 @public_bp.route('/contest/<int:contest_id>/group/submit', methods=['POST'])
@@ -887,7 +955,6 @@ def knockout_vote_female(contest_id):
         flash('当前不可投票', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    # 获取淘汰赛对阵
     matches = contest.config.get('knockout_matches_female', []) if contest.config else []
     if not matches:
         flash('女组淘汰赛尚未开始', 'warning')
@@ -895,12 +962,36 @@ def knockout_vote_female(contest_id):
 
     candidates = {c.id: c for c in contest.candidates.all()}
 
+    # 算当前子轮
+    now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
+    times = calc_stage_times(contest.open_at)
+    sub_round = None
+    if now <= times['knockout_16_end']:
+        sub_round = 1
+    elif now <= times['knockout_8_end']:
+        sub_round = 2
+    elif now <= times['knockout_4_end']:
+        sub_round = 3
+    elif now <= times['final_vote_end']:
+        sub_round = 4
+
+    has_voted = False
+    if session.get('user_id') and sub_round:
+        has_voted = ContestVote.query.filter_by(
+            contest_id=contest.id,
+            user_id=session.get('user_id'),
+            round_number=4,
+            sub_round=sub_round,
+            gender='female'
+        ).first() is not None
+
     return render_template('contest_knockout_vote.html',
                            contest=contest,
                            matches=matches,
                            candidates=candidates,
                            phase=_calc_current_phase(contest),
-                           gender='female')
+                           gender='female',
+                           has_voted=has_voted)
 
 
 @public_bp.route('/contest/<int:contest_id>/knockout/male')
@@ -919,12 +1010,36 @@ def knockout_vote_male(contest_id):
 
     candidates = {c.id: c for c in contest.candidates.all()}
 
+    # 算当前子轮
+    now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
+    times = calc_stage_times(contest.open_at)
+    sub_round = None
+    if now <= times['knockout_16_end']:
+        sub_round = 1
+    elif now <= times['knockout_8_end']:
+        sub_round = 2
+    elif now <= times['knockout_4_end']:
+        sub_round = 3
+    elif now <= times['final_vote_end']:
+        sub_round = 4
+
+    has_voted = False
+    if session.get('user_id') and sub_round:
+        has_voted = ContestVote.query.filter_by(
+            contest_id=contest.id,
+            user_id=session.get('user_id'),
+            round_number=4,
+            sub_round=sub_round,
+            gender= 'male'
+        ).first() is not None
+
     return render_template('contest_knockout_vote.html',
                            contest=contest,
                            matches=matches,
                            candidates=candidates,
                            phase=_calc_current_phase(contest),
-                           gender='male')
+                           gender='male',
+                           has_voted=has_voted)
 
 
 @public_bp.route('/contest/<int:contest_id>/knockout/submit', methods=['POST'])

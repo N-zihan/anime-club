@@ -192,6 +192,15 @@
         form.appendChild(genderInput);
         document.body.appendChild(form);
 
+        {% if has_voted %}
+        document.querySelectorAll('.vote-btn').forEach(function(btn) {
+            btn.disabled = true;
+            btn.textContent = '本轮已投';
+            btn.style.opacity = '0.6';
+            btn.style.cursor = 'not-allowed';
+        });
+        {% endif %}
+
         document.querySelectorAll('.vote-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const candidateId = parseInt(this.dataset.candidate);
@@ -223,18 +232,18 @@
                     },
                     body: formData
                 })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.message);
-                        this.disabled = false;
-                        this.textContent = '投给 ' + name;
-                        return;
+                .then(res => {
+                    if (res.redirected) {
+                        window.location.href = res.url;
+                        return null;
                     }
-                    window.location.reload();
+                    return res.json().then(data => {
+                        if (data.error) throw new Error(data.message);
+                        window.location.reload();
+                    });
                 })
-                .catch(() => {
-                    alert('网络错误，请重试');
+                .catch(err => {
+                    alert('投票失败：' + (err.message || '请重试'));
                     this.disabled = false;
                     this.textContent = '投给 ' + name;
                 });

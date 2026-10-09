@@ -54,6 +54,7 @@
         const MAX_VOTES = 15;
         const MAX_PER_CANDIDATE = 3;
 
+        const userVotes = {{ user_votes|tojson }};
         const voteCounts = {};
         let usedCandidates = 0;
         let usedVotes = 0;
@@ -61,8 +62,19 @@
         const cards = document.querySelectorAll('.candidate-card');
         cards.forEach(card => {
             const cid = parseInt(card.dataset.candidateId);
-            voteCounts[cid] = 0;
+            voteCounts[cid] = userVotes[cid] || 0;
+
+            const countSpan = card.querySelector('.vote-count');
+            const hiddenInput = card.querySelector('.vote-input');
+            if (countSpan) countSpan.textContent = voteCounts[cid];
+            if (hiddenInput) hiddenInput.value = voteCounts[cid];
         });
+
+        // 统计已投
+        for (const [id, count] of Object.entries(voteCounts)) {
+            if (count > 0) usedCandidates++;
+            usedVotes += count;
+        }
 
         function updateStats() {
             usedCandidates = 0;
@@ -149,24 +161,22 @@
             const formData = new FormData(form);
             fetch(form.action, {
                 method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 body: formData
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.message);
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = '确认投票';
-                    isSubmitting = false;
-                    return;
+            .then(res => {
+                // 后端重定向了（成功或已投过）→ 跟着跳
+                if (res.redirected) {
+                    window.location.href = res.url;
+                    return null;
                 }
-                window.location.reload();
+                return res.json().then(data => {
+                    if (data.error) throw new Error(data.message);
+                    window.location.reload();
+                });
             })
-            .catch(() => {
-                alert('网络错误，请重试');
+            .catch(err => {
+                alert('投票失败：' + (err.message || '请重试'));
                 submitBtn.disabled = false;
                 submitBtn.textContent = '确认投票';
                 isSubmitting = false;

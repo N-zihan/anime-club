@@ -37,6 +37,8 @@
                     票数：<span class="vote-count" data-candidate-id="{{ pair[0] }}">0</span>
                 </div>
                 <button class="vote-btn" data-candidate="{{ pair[0] }}"
+                        data-group-index="{{ loop.index0 }}"
+                        data-match-index="1"
                         style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
                     投票
                 </button>
@@ -54,6 +56,8 @@
                     票数：<span class="vote-count" data-candidate-id="{{ pair[1] }}">0</span>
                 </div>
                 <button class="vote-btn" data-candidate="{{ pair[1] }}"
+                        data-group-index="{{ loop.index0 }}"
+                        data-match-index="1"
                         style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
                     投票
                 </button>
@@ -101,27 +105,36 @@
 
                 fetch(form.action, {
                     method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
                     body: formData
                 })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.message);
-                        this.disabled = false;
-                        this.textContent = '投票';
-                        return;
+                .then(res => {
+                    if (res.redirected) {
+                        window.location.href = res.url;
+                        return null;
                     }
-                    window.location.reload();
+                    return res.json().then(data => {
+                        if (data.error) throw new Error(data.message);
+                        window.location.reload();
+                    });
                 })
-                .catch(() => {
-                    alert('网络错误，请重试');
+                .catch(err => {
+                    alert('投票失败：' + (err.message || '请重试'));
                     this.disabled = false;
                     this.textContent = '投票';
                 });
             });
+        });
+        const votedMatches = new Set({{ voted_matches|tojson }});
+
+        document.querySelectorAll('.vote-btn').forEach(function(btn) {
+            const key = btn.dataset.groupIndex + '_' + btn.dataset.matchIndex;
+            if (votedMatches.has(key)) {
+                btn.disabled = true;
+                btn.textContent = '已投';
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+            }
         });
     })();
 </script>
