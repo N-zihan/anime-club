@@ -13,6 +13,7 @@ club_name = os.getenv('CLUB_NAME', '动漫社')
 
 def _build_email_html(title: str, content: str, link: str = None) -> str:
     """生成统一风格的 HTML 邮件正文"""
+    content_html = (content or '').replace('\r\n', '<br>').replace('\n', '<br>')
     link_html = ''
     if link:
         link_html = f"""
@@ -34,7 +35,7 @@ def _build_email_html(title: str, content: str, link: str = None) -> str:
                 <div style="padding:32px;">
                     <h2 style="margin:0 0 16px 0; color:#1e2a3a; font-size:1.1rem;">{title}</h2>
                     <div style="color:#334155; font-size:0.95rem; line-height:1.7;">
-                        {content}
+                        {content_html}
                     </div>
                     {link_html}
                 </div>
