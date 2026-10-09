@@ -830,23 +830,22 @@ def group_vote_male(contest_id):
 
 @public_bp.route('/contest/<int:contest_id>/group/submit', methods=['POST'])
 def group_vote_submit(contest_id):
+    def fail(msg):
+        return jsonify({'success': False, 'message': msg})
+
     if not session.get('user_id'):
-        flash('请先登录', 'warning')
-        return redirect(url_for('auth.login'))
+        return fail('未登录')
 
     contest = get_or_404(Contest, contest_id)
 
     if contest.status not in ['open', 'group_stage']:
-        flash('当前不可投票', 'danger')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        return fail(f'当前不可投票（赛事状态：{contest.status}）')
 
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     open_at = contest.open_at
     if not open_at:
-        flash('赛事开始时间未设置', 'danger')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        return fail('赛事开始时间未设置')
 
-    # 与 calc_phase 共用同一套时间轴，避免出现两套天数
     times = calc_stage_times(open_at)
 
     if now <= times['group_round_1_end']:
@@ -856,27 +855,21 @@ def group_vote_submit(contest_id):
     elif now <= times['group_round_3_end']:
         round_number = 3
     else:
-        flash('小组赛已结束', 'warning')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        return fail('小组赛已结束')
 
     gender = request.form.get('gender')
     if gender not in ['female', 'male']:
-        flash('无效的组别', 'danger')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        return fail('无效的组别')
 
     candidate_id = request.form.get('candidate_id')
     if not candidate_id:
-        flash('请选择你要支持的角色', 'danger')
-        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+        return fail('请选择你要支持的角色')
     candidate_id = int(candidate_id)
 
-    # 获取该角色所在组和本轮配对
-    groups = contest.config.get(f'{gender}_groups', [])
+    groups = contest.config.get(f'{gender}_groups', []) if contest.config else []
     if not groups:
-        flash('分组数据不存在', 'danger')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        return fail('分组数据不存在')
 
-    # 找到角色所在组及组索引
     target_group_index = None
     target_group = None
     for gi, group in enumerate(groups):
@@ -885,19 +878,16 @@ def group_vote_submit(contest_id):
             target_group = group
             break
 
-    if target_group is None or target_group_index is None:
-        flash('该角色不在任何分组中', 'danger')
-        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+    if target_group is None:
+        return fail('该角色不在任何分组中')
 
-    # 确定该轮该组的配对
     if round_number == 1:
         pairs = [(target_group[0], target_group[1]), (target_group[2], target_group[3])]
     elif round_number == 2:
         pairs = [(target_group[0], target_group[2]), (target_group[1], target_group[3])]
-    else:  # round_number == 3
+    else:
         pairs = [(target_group[0], target_group[3]), (target_group[1], target_group[2])]
 
-    # 找到该角色属于第几场对决
     match_index = None
     for mi, (cid1, cid2) in enumerate(pairs, start=1):
         if candidate_id == cid1 or candidate_id == cid2:
@@ -905,10 +895,8 @@ def group_vote_submit(contest_id):
             break
 
     if match_index is None:
-        flash('该角色当前轮次无比赛', 'danger')
-        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+        return fail('该角色当前轮次无比赛')
 
-    # 检查该用户当前轮次是否已投过该场对决（任意一方）
     existing = ContestVote.query.filter_by(
         contest_id=contest.id,
         user_id=session.get('user_id'),
@@ -919,21 +907,7 @@ def group_vote_submit(contest_id):
     ).first()
 
     if existing:
-        flash(f'第{round_number}轮{"女组" if gender == "female" else "男组"}该场对决已投过票', 'warning')
-        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
-
-    # 检查该用户当前轮次是否已投过该角色（防止重复投同一角色）
-    existing_candidate = ContestVote.query.filter_by(
-        contest_id=contest.id,
-        user_id=session.get('user_id'),
-        round_number=round_number,
-        candidate_id=candidate_id,
-        gender=gender
-    ).first()
-
-    if existing_candidate:
-        flash('该角色本轮已投过票', 'warning')
-        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+        return fail(f'第{round_number}轮该场对决你已经投过票了')
 
     vote = ContestVote(
         contest_id=contest.id,
@@ -946,23 +920,17 @@ def group_vote_submit(contest_id):
         group_index=target_group_index
     )
     db.session.add(vote)
+
     try:
         db.session.commit()
-    except IntegrityError:
+    except IntegrityError as e:
         db.session.rollback()
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'error': True,
-                            'message': f'第{round_number}轮{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交'}), 400
-        flash(f'第{round_number}轮{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交', 'warning')
-        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+        return fail(f'数据库冲突：{str(e)}')
+    except Exception as e:
+        db.session.rollback()
+        return fail(f'写入失败：{type(e).__name__}: {str(e)}')
 
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify({'success': True, 'message': '投票成功'})
-
-    flash(f'第{round_number}轮{"女组" if gender == "female" else "男组"}投票成功！', 'success')
-    if gender == 'female':
-        return redirect(url_for('public.group_vote_female', contest_id=contest.id))
-    return redirect(url_for('public.group_vote_male', contest_id=contest.id))
+    return jsonify({'success': True, 'message': f'第{round_number}轮第{match_index}场投票成功'})
 
 
 # ========== 淘汰赛 ==========
@@ -1065,21 +1033,21 @@ def knockout_vote_male(contest_id):
 
 @public_bp.route('/contest/<int:contest_id>/knockout/submit', methods=['POST'])
 def knockout_vote_submit(contest_id):
+    def fail(msg):
+        return jsonify({'success': False, 'message': msg})
+
     if not session.get('user_id'):
-        flash('请先登录', 'warning')
-        return redirect(url_for('auth.login'))
+        return fail('未登录')
 
     contest = get_or_404(Contest, contest_id)
 
     if contest.status not in ['open', 'knockout']:
-        flash('当前不可投票', 'danger')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        return fail(f'当前不可投票（赛事状态：{contest.status}）')
 
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     open_at = contest.open_at
     if not open_at:
-        flash('赛事开始时间未设置', 'danger')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        return fail('赛事开始时间未设置')
 
     times = calc_stage_times(open_at)
 
@@ -1092,39 +1060,29 @@ def knockout_vote_submit(contest_id):
     elif now <= times['final_vote_end']:
         round_name = '决赛'
     else:
-        flash('淘汰赛已结束', 'warning')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        return fail('淘汰赛已结束')
 
     gender = request.form.get('gender')
     if gender not in ['female', 'male']:
-        flash('无效的组别', 'danger')
-        return redirect(url_for('public.contest_detail', contest_id=contest.id))
+        return fail('无效的组别')
 
-    sub_round_map = {
-        '16强': 1,
-        '8强': 2,
-        '4强': 3,
-        '决赛': 4
-    }
+    sub_round_map = {'16强': 1, '8强': 2, '4强': 3, '决赛': 4}
     sub_round = sub_round_map.get(round_name, 0)
 
-    # 检查该用户当前轮次是否已投过该组别（增加 sub_round 过滤）
     existing = ContestVote.query.filter_by(
         contest_id=contest.id,
         user_id=session.get('user_id'),
         round_number=4,
-        sub_round=sub_round,  # 关键：按当前子轮过滤
+        sub_round=sub_round,
         gender=gender
     ).first()
 
     if existing:
-        flash(f'{round_name}{"女组" if gender == "female" else "男组"}已投过票', 'warning')
-        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+        return fail(f'{round_name}你已经投过票了')
 
     candidate_id = request.form.get('candidate_id')
     if not candidate_id:
-        flash('请选择你要支持的角色', 'danger')
-        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+        return fail('请选择你要支持的角色')
 
     vote = ContestVote(
         contest_id=contest.id,
@@ -1136,23 +1094,17 @@ def knockout_vote_submit(contest_id):
         gender=gender
     )
     db.session.add(vote)
+
     try:
         db.session.commit()
-    except IntegrityError:
+    except IntegrityError as e:
         db.session.rollback()
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'error': True,
-                            'message': f'{round_name}{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交'}), 400
-        flash(f'{round_name}{"女组" if gender == "female" else "男组"}投票冲突，请勿重复提交', 'warning')
-        return redirect(request.referrer or url_for('public.contest_detail', contest_id=contest.id))
+        return fail(f'数据库冲突：{str(e)}')
+    except Exception as e:
+        db.session.rollback()
+        return fail(f'写入失败：{type(e).__name__}: {str(e)}')
 
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify({'success': True, 'message': '投票成功'})
-
-    flash(f'{round_name}{"女组" if gender == "female" else "男组"}投票成功！', 'success')
-    if gender == 'female':
-        return redirect(url_for('public.knockout_vote_female', contest_id=contest.id))
-    return redirect(url_for('public.knockout_vote_male', contest_id=contest.id))
+    return jsonify({'success': True, 'message': f'{round_name}投票成功'})
 
 
 # ========== API ==========

@@ -10,8 +10,9 @@
 
 {% if groups %}
 {% for group in groups %}
+{% set group_index = loop.index0 %}
 <div style="background: var(--bg-card); border-radius:12px; padding:16px; margin-bottom:20px; border:1px solid var(--border-color);">
-    <h4 style="margin:0 0 12px 0; color: var(--text-primary);">{{ ['A','B','C','D','E','F','G','H'][loop.index0] }}组</h4>
+    <h4 style="margin:0 0 12px 0; color: var(--text-primary);">{{ ['A','B','C','D','E','F','G','H'][group_index] }}组</h4>
 
     {% set round_num = phase.split('_')[-1]|int %}
     {% if round_num == 1 %}
@@ -23,6 +24,7 @@
     {% endif %}
 
     {% for pair in pairs %}
+    {% set match_index = loop.index %}
     <div style="background: var(--bg-card); border-radius:10px; padding:12px; margin-bottom:10px; border:1px solid var(--border-color); {% if loop.last %}margin-bottom:0;{% endif %}">
         <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center;">
             <div style="text-align:center;" data-candidate-id="{{ pair[0] }}">
@@ -32,13 +34,12 @@
                 {% endif %}
                 <div><strong style="color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</strong></div>
                 <div style="font-size:0.75rem; color: var(--text-muted);">{{ c1.source if c1 else '' }}</div>
-                <!-- 票数显示 -->
                 <div style="font-size:0.8rem; color: var(--text-secondary); margin-top:2px;">
                     票数：<span class="vote-count" data-candidate-id="{{ pair[0] }}">0</span>
                 </div>
                 <button class="vote-btn" data-candidate="{{ pair[0] }}"
-                        data-group-index="{{ loop.index0 }}"
-                        data-match-index="1"
+                        data-group-index="{{ group_index }}"
+                        data-match-index="{{ match_index }}"
                         style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
                     投票
                 </button>
@@ -51,13 +52,12 @@
                 {% endif %}
                 <div><strong style="color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</strong></div>
                 <div style="font-size:0.75rem; color: var(--text-muted);">{{ c2.source if c2 else '' }}</div>
-                <!-- 票数显示 -->
                 <div style="font-size:0.8rem; color: var(--text-secondary); margin-top:2px;">
                     票数：<span class="vote-count" data-candidate-id="{{ pair[1] }}">0</span>
                 </div>
                 <button class="vote-btn" data-candidate="{{ pair[1] }}"
-                        data-group-index="{{ loop.index0 }}"
-                        data-match-index="1"
+                        data-group-index="{{ group_index }}"
+                        data-match-index="{{ match_index }}"
                         style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
                     投票
                 </button>
@@ -79,55 +79,10 @@
 <script>
     (function () {
         const form = document.getElementById('voteForm');
-        const buttons = document.querySelectorAll('.vote-btn');
 
-        buttons.forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const candidateId = parseInt(this.dataset.candidate);
-                if (!candidateId) {
-                    alert('该角色已被移除');
-                    return;
-                }
-                if (this.disabled) return;
-
-                const card = this.parentElement;
-                const name = card.querySelector('strong').textContent;
-
-                if (!confirm('确定要投给 ' + name + ' 吗？')) {
-                    return;
-                }
-
-                this.disabled = true;
-                this.textContent = '提交中...';
-
-                document.getElementById('candidateInput').value = candidateId;
-                const formData = new FormData(form);
-
-                fetch(form.action, {
-                    method: 'POST',
-                    headers: {'X-Requested-With': 'XMLHttpRequest'},
-                    body: formData
-                })
-                .then(res => {
-                    if (res.redirected) {
-                        window.location.href = res.url;
-                        return null;
-                    }
-                    return res.json().then(data => {
-                        if (data.error) throw new Error(data.message);
-                        window.location.reload();
-                    });
-                })
-                .catch(err => {
-                    alert('投票失败：' + (err.message || '请重试'));
-                    this.disabled = false;
-                    this.textContent = '投票';
-                });
-            });
-        });
+        // 已投的场次禁用按钮
         const votedMatches = new Set({{ voted_matches|tojson }});
-
-        document.querySelectorAll('.vote-btn').forEach(function(btn) {
+        document.querySelectorAll('.vote-btn').forEach(function (btn) {
             const key = btn.dataset.groupIndex + '_' + btn.dataset.matchIndex;
             if (votedMatches.has(key)) {
                 btn.disabled = true;
@@ -136,16 +91,67 @@
                 btn.style.cursor = 'not-allowed';
             }
         });
+
+        // 投票
+        document.querySelectorAll('.vote-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (this.disabled) return;
+
+                const candidateId = parseInt(this.dataset.candidate);
+                if (!candidateId) {
+                    alert('该角色已被移除');
+                    return;
+                }
+
+                const card = this.parentElement;
+                const name = card.querySelector('strong').textContent;
+
+                if (!confirm('确定要投给 ' + name + ' 吗？')) return;
+
+                this.disabled = true;
+                this.textContent = '提交中...';
+
+                document.getElementById('candidateInput').value = candidateId;
+                const formData = new FormData(form);
+                const self = this;
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
+                    body: formData
+                })
+                .then(res => res.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (err) {
+                        throw new Error('服务器返回非 JSON（HTTP ' + res.status + '）：' + text.substring(0, 300));
+                    }
+                }))
+                .then(data => {
+                    if (data.success) {
+                        alert('✓ ' + data.message);
+                        window.location.reload();
+                    } else {
+                        alert('✗ ' + data.message);
+                        self.disabled = false;
+                        self.textContent = '投票';
+                    }
+                })
+                .catch(err => {
+                    alert('请求异常：' + err.message);
+                    self.disabled = false;
+                    self.textContent = '投票';
+                });
+            });
+        });
     })();
 </script>
 
 {% elif phase in ['group_round_1_result', 'group_round_2_result', 'group_round_3_result'] %}
-<!-- ========== 公示期 ========== -->
 {% set round_num = phase.split('_')[-1]|int %}
 <h3>小组赛第{{ round_num }}轮公示</h3>
 <p style="color: var(--text-secondary);">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
 
-<!-- 对决结果 -->
 {% if gender == 'female' %}
 {% set group_results = group_round_results.female if group_round_results else [] %}
 {% else %}
@@ -178,7 +184,6 @@
 
 <hr style="border-color: var(--border-color); margin:30px 0;">
 
-<!-- 总积分排名 -->
 <h3>总积分排名（第{{ round_num }}轮后）</h3>
 {% if gender == 'female' %}
 {% set ranking = overall_ranking_female if overall_ranking_female else [] %}
@@ -222,7 +227,6 @@
 <p style="color: var(--text-muted);">暂无积分数据</p>
 {% endif %}
 
-<!-- 第3轮公示额外显示：晋级名单 + 16强分组 -->
 {% if phase == 'group_round_3_result' %}
 <hr style="border-color: var(--border-color); margin:30px 0;">
 
@@ -278,7 +282,6 @@
 
 <p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
 
-<!-- ====== Supabase Realtime 实时投票更新 ====== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     (function () {

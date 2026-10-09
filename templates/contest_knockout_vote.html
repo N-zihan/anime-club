@@ -59,8 +59,6 @@
 </div>
 {% endfor %}
 
-<!-- ====== 公示期显示下一轮分组 ====== -->
-
 {% if phase == 'knockout_16_result' %}
 <hr style="border-color: var(--border-color); margin:30px 0;">
 <h3>8强分组（已生成）</h3>
@@ -203,13 +201,12 @@
 
         document.querySelectorAll('.vote-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
+                const self = this;
                 const candidateId = parseInt(this.dataset.candidate);
                 const name = this.dataset.name || '该角色';
                 if (!candidateId || this.disabled) return;
 
-                if (!confirm('确定要投给 ' + name + ' 吗？')) {
-                    return;
-                }
+                if (!confirm('确定要投给 ' + name + ' 吗？')) return;
 
                 this.disabled = true;
                 this.textContent = '提交中...';
@@ -227,32 +224,36 @@
 
                 fetch(form.action, {
                     method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
                     body: formData
                 })
-                .then(res => {
-                    if (res.redirected) {
-                        window.location.href = res.url;
-                        return null;
+                .then(res => res.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (err) {
+                        throw new Error('服务器返回非 JSON（HTTP ' + res.status + '）：' + text.substring(0, 300));
                     }
-                    return res.json().then(data => {
-                        if (data.error) throw new Error(data.message);
+                }))
+                .then(data => {
+                    if (data.success) {
+                        alert('✓ ' + data.message);
                         window.location.reload();
-                    });
+                    } else {
+                        alert('✗ ' + data.message);
+                        self.disabled = false;
+                        self.textContent = '投给 ' + name;
+                    }
                 })
                 .catch(err => {
-                    alert('投票失败：' + (err.message || '请重试'));
-                    this.disabled = false;
-                    this.textContent = '投给 ' + name;
+                    alert('请求异常：' + err.message);
+                    self.disabled = false;
+                    self.textContent = '投给 ' + name;
                 });
             });
         });
     })();
 </script>
 
-<!-- ====== Supabase Realtime 实时投票更新 ====== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     (function () {
