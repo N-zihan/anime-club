@@ -9,6 +9,7 @@
       "use": "@vercel/python",
       "config": {
         "pythonVersion": "3.14",
+        "maxDuration": 30,
         "installCommand": "pip install -r requirements.txt"
       }
     }

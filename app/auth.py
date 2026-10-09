@@ -114,6 +114,46 @@ def send_welcome_email(to_email, username):
     return send_email(to_email, subject, html, is_html=True)
 
 
+def send_email_batch(email_list, subject, body, is_html=True):
+    """一次 SMTP 连接，批量发送邮件。返回成功数。"""
+    if not MAIL_USERNAME or not MAIL_PASSWORD:
+        print('邮件未配置，跳过发送')
+        return 0
+    if not email_list:
+        return 0
+
+    server = None
+    sent = 0
+    try:
+        if SMTP_USE_SSL:
+            server = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT)
+        else:
+            server = smtplib.SMTP(SMTP_HOST, SMTP_PORT)
+            server.starttls()
+        server.login(MAIL_USERNAME, MAIL_PASSWORD)
+
+        for to_email in email_list:
+            try:
+                msg = MIMEText(body, 'html' if is_html else 'plain', 'utf-8')
+                msg['Subject'] = subject
+                msg['From'] = formataddr((CLUB_NAME, MAIL_USERNAME))
+                msg['To'] = to_email
+                server.sendmail(MAIL_USERNAME, [to_email], msg.as_string())
+                sent += 1
+            except Exception as e:
+                print(f'发送到 {to_email} 失败: {e}')
+    except Exception as e:
+        print(f'SMTP 连接失败: {e}')
+    finally:
+        if server:
+            try:
+                server.quit()
+            except Exception:
+                pass
+
+    return sent
+
+
 # ---------- 注册 ----------
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():

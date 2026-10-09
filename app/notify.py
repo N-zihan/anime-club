@@ -6,7 +6,7 @@
 import os
 
 from .models import db, Notification, User
-from .auth import send_email
+from .auth import send_email, send_email_batch
 
 club_name = os.getenv('CLUB_NAME', '动漫社')
 
@@ -92,6 +92,22 @@ def notify_many(user_ids: list, title: str, content: str = '', notify_type: str 
 
 def notify_all(title: str, content: str = '', notify_type: str = 'system',
                link: str = None, send_mail: bool = True):
-    """给所有用户发通知"""
-    user_ids = [u.id for u in User.query.all()]
-    notify_many(user_ids, title, content, notify_type, link, send_mail=send_mail)
+    """给所有用户发通知（站内 + 邮件批量）"""
+    users = db.session.query(User).all()
+
+    # 1. 站内通知：逐个插入
+    for u in users:
+        db.session.add(Notification(
+            user_id=u.id,
+            title=title,
+            content=content,
+            type=notify_type,
+            link=link,
+        ))
+
+    # 2. 邮件通知：一次连接批量发送
+    if send_mail:
+        emails = [u.email for u in users if u.email]
+        if emails:
+            html = _build_email_html(title, content or '你有一条新通知', _absolute_link(link))
+            send_email_batch(emails, f'【{club_name}】{title}', html, is_html=True)
