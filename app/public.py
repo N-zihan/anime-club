@@ -633,9 +633,9 @@ def qualifying_vote_submit(contest_id):
 
     gender = request.form.get('gender')
     if gender not in ['female', 'male']:
-        return fail(f'无效的组别')
+        return fail('无效的组别')
 
-    # 读历史
+    # 1. 读历史
     existing_rows = ContestVote.query.filter_by(
         contest_id=contest.id,
         user_id=session.get('user_id'),
@@ -644,7 +644,7 @@ def qualifying_vote_submit(contest_id):
     ).all()
     existing = {v.candidate_id: v.weight for v in existing_rows}
 
-    # 读本次提交
+    # 2. 读本次提交
     new_votes = {}
     for key, value in request.form.items():
         if key.startswith('vote_'):
@@ -659,12 +659,12 @@ def qualifying_vote_submit(contest_id):
     if not new_votes:
         return fail('请至少给一个角色投票')
 
-    # 合并：历史 + 本次
+    # 3. 合并（历史 + 本次）
     merged = dict(existing)
     for cid, w in new_votes.items():
         merged[cid] = merged.get(cid, 0) + w
 
-    # 校验合并后的上限
+    # 4. 校验合并后的上限
     total = sum(merged.values())
     if total > QUALIFYING_MAX_VOTES:
         return fail(f'总票数不能超过 {QUALIFYING_MAX_VOTES} 票（已投 {sum(existing.values())} 票，本次 {sum(new_votes.values())} 票，合计 {total}）')
@@ -674,7 +674,7 @@ def qualifying_vote_submit(contest_id):
         if w > QUALIFYING_MAX_PER_CANDIDATE:
             return fail(f'每个角色最多只能投 {QUALIFYING_MAX_PER_CANDIDATE} 票（角色 {cid} 累计 {w} 票）')
 
-    # 覆盖：先删旧，再写合并后的
+    # 5. 删旧、写合并后的
     ContestVote.query.filter_by(
         contest_id=contest.id,
         user_id=session.get('user_id'),
