@@ -227,27 +227,33 @@ from app.ai import _build_group_prompt, _build_knockout_prompt, _build_qualifyin
 class TestAIPromptBuilders:
 
     def test_build_group_prompt(self, sample_contest, db_session):
-        # 构造 extra_data
+        # 用真实的 candidate 对象
+        cands = sample_contest.candidates.filter_by(gender='female').limit(2).all()
+        assert len(cands) >= 2
+
         extra_data = {
             'gender': 'female',
-            'groups': [[1, 2, 3, 4], [5, 6, 7, 8]],
-            'group_results': {
-                'female': [
-                    {
-                        'group_name': 'A组',
-                        'matches': [
-                            {'candidate1': {'name': 'A1'}, 'candidate2': {'name': 'A2'},
-                             'votes1': 10, 'votes2': 5, 'winner': None}
-                        ]
-                    }
-                ]
-            },
-            'ranking': [{'name': 'A1', 'points': 3}]
+            'groups': [[cands[0].id, cands[1].id]],
+            'group_results': [
+                {
+                    'group_name': 'A组',
+                    'matches': [
+                        {
+                            'candidate1': cands[0],
+                            'candidate2': cands[1],
+                            'votes1': 10,
+                            'votes2': 5,
+                            'winner': None,
+                        }
+                    ]
+                }
+            ],
+            'ranking': [{'name': cands[0].name, 'points': 3}],
         }
         prompt = _build_group_prompt(sample_contest, 'group_round_1', extra_data)
         assert '女组 小组赛' in prompt
         assert 'A组' in prompt
-        assert 'A1' in prompt
+        assert cands[0].name in prompt
 
     def test_build_knockout_prompt(self, sample_contest):
         extra_data = {

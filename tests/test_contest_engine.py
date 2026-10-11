@@ -132,7 +132,7 @@ class TestRunQualifyingPromotion:
 
         contest = db.session.get(Contest, sample_contest.id)
 
-        assert contest.status == 'group_stage'
+        # status 由 contest_detail 在公示期结束时切换，引擎不再改
         assert 'female_groups' in contest.config
         assert 'male_groups' in contest.config
         assert len(contest.config['female_groups']) == 8
@@ -221,7 +221,6 @@ class TestRunFinalRanking:
         contest = db.session.get(Contest, sample_contest.id)
 
         assert 'female_ranking' in contest.config
-        assert contest.status == 'closed'
 
         db_session.refresh(finalist1)
         assert finalist1.stage == 'champion'
