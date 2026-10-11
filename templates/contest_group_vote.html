@@ -182,6 +182,33 @@
 <p style="color: var(--text-muted);">暂无对决数据</p>
 {% endif %}
 
+{% if round_num < 3 %}
+<hr style="border-color: var(--border-color); margin:30px 0;">
+<h4>第{{ round_num + 1 }}轮对阵预览</h4>
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:12px;">
+    {% for group in groups %}
+    {% set group_index = loop.index0 %}
+    {% if round_num == 1 %}
+    {% set next_pairs = [(group[0], group[2]), (group[1], group[3])] %}
+    {% else %}
+    {% set next_pairs = [(group[0], group[3]), (group[1], group[2])] %}
+    {% endif %}
+    <div style="background: var(--bg-card); border-radius:10px; padding:12px; border:1px solid var(--border-color);">
+        <strong style="color: var(--text-primary);">{{ ['A','B','C','D','E','F','G','H'][group_index] }}组</strong>
+        {% for pair in next_pairs %}
+        <div style="font-size:0.85rem; margin-top:6px; color: var(--text-primary);">
+            {% set c1 = candidates.get(pair[0]) %}
+            {% set c2 = candidates.get(pair[1]) %}
+            {{ c1.name if c1 else '已移除' }}
+            <span style="color: var(--text-muted);">vs</span>
+            {{ c2.name if c2 else '已移除' }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <hr style="border-color: var(--border-color); margin:30px 0;">
 
 <h3>总积分排名（第{{ round_num }}轮后）</h3>

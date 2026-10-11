@@ -93,10 +93,16 @@ def _build_commentary_prompt(contest: Contest, phase: str, phase_name: str, extr
         return _build_review_prompt(contest)
     if phase == 'qualifying':
         return _build_qualifying_prompt(contest)
+    if phase == 'qualifying_result':
+        return _build_qualifying_result_prompt(contest)
     if phase in ['group_round_1', 'group_round_2', 'group_round_3']:
         return _build_group_prompt(contest, phase, extra_data)
+    if phase in ['group_round_1_result', 'group_round_2_result', 'group_round_3_result']:
+        return _build_group_result_prompt(contest, phase, extra_data)
     if phase in ['knockout_16', 'knockout_8', 'knockout_4', 'final_vote']:
         return _build_knockout_prompt(contest, phase, extra_data)
+    if phase in ['knockout_16_result', 'knockout_8_result', 'knockout_4_result']:
+        return _build_knockout_result_prompt(contest, phase, extra_data)
     if phase == 'final_result':
         return _build_final_prompt(contest)
     return _build_generic_prompt(contest, phase_name)
@@ -218,11 +224,15 @@ def _build_group_prompt(contest: Contest, _phase: str, extra_data: dict) -> str:
 
     # 构建分组信息
     group_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-    for idx, _ in enumerate(groups[:8]):  # 最多8组
+    for idx, _ in enumerate(groups[:8]):
         if idx >= len(group_names):
             break
         group_name = group_names[idx]
-        matches = group_results.get(idx, [])
+        # group_results 是 list，按下标取
+        if idx < len(group_results):
+            matches = group_results[idx].get('matches', [])
+        else:
+            matches = []
         lines.append(f"\n{group_name}组：")
         if matches:
             for match in matches:
@@ -313,6 +323,145 @@ def _build_knockout_prompt(contest: Contest, phase: str, extra_data: dict) -> st
 """
 
 
+def _build_qualifying_result_prompt(contest: Contest) -> str:
+    """海选公示期 prompt"""
+    female_top = _get_qualifying_top_votes(contest.id, gender='female', limit=5)
+    male_top = _get_qualifying_top_votes(contest.id, gender='male', limit=5)
+
+    lines = [f"赛事：{contest.title}", "阶段：海选结果公示"]
+
+    if female_top:
+        lines.append("\n【女组】最终票数排名（前5）：")
+        for i, (_, name, votes) in enumerate(female_top, 1):
+            medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"{i}.")
+            lines.append(f"  {medal} {name}：{votes}票")
+
+    if male_top:
+        lines.append("\n【男组】最终票数排名（前5）：")
+        for i, (_, name, votes) in enumerate(male_top, 1):
+            medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"{i}.")
+            lines.append(f"  {medal} {name}：{votes}票")
+
+    return f"""
+你是萌战解说员，正在解说"海选结果公示"阶段。
+
+当前数据：
+{chr(10).join(lines)}
+
+请根据以上数据，生成一段 150-200 字的海选总结。
+要求：
+1. 男女组分开总结，各提到前三名的角色和票数
+2. 祝贺晋级的角色
+3. 预告即将开始的小组赛
+4. 语气热情、有期待感
+5. 不要编造数据，不要混淆男女组
+"""
+
+
+def _build_group_result_prompt(contest: Contest, phase: str, extra_data: dict) -> str:
+    """小组赛公示期 prompt"""
+    if not extra_data:
+        return "小组赛本轮数据加载中，请稍后再看 AI 分析。"
+
+    round_map = {
+        'group_round_1_result': 1,
+        'group_round_2_result': 2,
+        'group_round_3_result': 3,
+    }
+    round_num = round_map.get(phase, 1)
+
+    gender = extra_data.get('gender', 'female')
+    gender_name = "女组" if gender == 'female' else "男组"
+
+    lines = [f"赛事：{contest.title}", f"阶段：{gender_name} 第{round_num}轮公示"]
+
+    group_results = extra_data.get('group_results', [])
+    if group_results:
+        lines.append("\n本轮对决结果：")
+        for group in group_results[:8]:
+            group_name = group.get('group_name', '')
+            matches = group.get('matches', [])
+            if matches:
+                lines.append(f"\n{group_name}：")
+                for m in matches:
+                    c1 = m.get('candidate1')
+                    c2 = m.get('candidate2')
+                    v1 = m.get('votes1', 0)
+                    v2 = m.get('votes2', 0)
+                    winner = m.get('winner')
+                    c1_name = c1.name if c1 else '已移除'
+                    c2_name = c2.name if c2 else '已移除'
+                    c1_id = c1.id if c1 else None
+                    win_mark = "🏆" if winner == c1_id else ""
+                    lines.append(f"  {c1_name}({v1}票) vs {c2_name}({v2}票){win_mark}")
+
+    ranking = extra_data.get('ranking', [])
+    if ranking:
+        lines.append("\n总积分前 5 名：")
+        for i, item in enumerate(ranking[:5], 1):
+            lines.append(f"  {i}. {item.get('name')}：{item.get('points')}分")
+
+    return f"""
+你是萌战解说员，正在解说小组赛第{round_num}轮的结果公示。
+
+当前数据：
+{chr(10).join(lines)}
+
+请生成一段 150-200 字的小组赛总结。
+要求：
+1. 突出本轮的精彩对决
+2. 分析各组的出线形势
+3. 提到积分榜上的领先者
+4. 语气热情、专业
+5. 不要编造数据
+"""
+
+
+def _build_knockout_result_prompt(contest: Contest, phase: str, extra_data: dict) -> str:
+    """淘汰赛公示期 prompt"""
+    if not extra_data:
+        return "淘汰赛数据加载中，请稍后再看 AI 分析。"
+
+    gender = extra_data.get('gender', 'female')
+    gender_name = "女组" if gender == 'female' else "男组"
+
+    phase_to_name = {
+        'knockout_16_result': '16强',
+        'knockout_8_result': '8强',
+        'knockout_4_result': '4强',
+    }
+    round_name = phase_to_name.get(phase, '')
+
+    matches = extra_data.get('matches', [])
+    if not matches:
+        return f"{round_name}结果数据加载中，请稍后再看。"
+
+    lines = [f"赛事：{contest.title}", f"阶段：{gender_name} {round_name}公示", "\n本轮结果："]
+
+    for i, match in enumerate(matches, 1):
+        c1_name = match.get('candidate1_name', '选手A')
+        c2_name = match.get('candidate2_name', '选手B')
+        v1 = match.get('votes1', 0)
+        v2 = match.get('votes2', 0)
+        winner_name = match.get('winner_name', '')
+        lines.append(f"  {i}. {c1_name}({v1}票) vs {c2_name}({v2}票) → 🏆 {winner_name}晋级")
+
+    return f"""
+你是萌战解说员，正在解说{round_name}结果。
+
+当前数据：
+{chr(10).join(lines)}
+
+请生成一段 120-180 字的总结。
+要求：
+1. 祝贺晋级的角色
+2. 简要点评关键对决
+3. 预告下一轮对阵
+4. 语气紧张、有激情
+5. 不要编造数据
+"""
+
+
 def _build_final_prompt(contest: Contest) -> str:
     """决赛结果 prompt"""
     ranking_female = contest.config.get('female_ranking', []) if contest.config else []
@@ -396,9 +545,9 @@ def generate_commentary(contest_id: int, phase: str, extra_data: dict = None, fo
 
         prompt = _build_commentary_prompt(contest, phase, phase_name, extra_data)
 
-        # 如果 prompt 返回的是纯文本（非结构化），直接返回
-        if prompt.startswith("海选投票已开启") or prompt.startswith("小组赛数据加载中") or prompt.startswith(
-                "淘汰赛数据加载中"):
+        # 如果 prompt 是占位文本（没有真实数据），直接返回
+        if ('加载中' in prompt or '请稍后再看' in prompt
+                or prompt.startswith('海选投票已开启')):
             return True, prompt, None
 
         client = get_client()

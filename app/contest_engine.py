@@ -236,8 +236,6 @@ def auto_activate_contest(contest, now):
 def run_qualifying_promotion(contest):
     """海选公示结束后，前32名晋级小组赛并随机分组"""
     # 防止并发重复执行
-    if contest.status != 'open':
-        return
     if contest.config and contest.config.get('female_groups'):
         return
 
@@ -301,8 +299,6 @@ def run_qualifying_promotion(contest):
     ]
 
     flag_modified(contest, 'config')
-
-    contest.status = 'group_stage'
     db.session.commit()
 
 
@@ -542,7 +538,6 @@ def run_group_promotion(contest, session=None):
         )
 
     flag_modified(contest, 'config')
-    contest.status = 'knockout'
     session.commit()
 
 
@@ -590,6 +585,12 @@ def generate_next_round(contest, matches, gender, sub_round, round_name):
     """根据上一轮胜者生成下一轮对阵"""
     winners = []
     for match in matches:
+        # 记录本轮最终票数（供公示期展示）
+        c1_votes = get_knockout_votes(contest, match['candidate1'], gender, sub_round)
+        c2_votes = get_knockout_votes(contest, match['candidate2'], gender, sub_round)
+        match['votes1'] = c1_votes
+        match['votes2'] = c2_votes
+
         winner_id = get_match_winner(contest, match, gender, sub_round)
         match['winner'] = winner_id
         match['status'] = 'finished'
@@ -621,15 +622,15 @@ def run_knockout_advance(contest, now, times):
     淘汰赛各轮自动推进
     返回: (是否已推进, 推进后的轮次名称或None)
     """
-    if contest.status != 'knockout':
+    if contest.config is None:
+        return False, None
+    if not (contest.config.get('knockout_matches_female') or contest.config.get('knockout_matches_male')):
         return False, None
 
-    if contest.config is None:
-        contest.config = {}
     config = contest.config
 
     # 16强 → 8强（检查 round8 是否存在来判断是否已推进）
-    if now >= times['knockout_16_result_end'] and not config.get('knockout_matches_female_round8'):
+    if now >= times['knockout_16_end'] and not config.get('knockout_matches_female_round8'):
         female_matches = config.get('knockout_matches_female', [])
         male_matches = config.get('knockout_matches_male', [])
         if not female_matches and not male_matches:
@@ -647,7 +648,7 @@ def run_knockout_advance(contest, now, times):
         return True, '8强'
 
     # 8强 → 4强
-    if now >= times['knockout_8_result_end'] and not config.get('knockout_matches_female_round4'):
+    if now >= times['knockout_8_end'] and not config.get('knockout_matches_female_round4'):
         female_matches = config.get('knockout_matches_female', [])
         male_matches = config.get('knockout_matches_male', [])
         if not female_matches and not male_matches:
@@ -665,7 +666,7 @@ def run_knockout_advance(contest, now, times):
         return True, '4强'
 
     # 4强 → 决赛
-    if now >= times['knockout_4_result_end'] and not config.get('knockout_matches_female_final'):
+    if now >= times['knockout_4_end'] and not config.get('knockout_matches_female_final'):
         female_matches = config.get('knockout_matches_female', [])
         male_matches = config.get('knockout_matches_male', [])
         if not female_matches and not male_matches:
@@ -824,7 +825,6 @@ def run_final_ranking(contest):
             if runner:
                 runner.stage = 'finalist'
 
-    contest.status = 'closed'
     db.session.commit()
 
 

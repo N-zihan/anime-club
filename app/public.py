@@ -332,36 +332,52 @@ def contest_detail(contest_id):
 
     # 4. 执行自动推进
     # 循环处理，防止因为跳过了中间阶段而卡住
-    for _ in range(8):
-        # 海选 → 小组赛
-        if contest.status == 'open' and now >= times['qualifying_end']:
-            has_groups = contest.config and contest.config.get('female_groups')
-            if not has_groups:
+    for _ in range(10):
+        changed = False
+
+        # ① 海选投票结束 → 生成小组赛数据（先不切 status）
+        if now >= times['qualifying_vote_end'] and contest.status == 'open':
+            if not (contest.config and contest.config.get('female_groups')):
                 run_qualifying_promotion(contest)
-                flash('海选结果已公布，小组赛开始！', 'success')
-                continue
+                changed = True
 
-        # 小组赛 → 淘汰赛
-        if contest.status in ['open', 'group_stage'] and now >= times['group_round_3_result_end']:
-            has_knockout = contest.config and contest.config.get('knockout_matches_female')
-            if not has_knockout:
+        # ② 海选公示结束 → 进入小组赛
+        if now >= times['qualifying_end'] and contest.status == 'open':
+            contest.status = 'group_stage'
+            db.session.commit()
+            changed = True
+
+        # ③ 小组赛第3轮投票结束 → 生成淘汰赛数据
+        if now >= times['group_round_3_end'] and contest.status in ['open', 'group_stage']:
+            if not (contest.config and contest.config.get('knockout_matches_female')):
                 run_group_promotion(contest)
-                flash('小组赛结束，淘汰赛16强对阵已生成！', 'success')
-                continue
+                changed = True
 
-        # 淘汰赛各轮推进
-        advanced, round_name = run_knockout_advance(contest, now, times)
+        # ④ 小组赛第3轮公示结束 → 进入淘汰赛
+        if now >= times['group_round_3_result_end'] and contest.status == 'group_stage':
+            contest.status = 'knockout'
+            db.session.commit()
+            changed = True
+
+        # ⑤ 淘汰赛各轮推进
+        advanced, _ = run_knockout_advance(contest, now, times)
         if advanced:
-            flash(f'淘汰赛{round_name}对阵已生成！', 'success')
-            continue
+            changed = True
 
-        # 决赛结束 → 最终排名
-        if contest.status != 'closed' and now >= times['final_result_end']:
-            run_final_ranking(contest)
-            flash('赛事已结束，最终排名已生成！', 'success')
-            continue
+        # ⑥ 决赛投票结束 → 生成最终排名
+        if now >= times['final_vote_end'] and contest.status == 'knockout':
+            if not (contest.config and contest.config.get('female_ranking')):
+                run_final_ranking(contest)
+                changed = True
 
-        break
+        # ⑦ 最终公示结束 → 关闭赛事
+        if now >= times['final_result_end'] and contest.status != 'closed':
+            contest.status = 'closed'
+            db.session.commit()
+            changed = True
+
+        if not changed:
+            break
 
     # 推进后重新计算 phase（状态可能已变）
     phase = calc_phase(contest, now, times)
@@ -387,7 +403,8 @@ def contest_detail(contest_id):
     extra_data = {}
     candidates_map = {c.id: c for c in candidates}
 
-    if phase in ['group_round_1', 'group_round_2', 'group_round_3']:
+    if phase in ['group_round_1', 'group_round_2', 'group_round_3',
+                 'group_round_1_result', 'group_round_2_result', 'group_round_3_result']:
         # 小组赛：传入分组数据和票数
         if group_round_results:
             female_groups = group_round_results.get('female', [])
@@ -419,7 +436,8 @@ def contest_detail(contest_id):
                 'round_info': phase
             }
 
-    elif phase in ['knockout_16', 'knockout_8', 'knockout_4', 'final_vote']:
+    elif phase in ['knockout_16', 'knockout_8', 'knockout_4', 'final_vote',
+                   'knockout_16_result', 'knockout_8_result', 'knockout_4_result']:
         # 淘汰赛：传入对阵数据
         matches_female = contest.config.get('knockout_matches_female', []) if contest.config else []
 
@@ -876,10 +894,16 @@ def group_vote_submit(contest_id):
 
     if now <= times['group_round_1_end']:
         round_number = 1
+    elif now <= times['group_round_1_result_end']:
+        return fail('第1轮公示期，不能投票')
     elif now <= times['group_round_2_end']:
         round_number = 2
+    elif now <= times['group_round_2_result_end']:
+        return fail('第2轮公示期，不能投票')
     elif now <= times['group_round_3_end']:
         round_number = 3
+    elif now <= times['group_round_3_result_end']:
+        return fail('第3轮公示期，不能投票')
     else:
         return fail('小组赛已结束')
 
@@ -977,7 +1001,8 @@ def knockout_vote_female(contest_id):
 
     candidates = {c.id: c for c in contest.candidates.all()}
 
-    # 算当前子轮
+    # 算当前 phase 和 sub_round
+    phase = _calc_current_phase(contest)
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     times = calc_stage_times(contest.open_at)
     sub_round = None
@@ -1000,13 +1025,32 @@ def knockout_vote_female(contest_id):
             gender='female'
         ).first() is not None
 
+    # 公示期读上一轮结果
+    prev_matches = []
+    prev_round_name = ''
+    if contest.config:
+        if phase == 'knockout_16_result':
+            prev_matches = contest.config.get('knockout_matches_female_round16', [])
+            prev_round_name = '16强'
+        elif phase == 'knockout_8_result':
+            prev_matches = contest.config.get('knockout_matches_female_round8', [])
+            prev_round_name = '8强'
+        elif phase == 'knockout_4_result':
+            prev_matches = contest.config.get('knockout_matches_female_round4', [])
+            prev_round_name = '4强'
+        elif phase == 'final_result':
+            prev_matches = contest.config.get('knockout_matches_female_final', [])
+            prev_round_name = '决赛'
+
     return render_template('contest_knockout_vote.html',
                            contest=contest,
                            matches=matches,
                            candidates=candidates,
-                           phase=_calc_current_phase(contest),
+                           phase=phase,
                            gender='female',
-                           has_voted=has_voted)
+                           has_voted=has_voted,
+                           prev_matches=prev_matches,
+                           prev_round_name=prev_round_name)
 
 
 @public_bp.route('/contest/<int:contest_id>/knockout/male')
@@ -1025,7 +1069,7 @@ def knockout_vote_male(contest_id):
 
     candidates = {c.id: c for c in contest.candidates.all()}
 
-    # 算当前子轮
+    phase = _calc_current_phase(contest)
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     times = calc_stage_times(contest.open_at)
     sub_round = None
@@ -1045,16 +1089,34 @@ def knockout_vote_male(contest_id):
             user_id=session.get('user_id'),
             round_number=4,
             sub_round=sub_round,
-            gender= 'male'
+            gender='male'
         ).first() is not None
+
+    prev_matches = []
+    prev_round_name = ''
+    if contest.config:
+        if phase == 'knockout_16_result':
+            prev_matches = contest.config.get('knockout_matches_male_round16', [])
+            prev_round_name = '16强'
+        elif phase == 'knockout_8_result':
+            prev_matches = contest.config.get('knockout_matches_male_round8', [])
+            prev_round_name = '8强'
+        elif phase == 'knockout_4_result':
+            prev_matches = contest.config.get('knockout_matches_male_round4', [])
+            prev_round_name = '4强'
+        elif phase == 'final_result':
+            prev_matches = contest.config.get('knockout_matches_male_final', [])
+            prev_round_name = '决赛'
 
     return render_template('contest_knockout_vote.html',
                            contest=contest,
                            matches=matches,
                            candidates=candidates,
-                           phase=_calc_current_phase(contest),
+                           phase=phase,
                            gender='male',
-                           has_voted=has_voted)
+                           has_voted=has_voted,
+                           prev_matches=prev_matches,
+                           prev_round_name=prev_round_name)
 
 
 @public_bp.route('/contest/<int:contest_id>/knockout/submit', methods=['POST'])
@@ -1079,12 +1141,20 @@ def knockout_vote_submit(contest_id):
 
     if now <= times['knockout_16_end']:
         round_name = '16强'
+    elif now <= times['knockout_16_result_end']:
+        return fail('16强公示期，不能投票')
     elif now <= times['knockout_8_end']:
         round_name = '8强'
+    elif now <= times['knockout_8_result_end']:
+        return fail('8强公示期，不能投票')
     elif now <= times['knockout_4_end']:
         round_name = '4强'
+    elif now <= times['knockout_4_result_end']:
+        return fail('4强公示期，不能投票')
     elif now <= times['final_vote_end']:
         round_name = '决赛'
+    elif now <= times['final_result_end']:
+        return fail('决赛公示期，不能投票')
     else:
         return fail('淘汰赛已结束')
 
