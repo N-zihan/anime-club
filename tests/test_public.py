@@ -282,9 +282,13 @@ class TestPublicExtra:
         resp = logged_in_client.post(
             f'/contest/{contest.id}/qualifying/submit',
             data={'gender': 'female'},
-            follow_redirects=False
+            headers={'X-Requested-With': 'XMLHttpRequest'},
         )
-        assert resp.status_code == 302
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data['success'] is False
+        assert '至少' in data['message']
+
         from app.models import ContestVote
         votes = ContestVote.query.filter_by(
             contest_id=contest.id,
@@ -307,9 +311,14 @@ class TestPublicExtra:
         resp = logged_in_client.post(
             f'/contest/{contest.id}/qualifying/submit',
             data=data,
-            follow_redirects=False
+            headers={'X-Requested-With': 'XMLHttpRequest'},
         )
-        assert resp.status_code == 302
+        assert resp.status_code == 200
+        result = resp.get_json()
+        assert result['success'] is False
+        assert '5' in result['message'] or '最多' in result['message']
+
+        from app.models import ContestVote
         votes = ContestVote.query.filter_by(
             contest_id=contest.id,
             user_id=sample_user.id,
@@ -320,7 +329,6 @@ class TestPublicExtra:
     def test_group_vote_submit_success(self, logged_in_client, sample_contest, db_session, sample_user):
         contest = sample_contest
         contest.status = 'group_stage'
-        # 设置开始时间为 22 天前，使当前处于小组赛第1轮（提名5天+海选5天+小组赛第1轮开始）
         contest.open_at = datetime.now() - timedelta(days=22)
         female_candidates = contest.candidates.filter_by(gender='female').limit(4).all()
         if len(female_candidates) < 4:
@@ -328,23 +336,23 @@ class TestPublicExtra:
         contest.config = {'female_groups': [[c.id for c in female_candidates]]}
         db_session.commit()
 
-        # 模拟当前时间为小组赛第1轮期间
         with patch('app.public.datetime') as mock_dt:
-            mock_dt.now.return_value = datetime.now() - timedelta(days=18)  # 第1轮投票期内
+            mock_dt.now.return_value = datetime.now() - timedelta(days=18)
             mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
             resp = logged_in_client.post(
                 f'/contest/{contest.id}/group/submit',
                 data={'gender': 'female', 'candidate_id': female_candidates[0].id},
-                follow_redirects=False
+                headers={'X-Requested-With': 'XMLHttpRequest'},
             )
-            # 成功提交应返回重定向（302）
-            assert resp.status_code == 302
-            # 检查数据库是否有投票记录
+            assert resp.status_code == 200
+            result = resp.get_json()
+            assert result['success'] is True
+
             from app.models import ContestVote
             vote = ContestVote.query.filter_by(
                 contest_id=contest.id,
                 user_id=sample_user.id,
-                round_number=1,  # 小组赛第1轮
+                round_number=1,
                 gender='female',
                 candidate_id=female_candidates[0].id
             ).first()
@@ -353,7 +361,6 @@ class TestPublicExtra:
     def test_knockout_vote_submit_success(self, logged_in_client, sample_contest, db_session, sample_user):
         contest = sample_contest
         contest.status = 'knockout'
-        # 设置开始时间为 40 天前，使当前处于淘汰赛16强阶段
         contest.open_at = datetime.now() - timedelta(days=40)
         female_candidates = contest.candidates.filter_by(gender='female').limit(2).all()
         if len(female_candidates) < 2:
@@ -370,20 +377,23 @@ class TestPublicExtra:
         db_session.commit()
 
         with patch('app.public.datetime') as mock_dt:
-            mock_dt.now.return_value = datetime.now() - timedelta(days=35)  # 16强投票期内
+            mock_dt.now.return_value = datetime.now() - timedelta(days=35)
             mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
             resp = logged_in_client.post(
                 f'/contest/{contest.id}/knockout/submit',
                 data={'gender': 'female', 'candidate_id': female_candidates[0].id},
-                follow_redirects=False
+                headers={'X-Requested-With': 'XMLHttpRequest'},
             )
-            assert resp.status_code == 302
+            assert resp.status_code == 200
+            result = resp.get_json()
+            assert result['success'] is True
+
             from app.models import ContestVote
             vote = ContestVote.query.filter_by(
                 contest_id=contest.id,
                 user_id=sample_user.id,
-                round_number=4,  # 淘汰赛轮次固定为4
-                sub_round=1,  # 16强为1
+                round_number=4,
+                sub_round=1,
                 gender='female',
                 candidate_id=female_candidates[0].id
             ).first()
