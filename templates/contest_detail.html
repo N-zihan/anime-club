@@ -172,7 +172,7 @@
             {{ c.description }}
         </div>
         {% endif %}
-                <div style="font-size:0.7rem; color: var(--text-muted); margin-top:4px;">
+        <div style="font-size:0.7rem; color: var(--text-muted); margin-top:4px;">
             状态：
             {% if c.stage == 'champion' %}
             🏆 冠军
@@ -199,6 +199,7 @@
             海选投票中
             {% else %}
             海选淘汰
+            {% endif %}
             {% endif %}
         </div>
     </div>
@@ -250,6 +251,7 @@
             海选投票中
             {% else %}
             海选淘汰
+            {% endif %}
             {% endif %}
         </div>
     </div>
