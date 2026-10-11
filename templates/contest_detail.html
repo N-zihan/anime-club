@@ -195,11 +195,10 @@
             {% elif c.stage == 'pending' %}
             {% if phase in ['nomination', 'review'] %}
             候选
+            {% elif phase == 'qualifying' %}
+            海选投票中
             {% else %}
             海选淘汰
-            {% endif %}
-            {% else %}
-            {{ c.stage }}
             {% endif %}
         </div>
     </div>
@@ -247,11 +246,10 @@
             {% elif c.stage == 'pending' %}
             {% if phase in ['nomination', 'review'] %}
             候选
+            {% elif phase == 'qualifying' %}
+            海选投票中
             {% else %}
             海选淘汰
-            {% endif %}
-            {% else %}
-            {{ c.stage }}
             {% endif %}
         </div>
     </div>
