@@ -392,10 +392,20 @@ def contest_detail(contest_id):
 
     # 6. 获取数据
     candidates = contest.candidates.all()
-    user_nomination_count = Nomination.query.filter_by(
-        contest_id=contest.id,
-        user_id=session.get('user_id')
-    ).count() if session.get('user_id') else 0
+    if session.get('user_id'):
+        user_female_count = Nomination.query.filter_by(
+            contest_id=contest.id,
+            user_id=session.get('user_id'),
+            gender='female'
+        ).count()
+        user_male_count = Nomination.query.filter_by(
+            contest_id=contest.id,
+            user_id=session.get('user_id'),
+            gender='male'
+        ).count()
+    else:
+        user_female_count = 0
+        user_male_count = 0
 
     # ============================================================
     # 7. 构建 AI 额外数据（用于结构化解说）
@@ -466,7 +476,8 @@ def contest_detail(contest_id):
                            contest=contest,
                            candidates=candidates,
                            phase=phase,
-                           user_nomination_count=user_nomination_count,
+                           user_female_count=user_female_count,
+                           user_male_count=user_male_count,
                            nomination_end=times['nomination_end'],
                            review_end=times['review_end'],
                            qualifying_vote_end=times['qualifying_vote_end'],
@@ -507,11 +518,6 @@ def submit_nomination(contest_id):
         flash('该赛事未开放提名', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest_id))
 
-    count = Nomination.query.filter_by(contest_id=contest_id, user_id=session.get('user_id')).count()
-    if count >= NOMINATION_LIMIT:
-        flash('你已达到提名上限（5个角色）', 'danger')
-        return redirect(url_for('public.contest_detail', contest_id=contest_id))
-
     name = request.form.get('name')
     source = request.form.get('source')
     gender = request.form.get('gender')
@@ -519,6 +525,21 @@ def submit_nomination(contest_id):
 
     if not name or not source or not gender:
         flash('角色名、作品名、性别为必填项', 'danger')
+        return redirect(url_for('public.contest_detail', contest_id=contest_id))
+
+    if gender not in ['female', 'male']:
+        flash('无效的组别', 'danger')
+        return redirect(url_for('public.contest_detail', contest_id=contest_id))
+
+    # 按性别分别统计
+    count = Nomination.query.filter_by(
+        contest_id=contest_id,
+        user_id=session.get('user_id'),
+        gender=gender
+    ).count()
+    if count >= NOMINATION_LIMIT:
+        gender_name = '女组' if gender == 'female' else '男组'
+        flash(f'你在{gender_name}已达到提名上限（{NOMINATION_LIMIT}个角色）', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest_id))
 
     existing = Nomination.query.filter_by(contest_id=contest_id, name=name).first()

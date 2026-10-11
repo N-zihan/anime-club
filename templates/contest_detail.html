@@ -109,9 +109,12 @@
 <!-- ============================================================ -->
 {% if phase == 'nomination' %}
 <h3>提名角色</h3>
+<p style="color: var(--text-secondary); font-size:0.9rem; margin:8px 0;">
+    女组已提名 <strong>{{ user_female_count }}</strong> / 5，男组已提名 <strong>{{ user_male_count }}</strong> / 5
+</p>
 {% if session.user_id %}
-{% if user_nomination_count >= 5 %}
-<p style="color:#e74c3c;">你已达到提名上限（5个角色）</p>
+{% if user_female_count >= 5 and user_male_count >= 5 %}
+<p style="color:#e74c3c;">你在男女组都达到了提名上限（各 5 个角色）</p>
 {% else %}
 <form action="{{ url_for('public.submit_nomination', contest_id=contest.id) }}" enctype="multipart/form-data"
       method="POST" id="nominationForm">
@@ -120,8 +123,8 @@
         <div><input name="source" placeholder="作品名" required style="width:100%; padding:8px;" type="text"></div>
         <div>
             <select name="gender" required style="width:100%; padding:8px;">
-                <option value="female">女</option>
-                <option value="male">男</option>
+                <option value="female">女（已提 {{ user_female_count }}/5）</option>
+                <option value="male">男（已提 {{ user_male_count }}/5）</option>
             </select>
         </div>
         <div>
