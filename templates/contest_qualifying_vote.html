@@ -14,10 +14,8 @@
     <input name="gender" type="hidden" value="{{ gender }}">
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:16px; margin:20px 0;">
         {% for c in candidates %}
-        {% set already = existing_votes.get(c.id, 0) %}
         <div class="candidate-card" data-candidate-id="{{ c.id }}"
-             data-already="{{ already }}"
-            style="background: var(--bg-card); border-radius:12px; padding:16px; text-align:center; border:1px solid var(--border-color); {% if already >= 3 %}opacity:0.6;{% endif %}">
+            style="background: var(--bg-card); border-radius:12px; padding:16px; text-align:center; border:1px solid var(--border-color);">
             {% if c.image_url %}
             <img alt="{{ c.name }}" src="{{ c.image_url }}"
                  style="max-width:80px; max-height:80px; width:auto; height:auto; border-radius:8px; margin-bottom:8px;">
@@ -25,11 +23,10 @@
             <div><strong style="color: var(--text-primary);">{{ c.name }}</strong></div>
             <div style="font-size:0.85rem; color: var(--text-secondary);">{{ c.source }}</div>
 
-            {% if already > 0 %}
-            <div style="font-size:0.75rem; color:#16a34a; margin-top:6px; font-weight:600;">
-                已投 {{ already }} 票
+            <!-- 总票数 -->
+            <div style="font-size:0.8rem; color:#4caf50; margin-top:6px; font-weight:600;">
+                总票数：<span class="total-votes" data-candidate-id="{{ c.id }}">{{ vote_totals.get(c.id, 0) }}</span>
             </div>
-            {% endif %}
 
             <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px;">
                 <button class="vote-btn" data-action="decrease"
@@ -38,7 +35,7 @@
                 <button class="vote-btn" data-action="increase"
                         style="background:#1e2a3a; color:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:1.2rem;" type="button">+</button>
             </div>
-            <div style="font-size:0.7rem; color: var(--text-muted); margin-top:4px;">本次投几票</div>
+            <div style="font-size:0.7rem; color: var(--text-muted); margin-top:4px;">本次投几票（最多3）</div>
             <input class="vote-input" name="vote_{{ c.id }}" type="hidden" value="0">
         </div>
         {% endfor %}
@@ -63,12 +60,10 @@
         const MAX_VOTES = 15;
         const MAX_PER_CANDIDATE = 3;
 
-        // 历史数据（只读，用于校验）
         const existingVotes = {{ existing_votes|tojson }};
         const existingTotal = Object.values(existingVotes).reduce((a, b) => a + b, 0);
         const existingCount = Object.keys(existingVotes).length;
 
-        // 本次输入（从 0 开始）
         const voteCounts = {};
         let usedCandidates = 0;
         let usedVotes = 0;
@@ -105,21 +100,17 @@
 
             if (newVal < 0) return;
 
-            // 本次 + 历史不能超过 3
             if (already + newVal > MAX_PER_CANDIDATE) {
                 alert('该角色已经投了 ' + already + ' 票，本次最多还能投 ' + (MAX_PER_CANDIDATE - already) + ' 票');
                 return;
             }
 
             if (delta > 0) {
-                // 本次 + 历史总票数不能超 15
                 if (existingTotal + usedVotes + 1 > MAX_VOTES) {
                     alert('总票数已达上限（' + MAX_VOTES + ' 票）');
                     return;
                 }
-                // 历史 + 本次角色数不能超 5
                 if (already === 0 && current === 0) {
-                    // 这个角色历史没投，本次也没投 → 新增角色
                     if (existingCount + usedCandidates >= MAX_CANDIDATES) {
                         alert('最多只能投给 ' + MAX_CANDIDATES + ' 个角色');
                         return;
@@ -195,6 +186,36 @@
     })();
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    (function () {
+        const contestId = {{ contest.id }};
+        {% if session.user_id %}
+        const supabase = window.supabase.createClient(
+            '{{ supabase_url }}',
+            '{{ supabase_anon_key }}'
+        );
+        const channel = supabase
+            .channel('votes-channel')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'contest_votes',
+                filter: `contest_id=eq.${contestId}`
+            }, (payload) => {
+                fetch(`/api/votes/${payload.new.candidate_id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.querySelectorAll(`.total-votes[data-candidate-id="${payload.new.candidate_id}"]`).forEach(el => {
+                            el.textContent = data.total_votes;
+                        });
+                    });
+            })
+            .subscribe();
+        {% endif %}
+    })();
+</script>
+
 {% elif phase == 'qualifying_result' %}
 <h3>海选结果公示</h3>
 <p style="color: var(--text-secondary);">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
@@ -262,6 +283,6 @@
 <p style="color: #e74c3c;">当前不可投票</p>
 {% endif %}
 
-<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
+<p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">返回赛事详情</a></p>
 
 {% endblock %}

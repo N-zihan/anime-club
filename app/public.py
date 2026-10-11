@@ -566,7 +566,8 @@ def qualifying_vote_female(contest_id):
         flash('暂无女组候选角色', 'warning')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    existing_votes = {}   # 历史已投（只显示，不能改）
+    # 当前用户已投票数
+    existing_votes = {}
     if session.get('user_id'):
         rows = ContestVote.query.filter_by(
             contest_id=contest.id,
@@ -577,12 +578,25 @@ def qualifying_vote_female(contest_id):
         for v in rows:
             existing_votes[v.candidate_id] = v.weight
 
+    # 所有角色的总票数（一次 GROUP BY 查完）
+    vote_totals = dict(
+        db.session.query(
+            ContestVote.candidate_id,
+            db.func.sum(ContestVote.weight)
+        ).filter(
+            ContestVote.contest_id == contest.id,
+            ContestVote.round_number == 0,
+            ContestVote.gender == 'female'
+        ).group_by(ContestVote.candidate_id).all()
+    )
+
     return render_template('contest_qualifying_vote.html',
                            contest=contest,
                            candidates=candidates,
                            phase=_calc_current_phase(contest),
                            gender='female',
-                           existing_votes=existing_votes)
+                           existing_votes=existing_votes,
+                           vote_totals=vote_totals)
 
 
 @public_bp.route('/contest/<int:contest_id>/qualifying/male')
@@ -610,12 +624,24 @@ def qualifying_vote_male(contest_id):
         for v in rows:
             existing_votes[v.candidate_id] = v.weight
 
+    vote_totals = dict(
+        db.session.query(
+            ContestVote.candidate_id,
+            db.func.sum(ContestVote.weight)
+        ).filter(
+            ContestVote.contest_id == contest.id,
+            ContestVote.round_number == 0,
+            ContestVote.gender == 'male'
+        ).group_by(ContestVote.candidate_id).all()
+    )
+
     return render_template('contest_qualifying_vote.html',
                            contest=contest,
                            candidates=candidates,
                            phase=_calc_current_phase(contest),
                            gender='male',
-                           existing_votes=existing_votes)
+                           existing_votes=existing_votes,
+                           vote_totals=vote_totals)
 
 
 @public_bp.route('/contest/<int:contest_id>/qualifying/submit', methods=['POST'])
