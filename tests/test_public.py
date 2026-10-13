@@ -381,7 +381,11 @@ class TestPublicExtra:
             mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
             resp = logged_in_client.post(
                 f'/contest/{contest.id}/knockout/submit',
-                data={'gender': 'female', 'candidate_id': female_candidates[0].id},
+                data={
+                    'gender': 'female',
+                    'candidate_id': female_candidates[0].id,
+                    'match_index': 1,
+                },
                 headers={'X-Requested-With': 'XMLHttpRequest'},
             )
             assert resp.status_code == 200
@@ -394,6 +398,7 @@ class TestPublicExtra:
                 user_id=sample_user.id,
                 round_number=4,
                 sub_round=1,
+                match_index=1,
                 gender='female',
                 candidate_id=female_candidates[0].id
             ).first()
