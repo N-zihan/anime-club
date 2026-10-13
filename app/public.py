@@ -1022,7 +1022,6 @@ def knockout_vote_female(contest_id):
 
     candidates = {c.id: c for c in contest.candidates.all()}
 
-    # 算当前 phase 和 sub_round
     phase = _calc_current_phase(contest)
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     times = calc_stage_times(contest.open_at)
@@ -1036,17 +1035,18 @@ def knockout_vote_female(contest_id):
     elif now <= times['final_vote_end']:
         sub_round = 4
 
-    has_voted = False
+    # 本轮用户已投的场次
+    voted_matches = []
     if session.get('user_id') and sub_round:
-        has_voted = ContestVote.query.filter_by(
+        existing = ContestVote.query.filter_by(
             contest_id=contest.id,
             user_id=session.get('user_id'),
             round_number=4,
             sub_round=sub_round,
             gender='female'
-        ).first() is not None
+        ).all()
+        voted_matches = [v.match_index for v in existing]
 
-    # 公示期读上一轮结果
     prev_matches = []
     prev_round_name = ''
     if contest.config:
@@ -1069,7 +1069,7 @@ def knockout_vote_female(contest_id):
                            candidates=candidates,
                            phase=phase,
                            gender='female',
-                           has_voted=has_voted,
+                           voted_matches=voted_matches,
                            prev_matches=prev_matches,
                            prev_round_name=prev_round_name)
 
@@ -1103,15 +1103,16 @@ def knockout_vote_male(contest_id):
     elif now <= times['final_vote_end']:
         sub_round = 4
 
-    has_voted = False
+    voted_matches = []
     if session.get('user_id') and sub_round:
-        has_voted = ContestVote.query.filter_by(
+        existing = ContestVote.query.filter_by(
             contest_id=contest.id,
             user_id=session.get('user_id'),
             round_number=4,
             sub_round=sub_round,
             gender='male'
-        ).first() is not None
+        ).all()
+        voted_matches = [v.match_index for v in existing]
 
     prev_matches = []
     prev_round_name = ''
@@ -1135,7 +1136,7 @@ def knockout_vote_male(contest_id):
                            candidates=candidates,
                            phase=phase,
                            gender='male',
-                           has_voted=has_voted,
+                           voted_matches=voted_matches,
                            prev_matches=prev_matches,
                            prev_round_name=prev_round_name)
 
@@ -1186,16 +1187,26 @@ def knockout_vote_submit(contest_id):
     sub_round_map = {'16强': 1, '8强': 2, '4强': 3, '决赛': 4}
     sub_round = sub_round_map.get(round_name, 0)
 
+    match_index = request.form.get('match_index')
+    if not match_index:
+        return fail('缺少场次信息')
+    try:
+        match_index = int(match_index)
+    except ValueError:
+        return fail('场次信息无效')
+
+    # 去重：本轮 + 本场
     existing = ContestVote.query.filter_by(
         contest_id=contest.id,
         user_id=session.get('user_id'),
         round_number=4,
         sub_round=sub_round,
+        match_index=match_index,
         gender=gender
     ).first()
 
     if existing:
-        return fail(f'{round_name}你已经投过票了')
+        return fail(f'{round_name}第{match_index}场你已经投过票了')
 
     candidate_id = request.form.get('candidate_id')
     if not candidate_id:
@@ -1208,6 +1219,7 @@ def knockout_vote_submit(contest_id):
         weight=1,
         round_number=4,
         sub_round=sub_round,
+        match_index=match_index,
         gender=gender
     )
     db.session.add(vote)
@@ -1221,7 +1233,7 @@ def knockout_vote_submit(contest_id):
         db.session.rollback()
         return fail(f'写入失败：{type(e).__name__}: {str(e)}')
 
-    return jsonify({'success': True, 'message': f'{round_name}投票成功'})
+    return jsonify({'success': True, 'message': f'{round_name}第{match_index}场投票成功'})
 
 
 # ========== API ==========
