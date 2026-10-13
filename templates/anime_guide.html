@@ -301,81 +301,79 @@
         // ===== 主要角色 =====
         const charactersHtml =
             '<div id="charactersSection" style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">' +
-            '<div style="font-size:0.8rem; color: var(--text-muted); margin-bottom:10px;">主要角色</div>' +
-            '<div id="charactersList" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:6px;">' +
-            '<span style="color: var(--text-muted); font-size:0.85rem;">加载中...</span>' +
-            '</div></div>';
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">' +
+                '<div style="font-size:0.8rem; color: var(--text-muted);">主要角色</div>' +
+                '<button id="loadCharactersBtn" style="padding:4px 14px; background:var(--bg-code); border:1px solid var(--border-color); border-radius:20px; color:var(--text-secondary); font-size:0.8rem; cursor:pointer;">查看角色 →</button>' +
+            '</div>' +
+            '<div id="charactersList" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:6px;"></div>' +
+            '</div>';
 
         content.innerHTML = html;
 
-                // 异步加载角色列表
-        fetch('/api/anime/characters/' + id)
-            .then(r => r.json())
-            .then(data => {
+        // 用户点"查看角色"才加载
+        const loadBtn = document.getElementById('loadCharactersBtn');
+        if (loadBtn) {
+            loadBtn.addEventListener('click', function () {
+                this.style.display = 'none';
                 const listEl = document.getElementById('charactersList');
-                if (!listEl) return;
-                const chars = data.characters || [];
-                if (!chars.length) {
-                    listEl.innerHTML = '<span style="color: var(--text-muted); font-size:0.85rem;">暂无角色信息</span>';
-                    return;
-                }
+                listEl.innerHTML = '<span style="color: var(--text-muted); font-size:0.85rem;">加载中...</span>';
 
-                const PAGE_SIZE = 10;
-                let loaded = 0;
+                fetch('/api/anime/characters/' + id)
+                    .then(r => r.json())
+                    .then(data => {
+                        const chars = data.characters || [];
+                        if (!chars.length) {
+                            listEl.innerHTML = '<span style="color: var(--text-muted); font-size:0.85rem;">暂无角色信息</span>';
+                            return;
+                        }
 
-                function charHtml(c) {
-                    const imgSrc = c.image ? '/api/anime/cover?url=' + encodeURIComponent(c.image) : '';
-                    const img = imgSrc
-                        ? '<img src="' + imgSrc + '" alt="' + escapeHtml(c.name) + '" loading="lazy" ' +
-                          'style="width:70px; height:70px; object-fit:cover; border-radius:8px; display:block; background: var(--bg-code);">'
-                        : '<div style="width:70px; height:70px; background: var(--bg-code); border-radius:8px;"></div>';
-                    const cv = c.cv ? '<div style="font-size:0.7rem; color: var(--text-muted); margin-top:2px;">CV: ' + escapeHtml(c.cv) + '</div>' : '';
-                    return '<div onclick="openCharacterModal(' + c.id + ')" ' +
-                           'style="cursor:pointer; flex-shrink:0; width:80px; text-align:center; transition: transform 0.15s;" ' +
-                           'onmouseover="this.style.transform=\'translateY(-2px)\';" ' +
-                           'onmouseout="this.style.transform=\'\';">' +
-                        img +
-                        '<div style="font-size:0.8rem; color: var(--text-primary); margin-top:6px; line-height:1.3;">' + escapeHtml(c.name) + '</div>' +
-                        cv +
-                    '</div>';
-                }
+                        const PAGE_SIZE = 10;
+                        let loaded = 0;
 
-                function loadMore() {
-                    const next = chars.slice(loaded, loaded + PAGE_SIZE);
-                    if (!next.length) return;
-                    const frag = next.map(charHtml).join('');
-                    listEl.insertAdjacentHTML('beforeend', frag);
-                    loaded += next.length;
-                    updateSpinner();
-                }
+                        function charHtml(c) {
+                            const imgSrc = c.image ? '/api/anime/cover?url=' + encodeURIComponent(c.image) : '';
+                            const img = imgSrc
+                                ? '<img src="' + imgSrc + '" alt="' + escapeHtml(c.name) + '" loading="lazy" ' +
+                                  'style="width:70px; height:70px; object-fit:cover; border-radius:8px; display:block; background: var(--bg-code);">'
+                                : '<div style="width:70px; height:70px; background: var(--bg-code); border-radius:8px;"></div>';
+                            const cv = c.cv ? '<div style="font-size:0.7rem; color: var(--text-muted); margin-top:2px;">CV: ' + escapeHtml(c.cv) + '</div>' : '';
+                            return '<div onclick="openCharacterModal(' + c.id + ')" ' +
+                                   'style="cursor:pointer; flex-shrink:0; width:80px; text-align:center; transition: transform 0.15s;" ' +
+                                   'onmouseover="this.style.transform=\'translateY(-2px)\';" ' +
+                                   'onmouseout="this.style.transform=\'\';">' +
+                                img +
+                                '<div style="font-size:0.8rem; color: var(--text-primary); margin-top:6px; line-height:1.3;">' + escapeHtml(c.name) + '</div>' +
+                                cv +
+                            '</div>';
+                        }
 
-                function updateSpinner() {
-                    let spinner = listEl.querySelector('.char-loading');
-                    const hasMore = loaded < chars.length;
-                    if (hasMore && !spinner) {
-                        listEl.insertAdjacentHTML('beforeend',
-                            '<div class="char-loading" style="flex-shrink:0; width:80px; display:flex; align-items:center; justify-content:center; color: var(--text-muted); font-size:0.8rem;">加载中...</div>');
-                    } else if (!hasMore && spinner) {
-                        spinner.remove();
-                    }
-                }
+                        function loadMore() {
+                            const next = chars.slice(loaded, loaded + PAGE_SIZE);
+                            if (!next.length) return;
+                            listEl.insertAdjacentHTML('beforeend', next.map(charHtml).join(''));
+                            loaded += next.length;
+                            let spinner = listEl.querySelector('.char-loading');
+                            const hasMore = loaded < chars.length;
+                            if (hasMore && !spinner) {
+                                listEl.insertAdjacentHTML('beforeend',
+                                    '<div class="char-loading" style="flex-shrink:0; width:80px; display:flex; align-items:center; justify-content:center; color: var(--text-muted); font-size:0.8rem;">加载中...</div>');
+                            } else if (!hasMore && spinner) {
+                                spinner.remove();
+                            }
+                        }
 
-                listEl.innerHTML = '';
-                loadMore();
-
-                // 横向滚动到底 → 加载下一批
-                listEl.onscroll = function () {
-                    const nearEnd = listEl.scrollLeft + listEl.clientWidth >= listEl.scrollWidth - 40;
-                    if (nearEnd && loaded < chars.length) {
+                        listEl.innerHTML = '';
                         loadMore();
-                    }
-                };
-            })
-            .catch(() => {
-                const listEl = document.getElementById('charactersList');
-                if (listEl) listEl.innerHTML = '<span style="color: var(--text-muted); font-size:0.85rem;">加载失败</span>';
+                        listEl.onscroll = function () {
+                            const nearEnd = listEl.scrollLeft + listEl.clientWidth >= listEl.scrollWidth - 40;
+                            if (nearEnd && loaded < chars.length) loadMore();
+                        };
+                    })
+                    .catch(() => {
+                        listEl.innerHTML = '<span style="color: var(--text-muted); font-size:0.85rem;">加载失败</span>';
+                    });
             });
-    }
+        }
 
     function closeAnimeModal() {
         document.getElementById('animeModal').style.display = 'none';

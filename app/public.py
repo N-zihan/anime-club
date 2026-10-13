@@ -273,14 +273,18 @@ def api_anime_detail(subject_id):
     d = get_subject_detail(subject_id)
     if not d:
         return jsonify({'error': 'Not found'}), 404
-    return jsonify(d)
+    resp = jsonify(d)
+    resp.headers['Cache-Control'] = 'public, max-age=3600, s-maxage=3600'
+    return resp
 
 
 @public_bp.route('/api/anime/characters/<int:subject_id>')
 def api_anime_characters(subject_id):
     """拉取某部番剧的角色列表"""
     chars = get_subject_characters(subject_id)
-    return jsonify({'characters': chars})
+    resp = jsonify({'characters': chars})
+    resp.headers['Cache-Control'] = 'public, max-age=86400, s-maxage=86400'
+    return resp
 
 
 @public_bp.route('/api/anime/character/<int:char_id>')
