@@ -324,8 +324,9 @@
                 let loaded = 0;
 
                 function charHtml(c) {
-                    const img = c.image
-                        ? '<img src="' + escapeHtml(c.image) + '" alt="' + escapeHtml(c.name) + '" loading="lazy" ' +
+                    const imgSrc = c.image ? '/api/anime/cover?url=' + encodeURIComponent(c.image) : '';
+                    const img = imgSrc
+                        ? '<img src="' + imgSrc + '" alt="' + escapeHtml(c.name) + '" loading="lazy" ' +
                           'style="width:70px; height:70px; object-fit:cover; border-radius:8px; display:block; background: var(--bg-code);">'
                         : '<div style="width:70px; height:70px; background: var(--bg-code); border-radius:8px;"></div>';
                     const cv = c.cv ? '<div style="font-size:0.7rem; color: var(--text-muted); margin-top:2px;">CV: ' + escapeHtml(c.cv) + '</div>' : '';
@@ -404,8 +405,9 @@
             return;
         }
 
-        const coverHtml = d.image
-            ? '<img src="' + escapeHtml(d.image) + '" alt="' + escapeHtml(d.name) + '" ' +
+        const coverSrc = d.image ? '/api/anime/cover?url=' + encodeURIComponent(d.image) : '';
+        const coverHtml = coverSrc
+            ? '<img src="' + coverSrc + '" alt="' + escapeHtml(d.name) + '" ' +
               'style="width:140px; height:200px; object-fit:cover; border-radius:12px; flex-shrink:0; background: var(--bg-code);">'
             : '<div style="width:140px; height:200px; background: var(--bg-code); border-radius:12px; flex-shrink:0;"></div>';
 
