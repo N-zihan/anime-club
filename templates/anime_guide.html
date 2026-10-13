@@ -55,6 +55,16 @@
         <div id="modalContent"></div>
     </div>
 </div>
+<!-- 角色详情模态框 -->
+<div id="characterModal"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:100000; align-items:flex-start; justify-content:center; padding:40px 20px; overflow-y:auto;"
+     onclick="if(event.target===this) closeCharacterModal()">
+    <div style="background: var(--bg-card); border-radius:16px; max-width:520px; width:100%; padding:28px 28px 24px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+        <button onclick="closeCharacterModal()"
+                style="position:absolute; top:14px; right:18px; background:none; border:none; font-size:1.6rem; color: var(--text-muted); cursor:pointer; line-height:1; z-index:1;">×</button>
+        <div id="characterModalContent"></div>
+    </div>
+</div>
 
 <script>
 (function () {
@@ -281,14 +291,54 @@
             '</div>' +
             staffHtml +
             summaryHtml +
+            charactersHtml +
             '<div style="margin-top:22px; text-align:right;">' +
                 '<a href="https://search.bilibili.com/all?keyword=' + encodeURIComponent(d.name) + '" target="_blank" rel="noopener" ' +
                    'style="display:inline-block; padding:10px 24px; background:#00a1d6; color:#fff; text-decoration:none; border-radius:24px; font-size:0.9rem;">' +
                    '去 B 站找这部番 →' +
                 '</a>' +
             '</div>';
+        // ===== 主要角色 =====
+        const charactersHtml =
+            '<div id="charactersSection" style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">' +
+            '<div style="font-size:0.8rem; color: var(--text-muted); margin-bottom:10px;">主要角色</div>' +
+            '<div id="charactersList" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:6px;">' +
+            '<span style="color: var(--text-muted); font-size:0.85rem;">加载中...</span>' +
+            '</div></div>';
 
         content.innerHTML = html;
+
+                // 异步加载角色列表
+        fetch('/api/anime/characters/' + id)
+            .then(r => r.json())
+            .then(data => {
+                const listEl = document.getElementById('charactersList');
+                if (!listEl) return;
+                const chars = data.characters || [];
+                if (!chars.length) {
+                    listEl.innerHTML = '<span style="color: var(--text-muted); font-size:0.85rem;">暂无角色信息</span>';
+                    return;
+                }
+                listEl.innerHTML = chars.map(c => {
+                    const img = c.image
+                        ? '<img src="' + escapeHtml(c.image) + '" alt="' + escapeHtml(c.name) + '" ' +
+                          'style="width:70px; height:70px; object-fit:cover; border-radius:8px; display:block; background: var(--bg-code);">'
+                        : '<div style="width:70px; height:70px; background: var(--bg-code); border-radius:8px;"></div>';
+                    const cv = c.cv ? '<div style="font-size:0.7rem; color: var(--text-muted); margin-top:2px;">CV: ' + escapeHtml(c.cv) + '</div>' : '';
+                    return '<div onclick="openCharacterModal(' + c.id + ')" ' +
+                           'style="cursor:pointer; flex-shrink:0; width:80px; text-align:center; transition: transform 0.15s;" ' +
+                           'onmouseover="this.style.transform=\'translateY(-2px)\';" ' +
+                           'onmouseout="this.style.transform=\'\';">' +
+                        img +
+                        '<div style="font-size:0.8rem; color: var(--text-primary); margin-top:6px; line-height:1.3;">' + escapeHtml(c.name) + '</div>' +
+                        cv +
+                    '</div>';
+                }).join('');
+            })
+            .catch(() => {
+                const listEl = document.getElementById('charactersList');
+                if (listEl) listEl.innerHTML = '<span style="color: var(--text-muted); font-size:0.85rem;">加载失败</span>';
+            });
     }
 
     function closeAnimeModal() {
@@ -300,9 +350,88 @@
         if (e.key === 'Escape') closeAnimeModal();
     });
 
-    // onclick 需要挂到 window 上才能访问
+    // ===== 角色详情模态框 =====
+    async function openCharacterModal(charId) {
+        const modal = document.getElementById('characterModal');
+        const content = document.getElementById('characterModalContent');
+
+        content.innerHTML = '<div style="text-align:center; padding:60px 0; color: var(--text-muted);">正在加载...</div>';
+        modal.style.display = 'flex';
+        // 不锁 body 滚动 —— 番剧模态框已经锁过
+
+        let d;
+        try {
+            const res = await fetch('/api/anime/character/' + charId);
+            if (!res.ok) throw new Error('not found');
+            d = await res.json();
+        } catch (e) {
+            content.innerHTML = '<div style="text-align:center; padding:60px 0; color: var(--text-muted);">加载失败，请稍后重试</div>';
+            return;
+        }
+
+        const coverHtml = d.image
+            ? '<img src="' + escapeHtml(d.image) + '" alt="' + escapeHtml(d.name) + '" ' +
+              'style="width:140px; height:200px; object-fit:cover; border-radius:12px; flex-shrink:0; background: var(--bg-code);">'
+            : '<div style="width:140px; height:200px; background: var(--bg-code); border-radius:12px; flex-shrink:0;"></div>';
+
+        // 元信息
+        const meta = [];
+        if (d.gender) meta.push(d.gender === 'male' ? '男' : d.gender === 'female' ? '女' : d.gender);
+        if (d.birthday) meta.push('生日 ' + d.birthday);
+        if (d.blood_type) meta.push('血型 ' + d.blood_type);
+        if (d.height) meta.push('身高 ' + d.height + 'cm');
+        if (d.weight) meta.push('体重 ' + d.weight + 'kg');
+        const metaHtml = meta.length
+            ? '<div style="font-size:0.85rem; color: var(--text-secondary); margin-top:10px; line-height:1.8;">' + meta.join(' · ') + '</div>'
+            : '';
+
+        const cvHtml = d.cv
+            ? '<div style="font-size:0.85rem; color: var(--text-secondary); margin-top:6px;">声优：' + escapeHtml(d.cv) + '</div>'
+            : '';
+
+        const summaryHtml = d.summary
+            ? '<div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">' +
+              '<div style="font-size:0.8rem; color: var(--text-muted); margin-bottom:8px;">简介</div>' +
+              '<div style="color: var(--text-primary); font-size:0.9rem; line-height:1.8; white-space:pre-wrap;">' + escapeHtml(d.summary) + '</div>' +
+              '</div>'
+            : '';
+
+        const html =
+            '<div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">' +
+                coverHtml +
+                '<div style="flex:1; min-width:180px;">' +
+                    '<h2 style="margin:0 0 6px 0; color: var(--text-primary); font-size:1.3rem; line-height:1.3;">' + escapeHtml(d.name) + '</h2>' +
+                    (d.original_name && d.original_name !== d.name
+                        ? '<div style="color: var(--text-muted); font-size:0.85rem; margin-bottom:6px;">' + escapeHtml(d.original_name) + '</div>'
+                        : '') +
+                    metaHtml +
+                    cvHtml +
+                '</div>' +
+            '</div>' +
+            summaryHtml;
+
+        content.innerHTML = html;
+    }
+
+    function closeCharacterModal() {
+        document.getElementById('characterModal').style.display = 'none';
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            // 优先关角色模态框
+            const charModal = document.getElementById('characterModal');
+            if (charModal && charModal.style.display === 'flex') {
+                closeCharacterModal();
+                return;
+            }
+        }
+    });
+
     window.openAnimeModal = openAnimeModal;
     window.closeAnimeModal = closeAnimeModal;
+    window.openCharacterModal = openCharacterModal;
+    window.closeCharacterModal = closeCharacterModal;
 
     // 首次加载
     loadPage();
