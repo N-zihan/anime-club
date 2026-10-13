@@ -137,7 +137,6 @@
         loadMoreEl.textContent = '正在加载...';
 
         let url;
-        // loadPage 里，搜索 URL 带上 sort
         if (keyword) {
             url = '/api/anime/search?q=' + encodeURIComponent(keyword)
                 + '&offset=' + offset
@@ -203,7 +202,6 @@
         }
     });
 
-    // 返回浏览模式
     clearBtn.addEventListener('click', function () {
         keyword = '';
         searchInput.value = '';
@@ -211,13 +209,12 @@
         resetAndLoad();
     });
 
-    // 排序切换
     sortSelect.addEventListener('change', function () {
         sort = this.value;
         resetAndLoad();
     });
 
-    // ===== 模态框 =====
+    // ===== 番剧详情模态框 =====
     async function openAnimeModal(id) {
         const modal = document.getElementById('animeModal');
         const content = document.getElementById('modalContent');
@@ -277,6 +274,16 @@
               '</div>'
             : '';
 
+        // 主要角色区域（初始只有按钮）
+        const charactersHtml =
+            '<div id="charactersSection" style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">' +
+                '<div style="font-size:0.8rem; color: var(--text-muted);">主要角色</div>' +
+                '<button id="loadCharactersBtn" style="padding:4px 14px; background:var(--bg-code); border:1px solid var(--border-color); border-radius:20px; color:var(--text-secondary); font-size:0.8rem; cursor:pointer;">查看角色 →</button>' +
+            '</div>' +
+            '<div id="charactersList" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:6px;"></div>' +
+            '</div>';
+
         const html =
             '<div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">' +
                 coverHtml +
@@ -297,15 +304,6 @@
                    'style="display:inline-block; padding:10px 24px; background:#00a1d6; color:#fff; text-decoration:none; border-radius:24px; font-size:0.9rem;">' +
                    '去 B 站找这部番 →' +
                 '</a>' +
-            '</div>';
-        // ===== 主要角色 =====
-        const charactersHtml =
-            '<div id="charactersSection" style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">' +
-            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">' +
-                '<div style="font-size:0.8rem; color: var(--text-muted);">主要角色</div>' +
-                '<button id="loadCharactersBtn" style="padding:4px 14px; background:var(--bg-code); border:1px solid var(--border-color); border-radius:20px; color:var(--text-secondary); font-size:0.8rem; cursor:pointer;">查看角色 →</button>' +
-            '</div>' +
-            '<div id="charactersList" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:6px;"></div>' +
             '</div>';
 
         content.innerHTML = html;
@@ -347,26 +345,26 @@
                             '</div>';
                         }
 
-                        function loadMore() {
+                        function loadMoreChars() {
                             const next = chars.slice(loaded, loaded + PAGE_SIZE);
                             if (!next.length) return;
                             listEl.insertAdjacentHTML('beforeend', next.map(charHtml).join(''));
                             loaded += next.length;
                             let spinner = listEl.querySelector('.char-loading');
-                            const hasMore = loaded < chars.length;
-                            if (hasMore && !spinner) {
+                            const hasMoreChars = loaded < chars.length;
+                            if (hasMoreChars && !spinner) {
                                 listEl.insertAdjacentHTML('beforeend',
                                     '<div class="char-loading" style="flex-shrink:0; width:80px; display:flex; align-items:center; justify-content:center; color: var(--text-muted); font-size:0.8rem;">加载中...</div>');
-                            } else if (!hasMore && spinner) {
+                            } else if (!hasMoreChars && spinner) {
                                 spinner.remove();
                             }
                         }
 
                         listEl.innerHTML = '';
-                        loadMore();
+                        loadMoreChars();
                         listEl.onscroll = function () {
                             const nearEnd = listEl.scrollLeft + listEl.clientWidth >= listEl.scrollWidth - 40;
-                            if (nearEnd && loaded < chars.length) loadMore();
+                            if (nearEnd && loaded < chars.length) loadMoreChars();
                         };
                     })
                     .catch(() => {
@@ -374,15 +372,12 @@
                     });
             });
         }
+    }
 
     function closeAnimeModal() {
         document.getElementById('animeModal').style.display = 'none';
         document.body.style.overflow = '';
     }
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeAnimeModal();
-    });
 
     // ===== 角色详情模态框 =====
     async function openCharacterModal(charId) {
@@ -391,7 +386,6 @@
 
         content.innerHTML = '<div style="text-align:center; padding:60px 0; color: var(--text-muted);">正在加载...</div>';
         modal.style.display = 'flex';
-        // 不锁 body 滚动 —— 番剧模态框已经锁过
 
         let d;
         try {
@@ -409,7 +403,6 @@
               'style="width:140px; height:200px; object-fit:cover; border-radius:12px; flex-shrink:0; background: var(--bg-code);">'
             : '<div style="width:140px; height:200px; background: var(--bg-code); border-radius:12px; flex-shrink:0;"></div>';
 
-        // 元信息
         const meta = [];
         if (d.gender) meta.push(d.gender === 'male' ? '男' : d.gender === 'female' ? '女' : d.gender);
         if (d.birthday) meta.push('生日 ' + d.birthday);
@@ -454,12 +447,12 @@
 
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-            // 优先关角色模态框
             const charModal = document.getElementById('characterModal');
             if (charModal && charModal.style.display === 'flex') {
                 closeCharacterModal();
                 return;
             }
+            closeAnimeModal();
         }
     });
 
