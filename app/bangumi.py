@@ -137,3 +137,85 @@ def get_subject_detail(subject_id):
     except Exception as e:
         print(f'Bangumi 详情拉取失败: {e}')
         return None
+
+
+def get_subject_characters(subject_id):
+    """获取某部番剧的全部角色"""
+    try:
+        res = requests.get(
+            f'https://api.bgm.tv/v0/subjects/{subject_id}/characters',
+            headers=HEADERS,
+            timeout=8,
+        )
+        data = res.json()
+        if not isinstance(data, list):
+            return []
+
+        result = []
+        # 主角优先，其次按接口返回顺序
+        sorted_data = sorted(
+            data,
+            key=lambda x: 0 if x.get('relation') == '主角' else 1,
+        )
+        for item in sorted_data:
+            images = item.get('images') or {}
+            actors = item.get('actors') or []
+            result.append({
+                'id': item.get('id'),
+                'name': item.get('name') or '',
+                'relation': item.get('relation') or '',
+                'image': images.get('grid') or images.get('medium') or images.get('large') or '',
+                'cv': '、'.join(a.get('name', '') for a in actors if a.get('name')),
+            })
+        return result
+    except Exception as e:
+        print(f'Bangumi 角色列表拉取失败: {e}')
+        return []
+
+
+def get_character_detail(char_id):
+    """拉取单个角色的完整详情"""
+    try:
+        res = requests.get(
+            f'https://api.bgm.tv/v0/characters/{char_id}',
+            headers=HEADERS,
+            timeout=8,
+        )
+        d = res.json()
+        if not isinstance(d, dict) or d.get('id') is None:
+            return None
+
+        images = d.get('images') or {}
+        actors = d.get('actors') or []
+
+        # infobox 里提取中文名等补充信息
+        extra = {}
+        for item in (d.get('infobox') or []):
+            key = item.get('key')
+            if not key:
+                continue
+            val = item.get('value')
+            if isinstance(val, list):
+                val = '、'.join(
+                    str(v.get('v', v)) if isinstance(v, dict) else str(v)
+                    for v in val
+                )
+            extra[key] = val
+
+        return {
+            'id': d.get('id'),
+            'name': extra.get('简体中文名') or d.get('name') or '',
+            'original_name': d.get('name') or '',
+            'summary': (d.get('summary') or '').strip(),
+            'image': images.get('large') or images.get('medium') or images.get('grid') or '',
+            'gender': d.get('gender') or '',
+            'birthday': d.get('birthday') or '',
+            'blood_type': d.get('blood_type') or '',
+            'height': d.get('height') or '',
+            'weight': d.get('weight') or '',
+            'cv': '、'.join(a.get('name', '') for a in actors if a.get('name')),
+            'extra': extra,
+        }
+    except Exception as e:
+        print(f'Bangumi 角色详情拉取失败: {e}')
+        return None
