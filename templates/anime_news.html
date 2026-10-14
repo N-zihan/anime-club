@@ -2,11 +2,23 @@
 {% block title %}动漫动态{% endblock %}
 {% block content %}
 
-<h2>番剧新闻</h2>
-<p style="color: var(--text-secondary); font-size:0.9rem; margin-bottom:20px;">
+<h2>动漫动态</h2>
+<p style="color: var(--text-secondary); font-size:0.9rem; margin-bottom:16px;">
     数据来源：ANN / MAL / Crunchyroll / Comic Book 等多家媒体
 </p>
 
+<!-- 搜索框 -->
+<div style="display:flex; gap:8px; margin-bottom:16px;">
+    <input type="text" id="newsSearchInput" placeholder="搜索新闻（支持中文，如：药屋、海贼王）"
+           autocomplete="off"
+           style="flex:1; padding:10px 16px; border:1px solid var(--border-color); border-radius:24px; font-size:0.95rem; background: var(--bg-input); color: var(--text-primary);">
+    <button type="button" id="newsSearchBtn"
+            style="padding:10px 20px; background:#1e2a3a; color:#fff; border:none; border-radius:24px; cursor:pointer; font-size:0.9rem;">搜索</button>
+    <button type="button" id="newsClearBtn"
+            style="display:none; padding:10px 20px; background: var(--bg-code); color: var(--text-primary); border:1px solid var(--border-color); border-radius:24px; cursor:pointer; font-size:0.9rem;">返回</button>
+</div>
+
+<!-- 标签筛选 -->
 <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
     <button class="filter-btn" data-tag=""
             style="padding:6px 16px; border-radius:20px; border:1px solid var(--border-color); background:#1e2a3a; color:white; cursor:pointer; font-size:0.85rem;">全部</button>
@@ -57,6 +69,10 @@
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     const filterBtns = document.querySelectorAll('.filter-btn');
 
+    const searchInput = document.getElementById('newsSearchInput');
+    const searchBtn = document.getElementById('newsSearchBtn');
+    const clearBtn = document.getElementById('newsClearBtn');
+
     const SOURCE_NAMES = {
         'MyAnimeList': 'MAL',
         'Anime News Network': 'ANN',
@@ -64,6 +80,7 @@
 
     let currentTag = '';
     let nextCursor = null;
+    let searchKeyword = '';
 
     function escapeHtml(s) {
         const d = document.createElement('div');
@@ -93,7 +110,6 @@
     }
 
     function itemHtml(a) {
-        // ★ 优先用中文标题
         const title = escapeHtml(a.title_zh || a.title || '无标题');
         const link = a.link || a.url || '#';
         const source = SOURCE_NAMES[a.source] || a.source || '';
@@ -133,6 +149,10 @@
         if (!append) {
             currentTag = tag;
             nextCursor = null;
+            searchKeyword = '';
+            if (searchInput) searchInput.value = '';
+            if (clearBtn) clearBtn.style.display = 'none';
+
             filterBtns.forEach(function (b) {
                 if (b.dataset.tag === tag) {
                     b.style.background = '#1e2a3a';
@@ -179,11 +199,68 @@
         });
     }
 
-    filterBtns.forEach(function (b) {
-        b.addEventListener('click', function () { load(b.dataset.tag, false); });
+    // ===== 搜索 =====
+    function doSearch() {
+        const q = searchInput.value.trim();
+        if (!q) return;
+        searchKeyword = q;
+
+        filterBtns.forEach(function (b) {
+            b.style.background = 'var(--bg-code)';
+            b.style.color = 'var(--text-primary)';
+        });
+
+        feed.innerHTML = '';
+        statusEl.style.display = 'block';
+        statusEl.textContent = '搜索中...（首次搜索可能要几秒钟）';
+        loadMoreBtn.style.display = 'none';
+        clearBtn.style.display = 'inline-block';
+
+        fetch('/api/anime/news-search?q=' + encodeURIComponent(q))
+        .then(r => r.json())
+        .then(data => {
+            const articles = data.articles || [];
+            if (!articles.length) {
+                feed.innerHTML = '';
+                statusEl.style.display = 'block';
+                statusEl.textContent = '没有找到相关新闻';
+            } else {
+                render(articles, false);
+            }
+        })
+        .catch(() => {
+            statusEl.textContent = '搜索失败，请稍后再试';
+        });
+    }
+
+    searchBtn.addEventListener('click', doSearch);
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            doSearch();
+        }
+    });
+    clearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        searchKeyword = '';
+        clearBtn.style.display = 'none';
+        load('', false);
     });
 
-    loadMoreBtn.addEventListener('click', function () { load(currentTag, true); });
+    filterBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+            if (searchKeyword) {
+                searchKeyword = '';
+                searchInput.value = '';
+                clearBtn.style.display = 'none';
+            }
+            load(b.dataset.tag, false);
+        });
+    });
+
+    loadMoreBtn.addEventListener('click', function () {
+        if (!searchKeyword) load(currentTag, true);
+    });
 
     // ===== 详情模态框 =====
     window.openNewsModal = function (url, title) {
@@ -224,14 +301,11 @@
         }
     });
 
-    // 事件委托：点击标题打开模态框
     feed.addEventListener('click', function (e) {
         const link = e.target.closest('.news-link');
         if (!link) return;
         e.preventDefault();
-        const url = link.dataset.url;
-        const title = link.textContent;
-        window.openNewsModal(url, title);
+        window.openNewsModal(link.dataset.url, link.textContent);
     });
 
     load('', false);

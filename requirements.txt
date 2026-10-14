@@ -46,6 +46,7 @@ certifi==2026.4.22
 charset-normalizer==3.4.7
 idna==3.18
 beautifulsoup4==4.12.3
+alibabacloud_alimt20181012==1.1.0
 
 # ---- 部署 ----
 gunicorn==23.0.0

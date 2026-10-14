@@ -1,30 +1,192 @@
 """
 动漫社官网 · 动漫新闻数据源
 ====================================
-从自部署的 AniNewsAPI 聚合动漫新闻，并翻译标题为中文。
+从自部署的 AniNewsAPI 聚合动漫新闻，使用阿里云机器翻译。
 """
+import base64
+import hashlib
+import hmac
 import json
 import os
+import re
 import traceback
+import uuid
 from datetime import datetime, timedelta
+from urllib.parse import quote
 
 import requests
-from openai import OpenAI
-
-import re
 from bs4 import BeautifulSoup
 
 ANI_NEWS_API = 'https://anime-news.nanyi-anime-club.top/'
 
-# 免费模型（SiliconFlow 上 Qwen2.5-7B 免费额度足够翻译标题）
-FREE_MODEL = os.getenv('AI_MODEL_FREE', 'Qwen/Qwen2.5-7B-Instruct')
-
 _cache = {}
-_CACHE_TTL = 1800  # 新闻缓存 30 分钟
-_translate_cache = {}
-_TRANSLATE_TTL = 86400  # 翻译缓存 24 小时（翻译结果不会变）
+_CACHE_TTL = 1800
+
+_translate_cache = {}  # 翻译缓存（永久，进程重启后清空）
+
+_article_cache = {}
+_ARTICLE_TTL = 172800
+
+_UA = 'Mozilla/5.0 (compatible; nanyi-anime-club/1.0)'
+
+# 阿里云机器翻译端点
+_ALIYUN_MT_ENDPOINT = 'https://mt.aliyuncs.com/'
+_ALIYUN_SINGLE_MAX = 4500  # 单次请求最大字符数（保守取值）
 
 
+# ============================================================
+# 阿里云翻译
+# ============================================================
+def _aliyun_call(text, source='en', target='zh'):
+    """单次调用阿里云机器翻译 API，返回翻译文本（失败返回 None）"""
+    if not text or not text.strip():
+        return ''
+
+    ak_id = os.getenv('ALIBABA_CLOUD_ACCESS_KEY_ID')
+    ak_secret = os.getenv('ALIBABA_CLOUD_ACCESS_KEY_SECRET')
+    if not ak_id or not ak_secret:
+        return None
+
+    params = {
+        'Action': 'TranslateGeneral',
+        'Version': '2018-10-12',
+        'Format': 'JSON',
+        'AccessKeyId': ak_id,
+        'SignatureMethod': 'HMAC-SHA1',
+        'SignatureVersion': '1.0',
+        'SignatureNonce': str(uuid.uuid4()),
+        'Timestamp': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+        'FormatType': 'text',
+        'SourceLanguage': source,
+        'TargetLanguage': target,
+        'SourceText': text,
+        'Scene': 'general',
+    }
+
+    # 阿里云签名算法
+    sorted_params = sorted(params.items())
+    canonicalized = '&'.join(
+        f'{quote(k, safe="")}={quote(str(v), safe="")}'
+        for k, v in sorted_params
+    )
+    string_to_sign = 'GET&%2F&' + quote(canonicalized, safe='')
+    signature = base64.b64encode(
+        hmac.new(
+            (ak_secret + '&').encode('utf-8'),
+            string_to_sign.encode('utf-8'),
+            hashlib.sha1,
+        ).digest()
+    ).decode('utf-8')
+
+    params['Signature'] = signature
+
+    try:
+        res = requests.get(_ALIYUN_MT_ENDPOINT, params=params, timeout=10)
+        data = res.json()
+        if data.get('Code') == '200':
+            return data.get('Data', {}).get('Translated', '')
+        print(f'>>> 阿里云翻译错误: code={data.get("Code")} msg={data.get("Message")}')
+        return None
+    except Exception as e:
+        print(f'>>> 阿里云请求失败: {e}')
+        return None
+
+
+def _translate_batch(texts):
+    """批量翻译（英→中），带缓存。
+    texts: list[str]，返回 {原文: 译文}。
+    """
+    if not texts:
+        return {}
+
+    result = {}
+    to_translate = []
+
+    for t in texts:
+        if not t or not t.strip():
+            result[t] = t
+            continue
+        cached = _translate_cache.get(t)
+        if cached:
+            result[t] = cached
+        else:
+            to_translate.append(t)
+
+    if not to_translate:
+        return result
+
+    # 阿里云没有原生批量接口，用 \n 拼接实现伪批量
+    # 按字符数分批，防止单次请求超长
+    batches = []
+    current = []
+    current_len = 0
+
+    for t in to_translate:
+        # 单条太长，单独处理
+        if len(t) > _ALIYUN_SINGLE_MAX:
+            if current:
+                batches.append(current)
+                current = []
+                current_len = 0
+            batches.append([t])
+            continue
+
+        if current_len + len(t) + 1 > _ALIYUN_SINGLE_MAX:
+            batches.append(current)
+            current = [t]
+            current_len = len(t)
+        else:
+            current.append(t)
+            current_len += len(t) + 1
+
+    if current:
+        batches.append(current)
+
+    for batch in batches:
+        # 单条超长的情况，直接单独调用
+        if len(batch) == 1 and len(batch[0]) > _ALIYUN_SINGLE_MAX:
+            # 截断处理（超过 4500 字符的文本很少见）
+            truncated = batch[0][:_ALIYUN_SINGLE_MAX]
+            translated = _aliyun_call(truncated)
+            if translated:
+                result[batch[0]] = translated
+                _translate_cache[batch[0]] = translated
+            else:
+                result[batch[0]] = batch[0]
+            continue
+
+        joined = '\n'.join(batch)
+        translated = _aliyun_call(joined)
+
+        if translated is None:
+            # 调用失败，原样返回
+            for t in batch:
+                result[t] = t
+            continue
+
+        lines = translated.split('\n')
+
+        # 行数不匹配时，降级为逐条翻译
+        if len(lines) != len(batch):
+            print(f'>>> 行数不匹配（{len(lines)} vs {len(batch)}），降级逐条翻译')
+            for t in batch:
+                single = _aliyun_call(t)
+                zh = single if single else t
+                result[t] = zh
+                _translate_cache[t] = zh
+            continue
+
+        for orig, trans in zip(batch, lines):
+            zh = trans.strip() or orig
+            result[orig] = zh
+            _translate_cache[orig] = zh
+
+    return result
+
+
+# ============================================================
+# 新闻列表
+# ============================================================
 def get_anime_news(limit=20, tag=None, cursor=None):
     """获取动漫新闻列表，返回 (articles, meta)"""
     cache_key = f'news_{limit}_{tag or "all"}_{cursor or "start"}'
@@ -58,23 +220,24 @@ def get_anime_news(limit=20, tag=None, cursor=None):
         elif isinstance(data, list):
             articles = data
 
-        # ★ 批量翻译标题
+        # ★ 标题 + 摘要一次批量翻译
         if articles:
-            titles = [a.get('title', '') for a in articles if a.get('title')]
-            if titles:
-                translated = _translate_titles(titles)
-                for a in articles:
-                    orig = a.get('title', '')
-                    a['title_zh'] = translated.get(orig, orig)
+            all_texts = []
+            for a in articles:
+                if a.get('title'):
+                    all_texts.append(a['title'])
+                if a.get('excerpt'):
+                    all_texts.append(a['excerpt'])
 
-        # ★ 批量翻译摘要
-        if articles:
-            excerpts = [a.get('excerpt', '') for a in articles if a.get('excerpt')]
-            if excerpts:
-                translated = _translate_excerpts(excerpts)
+            if all_texts:
+                translated = _translate_batch(all_texts)
                 for a in articles:
-                    orig = a.get('excerpt', '')
-                    a['excerpt_zh'] = translated.get(orig, orig)
+                    t = a.get('title', '')
+                    e = a.get('excerpt', '')
+                    if t:
+                        a['title_zh'] = translated.get(t, t)
+                    if e:
+                        a['excerpt_zh'] = translated.get(e, e)
 
         result = (articles, meta)
         _cache[cache_key] = (result, now + timedelta(seconds=_CACHE_TTL))
@@ -86,141 +249,64 @@ def get_anime_news(limit=20, tag=None, cursor=None):
         return [], {}
 
 
-def _translate_titles(titles):
-    """批量翻译标题（英→中），带 24 小时内存缓存"""
-    result = {}
-    to_translate = []
+# ============================================================
+# 搜索
+# ============================================================
+def search_news(keyword, limit=50):
+    """搜索新闻。中文关键词会先翻译成英文再匹配。"""
+    if not keyword:
+        return []
 
-    for t in titles:
-        cached = _translate_cache.get(t)
-        if cached:
-            result[t] = cached
-        else:
-            to_translate.append(t)
+    keyword = keyword.strip()
+    if not keyword:
+        return []
 
-    if not to_translate:
-        return result
+    has_chinese = any('\u4e00' <= c <= '\u9fff' for c in keyword)
 
-    api_key = os.getenv('OPENAI_API_KEY')
-    if not api_key:
-        for t in to_translate:
-            result[t] = t
-        return result
+    articles, _ = get_anime_news(limit=100)
 
-    try:
-        client = OpenAI(
-            api_key=api_key,
-            base_url=os.getenv('OPENAI_BASE_URL', 'https://api.siliconflow.cn/v1'),
-        )
+    keywords = [keyword.lower()]
 
-        prompt = (
-            "把下面的动漫新闻标题翻译成简体中文。"
-            "要求：简洁、准确，保留专有名词。"
-            "只返回 JSON，格式为 {\"原文\": \"中文\"}，不要加任何解释或代码块标记。\n\n"
-            + json.dumps(to_translate, ensure_ascii=False)
-        )
+    if has_chinese:
+        translated = _translate_keyword(keyword)
+        if translated and translated.lower() != keyword.lower():
+            keywords.append(translated.lower())
+            print(f'>>> 搜索词翻译: "{keyword}" → "{translated}"')
 
-        response = client.chat.completions.create(
-            model=FREE_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=4000,
-            temperature=0.2,
-        )
+    results = []
+    for a in articles:
+        title = (a.get('title') or '').lower()
+        title_zh = (a.get('title_zh') or '').lower()
+        excerpt = (a.get('excerpt') or '').lower()
+        excerpt_zh = (a.get('excerpt_zh') or '').lower()
+        tags = ' '.join(a.get('tags') or []).lower()
 
-        text = response.choices[0].message.content.strip()
+        haystack = ' '.join([title, title_zh, excerpt, excerpt_zh, tags])
+        if any(kw in haystack for kw in keywords):
+            results.append(a)
+            if len(results) >= limit:
+                break
 
-        # 兜底清理：去掉 ```json ... ``` 包裹
-        if text.startswith('```'):
-            text = text.split('```', 1)[1]
-            if text.lower().startswith('json'):
-                text = text[4:]
-            text = text.rsplit('```', 1)[0].strip()
-
-        translated = json.loads(text)
-
-        for orig in to_translate:
-            zh = translated.get(orig) or orig
-            result[orig] = zh
-            _translate_cache[orig] = zh
-
-    except Exception as e:
-        print(f'>>> 翻译失败: {type(e).__name__}: {e}')
-        for t in to_translate:
-            result[t] = t
-
-    return result
+    return results
 
 
-def _translate_excerpts(excerpts):
-    """批量翻译摘要（英→中），带 24 小时内存缓存"""
-    result = {}
-    to_translate = []
+def _translate_keyword(keyword):
+    """把搜索关键词翻译成英文"""
+    cache_key = 'KW:' + keyword
+    if cache_key in _translate_cache:
+        return _translate_cache[cache_key]
 
-    for t in excerpts:
-        cached = _translate_cache.get('EX:' + t)
-        if cached:
-            result[t] = cached
-        else:
-            to_translate.append(t)
-
-    if not to_translate:
-        return result
-
-    api_key = os.getenv('OPENAI_API_KEY')
-    if not api_key:
-        for t in to_translate:
-            result[t] = t
-        return result
-
-    try:
-        client = OpenAI(
-            api_key=api_key,
-            base_url=os.getenv('OPENAI_BASE_URL', 'https://api.siliconflow.cn/v1'),
-        )
-
-        prompt = (
-            "把下面的动漫新闻摘要翻译成简体中文。"
-            "要求：简洁、通顺、口语化，保留专有名词。"
-            "只返回 JSON，格式为 {\"原文\": \"中文\"}，不要加任何解释或代码块标记。\n\n"
-            + json.dumps(to_translate, ensure_ascii=False)
-        )
-
-        response = client.chat.completions.create(
-            model=FREE_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=4000,
-            temperature=0.2,
-        )
-
-        text = response.choices[0].message.content.strip()
-        if text.startswith('```'):
-            text = text.split('```', 1)[1]
-            if text.lower().startswith('json'):
-                text = text[4:]
-            text = text.rsplit('```', 1)[0].strip()
-
-        translated = json.loads(text)
-        for orig in to_translate:
-            zh = translated.get(orig) or orig
-            result[orig] = zh
-            _translate_cache['EX:' + orig] = zh
-
-    except Exception as e:
-        print(f'>>> 摘要翻译失败: {type(e).__name__}: {e}')
-        for t in to_translate:
-            result[t] = t
-
-    return result
+    translated = _aliyun_call(keyword, source='zh', target='en')
+    if translated:
+        translated = translated.strip().strip('"\'')
+        _translate_cache[cache_key] = translated
+        return translated
+    return keyword
 
 
-# 正文缓存（2 天）
-_article_cache = {}
-_ARTICLE_TTL = 172800
-
-# 抓取时伪装成浏览器
-_UA = 'Mozilla/5.0 (compatible; nanyi-anime-club/1.0)'
-
-
+# ============================================================
+# 新闻正文
+# ============================================================
 def get_article_content(url):
     """抓取原文章正文并翻译成中文"""
     if not url:
@@ -242,12 +328,10 @@ def get_article_content(url):
     try:
         soup = BeautifulSoup(res.text, 'html.parser')
 
-        # 删掉无关标签
         for tag in soup(['script', 'style', 'nav', 'header', 'footer',
                          'aside', 'form', 'iframe', 'noscript', 'button']):
             tag.decompose()
 
-        # 尝试定位正文区
         article = (
             soup.find('article') or
             soup.find('main') or
@@ -258,14 +342,12 @@ def get_article_content(url):
         if not article:
             return None
 
-        # 提取段落
         paragraphs = []
         for p in article.find_all(['p', 'h2', 'h3']):
             text = p.get_text(' ', strip=True)
             if text and len(text) > 20:
                 paragraphs.append(text)
 
-        # 去重 + 拼接
         seen = set()
         cleaned = []
         for p in paragraphs:
@@ -273,12 +355,12 @@ def get_article_content(url):
                 seen.add(p)
                 cleaned.append(p)
 
-        full_text = '\n\n'.join(cleaned[:40])  # 最多取 40 段，防止太长
+        full_text = '\n\n'.join(cleaned[:40])
 
         if len(full_text) < 100:
             return None
 
-        # 翻译
+        # 翻译正文
         translated = _translate_article(full_text)
 
         result = {
@@ -295,39 +377,31 @@ def get_article_content(url):
 
 
 def _translate_article(text):
-    """翻译整篇文章（分段翻译，避免超长）"""
-    api_key = os.getenv('OPENAI_API_KEY')
-    if not api_key:
-        return text
-
-    # 按段落切分，每批 5 段
+    """翻译整篇文章。按段落分批调用阿里云。"""
     paragraphs = [p for p in text.split('\n\n') if p.strip()]
-    BATCH = 5
-    translated_parts = []
-
-    try:
-        client = OpenAI(
-            api_key=api_key,
-            base_url=os.getenv('OPENAI_BASE_URL', 'https://api.siliconflow.cn/v1'),
-        )
-
-        for i in range(0, len(paragraphs), BATCH):
-            batch = paragraphs[i:i + BATCH]
-            prompt = (
-                "把下面的动漫新闻段落翻译成简体中文。保持段落结构，"
-                "直接返回翻译结果，段落之间用空行分隔。不要加任何解释或前后缀。\n\n"
-                + '\n\n'.join(batch)
-            )
-            resp = client.chat.completions.create(
-                model=FREE_MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=4000,
-                temperature=0.2,
-            )
-            translated_parts.append(resp.choices[0].message.content.strip())
-
-        return '\n\n'.join(translated_parts)
-
-    except Exception as e:
-        print(f'>>> 整篇翻译失败: {e}')
+    if not paragraphs:
         return text
+
+    translated_parts = []
+    BATCH_SIZE = 5  # 每批 5 段
+
+    for i in range(0, len(paragraphs), BATCH_SIZE):
+        batch = paragraphs[i:i + BATCH_SIZE]
+        joined = '\n'.join(batch)
+
+        # 超过单次限制的段落单独处理
+        if len(joined) > _ALIYUN_SINGLE_MAX:
+            for p in batch:
+                if len(p) > _ALIYUN_SINGLE_MAX:
+                    p = p[:_ALIYUN_SINGLE_MAX]
+                single = _aliyun_call(p)
+                translated_parts.append(single if single else p)
+            continue
+
+        translated = _aliyun_call(joined)
+        if translated:
+            translated_parts.append(translated)
+        else:
+            translated_parts.append('\n'.join(batch))
+
+    return '\n\n'.join(translated_parts)
