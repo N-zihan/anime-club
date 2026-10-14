@@ -5,7 +5,7 @@
 {% if phase in ['group_round_1', 'group_round_2', 'group_round_3'] %}
 <h2>小组赛：{{ contest.title }}</h2>
 <p style="color: var(--text-secondary);">组别：<strong>{{ '女组' if gender == 'female' else '男组' }}</strong></p>
-<p style="color: var(--text-secondary);">当前轮次：第 <strong>{{ phase.split('_')[1]|int }}</strong> 轮（共3轮）</p>
+<p style="color: var(--text-secondary);">当前轮次：第 <strong>{{ phase.split('_')[-1]|int }}</strong> 轮（共3轮）</p>
 <p style="color: var(--text-secondary);">每轮每组有 <strong>2场</strong> 对决，每场可投 <strong>1票</strong>，共可投 <strong>16票</strong></p>
 
 {% if groups %}
@@ -34,8 +34,8 @@
                 {% endif %}
                 <div><strong style="color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</strong></div>
                 <div style="font-size:0.75rem; color: var(--text-muted);">{{ c1.source if c1 else '' }}</div>
-                <div style="font-size:0.8rem; color: var(--text-secondary); margin-top:2px;">
-                    票数：<span class="vote-count" data-candidate-id="{{ pair[0] }}">0</span>
+                <div style="font-size:0.9rem; color:#4caf50; font-weight:600; margin-top:2px;">
+                    票数：<span class="vote-count" data-candidate-id="{{ pair[0] }}">{{ vote_totals.get(pair[0], 0) }}</span>
                 </div>
                 <button class="vote-btn" data-candidate="{{ pair[0] }}"
                         data-group-index="{{ group_index }}"
@@ -52,8 +52,8 @@
                 {% endif %}
                 <div><strong style="color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</strong></div>
                 <div style="font-size:0.75rem; color: var(--text-muted);">{{ c2.source if c2 else '' }}</div>
-                <div style="font-size:0.8rem; color: var(--text-secondary); margin-top:2px;">
-                    票数：<span class="vote-count" data-candidate-id="{{ pair[1] }}">0</span>
+                <div style="font-size:0.9rem; color:#4caf50; font-weight:600; margin-top:2px;">
+                    票数：<span class="vote-count" data-candidate-id="{{ pair[1] }}">{{ vote_totals.get(pair[1], 0) }}</span>
                 </div>
                 <button class="vote-btn" data-candidate="{{ pair[1] }}"
                         data-group-index="{{ group_index }}"
@@ -313,6 +313,7 @@
 <script>
     (function () {
         const contestId = {{ contest.id }};
+        const currentRound = {{ phase.split('_')[-1]|int }};
         {% if session.user_id %}
         const supabase = window.supabase.createClient(
             '{{ supabase_url }}',
@@ -326,7 +327,7 @@
                 table: 'contest_votes',
                 filter: `contest_id=eq.${contestId}`
             }, (payload) => {
-                fetch(`/api/votes/${payload.new.candidate_id}`)
+                fetch('/api/votes/' + payload.new.candidate_id + '?round=' + currentRound)
                     .then(res => res.json())
                     .then(data => {
                         document.querySelectorAll(`.vote-count[data-candidate-id="${payload.new.candidate_id}"]`).forEach(el => {

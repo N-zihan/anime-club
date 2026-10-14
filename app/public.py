@@ -898,9 +898,10 @@ def group_vote_female(contest_id):
 
     candidates = {c.id: c for c in contest.candidates.all()}
 
-    # 算当前轮次
+    # 时区修复
     if contest.open_at and contest.open_at.tzinfo is not None:
         contest.open_at = contest.open_at.replace(tzinfo=None)
+
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     times = calc_stage_times(contest.open_at)
     round_number = None
@@ -911,7 +912,7 @@ def group_vote_female(contest_id):
     elif now <= times['group_round_3_end']:
         round_number = 3
 
-    # 查用户已投的对决（用 "组_场" 作 key）
+    # 用户已投场次
     voted_matches = []
     if session.get('user_id') and round_number:
         existing = ContestVote.query.filter_by(
@@ -922,6 +923,20 @@ def group_vote_female(contest_id):
         ).all()
         voted_matches = [f'{v.group_index}_{v.match_index}' for v in existing]
 
+    # 本轮所有候选人的总票数
+    vote_totals = {}
+    if round_number:
+        vote_totals = dict(
+            db.session.query(
+                ContestVote.candidate_id,
+                db.func.sum(ContestVote.weight)
+            ).filter(
+                ContestVote.contest_id == contest.id,
+                ContestVote.round_number == round_number,
+                ContestVote.gender == 'female'
+            ).group_by(ContestVote.candidate_id).all()
+        )
+
     return render_template('contest_group_vote.html',
                            contest=contest,
                            groups=groups,
@@ -929,7 +944,8 @@ def group_vote_female(contest_id):
                            phase=_calc_current_phase(contest),
                            gender='female',
                            round_type='group',
-                           voted_matches=voted_matches)
+                           voted_matches=voted_matches,
+                           vote_totals=vote_totals)
 
 
 @public_bp.route('/contest/<int:contest_id>/group/male')
@@ -941,7 +957,6 @@ def group_vote_male(contest_id):
         flash('当前不可投票', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest.id))
 
-    # 获取男组分组数据
     groups = contest.config.get('male_groups', []) if contest.config else []
     if not groups:
         flash('男组分组尚未生成', 'warning')
@@ -949,9 +964,9 @@ def group_vote_male(contest_id):
 
     candidates = {c.id: c for c in contest.candidates.all()}
 
-    # 算当前轮次
     if contest.open_at and contest.open_at.tzinfo is not None:
         contest.open_at = contest.open_at.replace(tzinfo=None)
+
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     times = calc_stage_times(contest.open_at)
     round_number = None
@@ -962,7 +977,6 @@ def group_vote_male(contest_id):
     elif now <= times['group_round_3_end']:
         round_number = 3
 
-    # 查用户已投的对决（用 "组_场" 作 key）
     voted_matches = []
     if session.get('user_id') and round_number:
         existing = ContestVote.query.filter_by(
@@ -973,6 +987,19 @@ def group_vote_male(contest_id):
         ).all()
         voted_matches = [f'{v.group_index}_{v.match_index}' for v in existing]
 
+    vote_totals = {}
+    if round_number:
+        vote_totals = dict(
+            db.session.query(
+                ContestVote.candidate_id,
+                db.func.sum(ContestVote.weight)
+            ).filter(
+                ContestVote.contest_id == contest.id,
+                ContestVote.round_number == round_number,
+                ContestVote.gender == 'male'
+            ).group_by(ContestVote.candidate_id).all()
+        )
+
     return render_template('contest_group_vote.html',
                            contest=contest,
                            groups=groups,
@@ -980,7 +1007,8 @@ def group_vote_male(contest_id):
                            phase=_calc_current_phase(contest),
                            gender='male',
                            round_type='group',
-                           voted_matches=voted_matches)
+                           voted_matches=voted_matches,
+                           vote_totals=vote_totals)
 
 
 @public_bp.route('/contest/<int:contest_id>/group/submit', methods=['POST'])
@@ -1116,10 +1144,14 @@ def knockout_vote_female(contest_id):
     candidates = {c.id: c for c in contest.candidates.all()}
 
     phase = _calc_current_phase(contest)
+
+    # 时区修复
     if contest.open_at and contest.open_at.tzinfo is not None:
         contest.open_at = contest.open_at.replace(tzinfo=None)
+
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     times = calc_stage_times(contest.open_at)
+
     sub_round = None
     if now <= times['knockout_16_end']:
         sub_round = 1
@@ -1130,7 +1162,7 @@ def knockout_vote_female(contest_id):
     elif now <= times['final_vote_end']:
         sub_round = 4
 
-    # 本轮用户已投的场次
+    # 用户已投的场次
     voted_matches = []
     if session.get('user_id') and sub_round:
         existing = ContestVote.query.filter_by(
@@ -1142,6 +1174,22 @@ def knockout_vote_female(contest_id):
         ).all()
         voted_matches = [v.match_index for v in existing]
 
+    # 本轮每人的实时票数
+    vote_totals = {}
+    if sub_round:
+        vote_totals = dict(
+            db.session.query(
+                ContestVote.candidate_id,
+                db.func.sum(ContestVote.weight)
+            ).filter(
+                ContestVote.contest_id == contest.id,
+                ContestVote.round_number == 4,
+                ContestVote.sub_round == sub_round,
+                ContestVote.gender == 'female'
+            ).group_by(ContestVote.candidate_id).all()
+        )
+
+    # 公示期上一轮结果
     prev_matches = []
     prev_round_name = ''
     if contest.config:
@@ -1165,6 +1213,8 @@ def knockout_vote_female(contest_id):
                            phase=phase,
                            gender='female',
                            voted_matches=voted_matches,
+                           vote_totals=vote_totals,
+                           sub_round=sub_round,
                            prev_matches=prev_matches,
                            prev_round_name=prev_round_name)
 
@@ -1186,10 +1236,13 @@ def knockout_vote_male(contest_id):
     candidates = {c.id: c for c in contest.candidates.all()}
 
     phase = _calc_current_phase(contest)
+
     if contest.open_at and contest.open_at.tzinfo is not None:
         contest.open_at = contest.open_at.replace(tzinfo=None)
+
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     times = calc_stage_times(contest.open_at)
+
     sub_round = None
     if now <= times['knockout_16_end']:
         sub_round = 1
@@ -1210,6 +1263,20 @@ def knockout_vote_male(contest_id):
             gender='male'
         ).all()
         voted_matches = [v.match_index for v in existing]
+
+    vote_totals = {}
+    if sub_round:
+        vote_totals = dict(
+            db.session.query(
+                ContestVote.candidate_id,
+                db.func.sum(ContestVote.weight)
+            ).filter(
+                ContestVote.contest_id == contest.id,
+                ContestVote.round_number == 4,
+                ContestVote.sub_round == sub_round,
+                ContestVote.gender == 'male'
+            ).group_by(ContestVote.candidate_id).all()
+        )
 
     prev_matches = []
     prev_round_name = ''
@@ -1234,6 +1301,8 @@ def knockout_vote_male(contest_id):
                            phase=phase,
                            gender='male',
                            voted_matches=voted_matches,
+                           vote_totals=vote_totals,
+                           sub_round=sub_round,
                            prev_matches=prev_matches,
                            prev_round_name=prev_round_name)
 
@@ -1340,14 +1409,29 @@ def knockout_vote_submit(contest_id):
 
 @public_bp.route('/api/votes/<int:candidate_id>')
 def api_votes(candidate_id):
-    """获取某个候选人的总票数"""
+    """获取某个候选人的票数（可按 round / sub_round 过滤）"""
     from .models import Candidate
     candidate = db.session.get(Candidate, candidate_id)
     if not candidate:
         return {'error': 'Candidate not found'}, 404
-    total = ContestVote.query.filter_by(candidate_id=candidate_id).with_entities(
-        db.func.sum(ContestVote.weight)
-    ).scalar() or 0
+
+    q = ContestVote.query.filter_by(candidate_id=candidate_id)
+
+    round_number = request.args.get('round')
+    if round_number is not None:
+        try:
+            q = q.filter(ContestVote.round_number == int(round_number))
+        except ValueError:
+            pass
+
+    sub_round = request.args.get('sub_round')
+    if sub_round is not None:
+        try:
+            q = q.filter(ContestVote.sub_round == int(sub_round))
+        except ValueError:
+            pass
+
+    total = q.with_entities(db.func.sum(ContestVote.weight)).scalar() or 0
     return {'total_votes': total}
 
 
