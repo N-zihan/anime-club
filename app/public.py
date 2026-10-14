@@ -996,6 +996,9 @@ def group_vote_submit(contest_id):
     if contest.status not in ['open', 'group_stage']:
         return fail(f'当前不可投票（赛事状态：{contest.status}）')
 
+    if contest.open_at and contest.open_at.tzinfo is not None:
+        contest.open_at = contest.open_at.replace(tzinfo=None)
+
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     open_at = contest.open_at
     if not open_at:
@@ -1247,6 +1250,9 @@ def knockout_vote_submit(contest_id):
 
     if contest.status not in ['open', 'knockout']:
         return fail(f'当前不可投票（赛事状态：{contest.status}）')
+
+    if contest.open_at and contest.open_at.tzinfo is not None:
+        contest.open_at = contest.open_at.replace(tzinfo=None)
 
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     open_at = contest.open_at
