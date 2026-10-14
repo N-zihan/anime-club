@@ -216,12 +216,6 @@ def anime_resources():
     return render_template('anime_guide.html')
 
 
-@public_bp.route('/anime_news')
-def anime_news():
-    """番剧动态"""
-    return render_template('anime_news.html')
-
-
 @public_bp.route('/api/anime/cover')
 def api_anime_cover():
     """代理 Bangumi 封面图，走 Vercel CDN 缓存"""
@@ -302,6 +296,25 @@ def api_anime_character_detail(char_id):
     return jsonify(d)
 
 
+@public_bp.route('/anime_news')
+def anime_news():
+    """番剧新闻动态"""
+    return render_template('anime_news.html')
+
+
+@public_bp.route('/api/anime/news')
+def api_anime_news():
+    """API：获取新闻列表"""
+    from .anime_news import get_anime_news
+    limit = request.args.get('limit', 20, type=int)
+    tag = request.args.get('tag') or None
+    cursor = request.args.get('cursor') or None
+    articles, meta = get_anime_news(limit=limit, tag=tag, cursor=cursor)
+    resp = jsonify({'articles': articles, 'meta': meta})
+    resp.headers['Cache-Control'] = 'public, max-age=1800, s-maxage=1800'
+    return resp
+
+
 @public_bp.route('/members')
 def members():
     users = User.query.order_by(User.registered_at.desc()).all()
@@ -315,18 +328,23 @@ def contest_center():
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     for c in Contest.query.filter_by(status='draft').all():
         auto_activate_contest(c, now)
+
+    # 进行中：open / group_stage / knockout 都算
     open_contests = Contest.query.filter(
-        Contest.status == 'open',
+        Contest.status.in_(['open', 'group_stage', 'knockout']),
         Contest.open_at <= now,
         Contest.close_at >= now
     ).order_by(Contest.created_at.desc()).all()
+
     upcoming_contests = Contest.query.filter(
         Contest.status == 'draft',
         Contest.open_at > now
     ).order_by(Contest.open_at.asc()).all()
+
     closed_contests = Contest.query.filter(
         Contest.status == 'closed'
     ).order_by(Contest.created_at.desc()).limit(10).all()
+
     return render_template('contest_center.html',
                            open_contests=open_contests,
                            upcoming_contests=upcoming_contests,

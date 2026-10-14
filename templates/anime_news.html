@@ -1,42 +1,110 @@
 {% extends "base.html" %}
-{% block title %}新番动态{% endblock %}
+{% block title %}番剧动态{% endblock %}
 {% block content %}
 
-<h2>新番动态</h2>
+<h2>番剧动态</h2>
 <p style="color: var(--text-secondary); font-size:0.9rem; margin-bottom:20px;">
-    数据来源：Simkl
+    数据来源：ANN / MAL / Crunchyroll / Comic Book 等多家媒体
 </p>
 
-<div style="display:flex; gap:8px; margin-bottom:20px;">
-    <button id="tabSoon" class="news-tab"
-            style="padding:8px 20px; border-radius:24px; border:1px solid var(--border-color); background:#1e2a3a; color:white; cursor:pointer; font-size:0.9rem;">
-        即将开播
-    </button>
-    <button id="tabNew" class="news-tab"
-            style="padding:8px 20px; border-radius:24px; border:1px solid var(--border-color); background: var(--bg-code); color: var(--text-primary); cursor:pointer; font-size:0.9rem;">
-        近期已播
-    </button>
+<div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+    <button class="filter-btn active" data-tag=""
+            style="padding:6px 16px; border-radius:20px; border:1px solid var(--border-color); background:#1e2a3a; color:white; cursor:pointer; font-size:0.85rem;">全部</button>
+    <button class="filter-btn" data-tag="anime"
+            style="padding:6px 16px; border-radius:20px; border:1px solid var(--border-color); background:var(--bg-code); color:var(--text-primary); cursor:pointer; font-size:0.85rem;">动画</button>
+    <button class="filter-btn" data-tag="manga"
+            style="padding:6px 16px; border-radius:20px; border:1px solid var(--border-color); background:var(--bg-code); color:var(--text-primary); cursor:pointer; font-size:0.85rem;">漫画</button>
+    <button class="filter-btn" data-tag="industry"
+            style="padding:6px 16px; border-radius:20px; border:1px solid var(--border-color); background:var(--bg-code); color:var(--text-primary); cursor:pointer; font-size:0.85rem;">业界</button>
+    <button class="filter-btn" data-tag="official"
+            style="padding:6px 16px; border-radius:20px; border:1px solid var(--border-color); background:var(--bg-code); color:var(--text-primary); cursor:pointer; font-size:0.85rem;">官方</button>
 </div>
 
-<div id="newsStatus" style="text-align:center; color: var(--text-muted); padding:40px 0;">加载中...</div>
+<div id="newsStatus" style="text-align:center; color: var(--text-muted); padding:40px 0; display:none;"></div>
+<div id="newsFeed"></div>
 
-<div id="newsGrid"
-     style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:16px;">
-</div>
+<button id="loadMoreBtn" style="display:none; width:100%; padding:14px; margin-top:20px; background:var(--bg-code); border:1px solid var(--border-color); border-radius:12px; cursor:pointer; color:var(--text-primary); font-size:0.9rem;">加载更多</button>
+
+<style>
+.news-item {
+    display: flex;
+    gap: 16px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border-color);
+    align-items: flex-start;
+}
+.news-item:last-child { border-bottom: none; }
+.news-thumb {
+    width: 120px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--bg-code);
+    flex-shrink: 0;
+}
+.news-body { flex: 1; min-width: 0; }
+.news-meta {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.news-source {
+    background: var(--bg-code);
+    padding: 2px 10px;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+.news-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 4px 0 8px 0;
+    line-height: 1.5;
+}
+.news-title a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+.news-title a:hover { color: #4a90d9; }
+.news-excerpt {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+@media (max-width: 600px) {
+    .news-thumb { width: 90px; height: 60px; }
+    .news-title { font-size: 0.95rem; }
+}
+</style>
 
 <script>
 (function () {
-    const CLIENT_ID = '9330e9c28fbbc7ff5b0d96b75ad45b18ff3ff1aecd568cf3601d8f8ef9ba06cd';
-    const APP_NAME = 'nanyi-anime-club';
-    const APP_VERSION = '1.0';
-    const CACHE_TTL = 60 * 60 * 1000;
-
-    const grid = document.getElementById('newsGrid');
+    const feed = document.getElementById('newsFeed');
     const statusEl = document.getElementById('newsStatus');
-    const tabSoon = document.getElementById('tabSoon');
-    const tabNew = document.getElementById('tabNew');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const filterBtns = document.querySelectorAll('.filter-btn');
 
-    let currentTab = 'soon';
+    const SOURCE_NAMES = {
+        'MyAnimeList': 'MAL',
+        'Anime News Network': 'ANN',
+        'Crunchyroll': 'Crunchyroll',
+        'Comic Book': 'ComicBook',
+        'Anime Corner': 'Anime Corner',
+        'Anime Herald': 'Anime Herald',
+        'Otaku USA': 'Otaku USA',
+    };
+
+    let currentTag = '';
+    let nextCursor = null;
 
     function escapeHtml(s) {
         const d = document.createElement('div');
@@ -44,122 +112,123 @@
         return d.innerHTML;
     }
 
-    function posterUrl(path) {
-        if (!path) return '';
-        return 'https://wsrv.nl/?url=https://simkl.in/posters/' + path + '_m.webp';
-    }
-
-    function formatDate(dateStr) {
-        if (!dateStr) return '';
+    function formatDate(s) {
+        if (!s) return '';
         try {
-            const d = new Date(dateStr);
+            const d = new Date(s);
+            if (isNaN(d.getTime())) return s.slice(0, 10);
+            const now = new Date();
+            const diff = (now - d) / 1000;
+            if (diff < 3600) return Math.max(1, Math.floor(diff / 60)) + ' 分钟前';
+            if (diff < 86400) return Math.floor(diff / 3600) + ' 小时前';
+            if (diff < 604800) return Math.floor(diff / 86400) + ' 天前';
             return d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' });
         } catch (e) {
-            return dateStr;
+            return s.slice(0, 10);
         }
     }
 
-    function cardHtml(item) {
-        const poster = item.poster
-            ? '<img src="' + posterUrl(item.poster) + '" alt="' + escapeHtml(item.title) + '" loading="lazy" ' +
-              'style="width:100%; height:320px; object-fit:cover; display:block; background: var(--bg-code);">'
-            : '<div style="width:100%; height:320px; background: var(--bg-code);"></div>';
+    function thumbUrl(url) {
+        if (!url) return '';
+        // 通过图片 CDN 代理，解决部分图床国内访问慢的问题
+        return 'https://wsrv.nl/?url=' + encodeURIComponent(url) + '&w=240&h=160&fit=cover';
+    }
 
-        const dateText = currentTab === 'soon'
-            ? (item.date ? formatDate(item.date) + ' 开播' : '即将开播')
-            : (item.date ? formatDate(item.date) + ' 已开播' : '近期开播');
+    function itemHtml(a) {
+        const title = escapeHtml(a.title || '无标题');
+        const url = a.link || a.url || '#';
+        const source = SOURCE_NAMES[a.source] || a.source || '';
+        const date = formatDate(a.date || a.published_at);
+        const excerpt = a.excerpt || a.summary || '';
+        const img = a.image ? thumbUrl(a.image) : '';
 
-        const scoreHtml = item.ratings && item.ratings.simkl && item.ratings.simkl.rating
-            ? '<span style="color:#f39c12; font-weight:600;">★ ' + item.ratings.simkl.rating.toFixed(1) + '</span>'
-            : '';
-
-        const yearHtml = item.year
-            ? '<span style="color: var(--text-muted);">' + item.year + '</span>'
-            : '';
-
-        return '<div style="background: var(--bg-card); border:1px solid var(--border-color); border-radius:12px; overflow:hidden;">' +
-            poster +
-            '<div style="padding:12px 14px;">' +
-                '<div style="font-weight:600; color: var(--text-primary); line-height:1.4; margin-bottom:6px;">' + escapeHtml(item.title) + '</div>' +
-                '<div style="font-size:0.8rem; color: var(--text-secondary); margin-bottom:8px;">' + dateText + '</div>' +
-                '<div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">' +
-                    scoreHtml +
-                    yearHtml +
+        return '<div class="news-item">' +
+            (img
+                ? '<img class="news-thumb" src="' + escapeHtml(img) + '" loading="lazy" alt="">'
+                : '') +
+            '<div class="news-body">' +
+                '<div class="news-meta">' +
+                    (source ? '<span class="news-source">' + escapeHtml(source) + '</span>' : '') +
+                    '<span>' + escapeHtml(date) + '</span>' +
                 '</div>' +
+                '<h3 class="news-title"><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + title + '</a></h3>' +
+                (excerpt ? '<div class="news-excerpt">' + escapeHtml(excerpt) + '</div>' : '') +
             '</div>' +
         '</div>';
     }
 
-    function render(items) {
-        if (!items.length) {
-            grid.innerHTML = '';
+    function render(articles, append) {
+        if (!append) feed.innerHTML = '';
+        if (!articles.length && !append) {
             statusEl.style.display = 'block';
-            statusEl.textContent = '暂无数据';
+            statusEl.textContent = '暂无新闻';
             return;
         }
         statusEl.style.display = 'none';
-        grid.innerHTML = items.map(cardHtml).join('');
+        feed.insertAdjacentHTML('beforeend', articles.map(itemHtml).join(''));
     }
 
-    function loadTab(tab) {
-        currentTab = tab;
-
-        if (tab === 'soon') {
-            tabSoon.style.background = '#1e2a3a';
-            tabSoon.style.color = 'white';
-            tabNew.style.background = 'var(--bg-code)';
-            tabNew.style.color = 'var(--text-primary)';
+    function load(tag, append) {
+        if (!append) {
+            currentTag = tag;
+            nextCursor = null;
+            filterBtns.forEach(function (b) {
+                if (b.dataset.tag === tag) {
+                    b.style.background = '#1e2a3a';
+                    b.style.color = 'white';
+                } else {
+                    b.style.background = 'var(--bg-code)';
+                    b.style.color = 'var(--text-primary)';
+                }
+            });
+            feed.innerHTML = '';
+            statusEl.style.display = 'block';
+            statusEl.textContent = '加载中...';
+            loadMoreBtn.style.display = 'none';
         } else {
-            tabNew.style.background = '#1e2a3a';
-            tabNew.style.color = 'white';
-            tabSoon.style.background = 'var(--bg-code)';
-            tabSoon.style.color = 'var(--text-primary)';
+            loadMoreBtn.textContent = '加载中...';
+            loadMoreBtn.disabled = true;
         }
 
-        const cacheKey = 'anime_news_' + tab;
-        try {
-            const cached = localStorage.getItem(cacheKey);
-            if (cached) {
-                const obj = JSON.parse(cached);
-                if (obj.expires > Date.now()) {
-                    render(obj.data);
-                    return;
-                }
-            }
-        } catch (e) { /* 忽略 */ }
+        let url = '/api/anime/news?limit=20';
+        if (tag) url += '&tag=' + encodeURIComponent(tag);
+        if (append && nextCursor) url += '&cursor=' + encodeURIComponent(nextCursor);
 
-        grid.innerHTML = '';
-        statusEl.style.display = 'block';
-        statusEl.textContent = '加载中...';
-
-        const params = new URLSearchParams({
-            client_id: CLIENT_ID,
-            'app-name': APP_NAME,
-            'app-version': APP_VERSION,
-        });
-
-        fetch('https://api.simkl.com/anime/premieres/' + tab + '?' + params.toString())
+        fetch(url)
         .then(r => r.json())
         .then(data => {
-            const items = Array.isArray(data) ? data : [];
-            try {
-                localStorage.setItem(cacheKey, JSON.stringify({
-                    data: items,
-                    expires: Date.now() + CACHE_TTL
-                }));
-            } catch (e) { /* 忽略 */ }
-            render(items);
+            const articles = data.articles || [];
+            render(articles, append);
+
+            const meta = data.meta || {};
+            nextCursor = meta.nextCursor || null;
+
+            if (meta.hasMore && nextCursor) {
+                loadMoreBtn.style.display = 'block';
+                loadMoreBtn.textContent = '加载更多';
+                loadMoreBtn.disabled = false;
+            } else {
+                loadMoreBtn.style.display = 'none';
+            }
         })
         .catch(() => {
             statusEl.style.display = 'block';
             statusEl.textContent = '加载失败，请稍后再试';
+            loadMoreBtn.style.display = 'none';
         });
     }
 
-    tabSoon.addEventListener('click', () => loadTab('soon'));
-    tabNew.addEventListener('click', () => loadTab('new'));
+    filterBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+            load(b.dataset.tag, false);
+        });
+    });
 
-    loadTab('soon');
+    loadMoreBtn.addEventListener('click', function () {
+        load(currentTag, true);
+    });
+
+    load('', false);
 })();
 </script>
 
