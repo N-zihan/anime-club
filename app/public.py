@@ -216,6 +216,12 @@ def anime_resources():
     return render_template('anime_guide.html')
 
 
+@public_bp.route('/anime_news')
+def anime_news():
+    """番剧动态"""
+    return render_template('anime_news.html')
+
+
 @public_bp.route('/api/anime/cover')
 def api_anime_cover():
     """代理 Bangumi 封面图，走 Vercel CDN 缓存"""

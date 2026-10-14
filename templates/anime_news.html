@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}新番动态{% endblock %}
+{% block content %}
+
+<h2>新番动态</h2>
+<p style="color: var(--text-secondary); font-size:0.9rem; margin-bottom:20px;">
+    数据来源：Simkl
+</p>
+
+<div style="display:flex; gap:8px; margin-bottom:20px;">
+    <button id="tabSoon" class="news-tab"
+            style="padding:8px 20px; border-radius:24px; border:1px solid var(--border-color); background:#1e2a3a; color:white; cursor:pointer; font-size:0.9rem;">
+        即将开播
+    </button>
+    <button id="tabNew" class="news-tab"
+            style="padding:8px 20px; border-radius:24px; border:1px solid var(--border-color); background: var(--bg-code); color: var(--text-primary); cursor:pointer; font-size:0.9rem;">
+        近期已播
+    </button>
+</div>
+
+<div id="newsStatus" style="text-align:center; color: var(--text-muted); padding:40px 0;">加载中...</div>
+
+<div id="newsGrid"
+     style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:16px;">
+</div>
+
+<script>
+(function () {
+    const CLIENT_ID = '9330e9c28fbbc7ff5b0d96b75ad45b18ff3ff1aecd568cf3601d8f8ef9ba06cd';
+    const APP_NAME = 'nanyi-anime-club';
+    const APP_VERSION = '1.0';
+    const CACHE_TTL = 60 * 60 * 1000;
+
+    const grid = document.getElementById('newsGrid');
+    const statusEl = document.getElementById('newsStatus');
+    const tabSoon = document.getElementById('tabSoon');
+    const tabNew = document.getElementById('tabNew');
+
+    let currentTab = 'soon';
+
+    function escapeHtml(s) {
+        const d = document.createElement('div');
+        d.textContent = s == null ? '' : String(s);
+        return d.innerHTML;
+    }
+
+    function posterUrl(path) {
+        if (!path) return '';
+        return 'https://wsrv.nl/?url=https://simkl.in/posters/' + path + '_m.webp';
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        try {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' });
+        } catch (e) {
+            return dateStr;
+        }
+    }
+
+    function cardHtml(item) {
+        const poster = item.poster
+            ? '<img src="' + posterUrl(item.poster) + '" alt="' + escapeHtml(item.title) + '" loading="lazy" ' +
+              'style="width:100%; height:320px; object-fit:cover; display:block; background: var(--bg-code);">'
+            : '<div style="width:100%; height:320px; background: var(--bg-code);"></div>';
+
+        const dateText = currentTab === 'soon'
+            ? (item.date ? formatDate(item.date) + ' 开播' : '即将开播')
+            : (item.date ? formatDate(item.date) + ' 已开播' : '近期开播');
+
+        const scoreHtml = item.ratings && item.ratings.simkl && item.ratings.simkl.rating
+            ? '<span style="color:#f39c12; font-weight:600;">★ ' + item.ratings.simkl.rating.toFixed(1) + '</span>'
+            : '';
+
+        const yearHtml = item.year
+            ? '<span style="color: var(--text-muted);">' + item.year + '</span>'
+            : '';
+
+        return '<div style="background: var(--bg-card); border:1px solid var(--border-color); border-radius:12px; overflow:hidden;">' +
+            poster +
+            '<div style="padding:12px 14px;">' +
+                '<div style="font-weight:600; color: var(--text-primary); line-height:1.4; margin-bottom:6px;">' + escapeHtml(item.title) + '</div>' +
+                '<div style="font-size:0.8rem; color: var(--text-secondary); margin-bottom:8px;">' + dateText + '</div>' +
+                '<div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">' +
+                    scoreHtml +
+                    yearHtml +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function render(items) {
+        if (!items.length) {
+            grid.innerHTML = '';
+            statusEl.style.display = 'block';
+            statusEl.textContent = '暂无数据';
+            return;
+        }
+        statusEl.style.display = 'none';
+        grid.innerHTML = items.map(cardHtml).join('');
+    }
+
+    function loadTab(tab) {
+        currentTab = tab;
+
+        if (tab === 'soon') {
+            tabSoon.style.background = '#1e2a3a';
+            tabSoon.style.color = 'white';
+            tabNew.style.background = 'var(--bg-code)';
+            tabNew.style.color = 'var(--text-primary)';
+        } else {
+            tabNew.style.background = '#1e2a3a';
+            tabNew.style.color = 'white';
+            tabSoon.style.background = 'var(--bg-code)';
+            tabSoon.style.color = 'var(--text-primary)';
+        }
+
+        const cacheKey = 'anime_news_' + tab;
+        try {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                const obj = JSON.parse(cached);
+                if (obj.expires > Date.now()) {
+                    render(obj.data);
+                    return;
+                }
+            }
+        } catch (e) { /* 忽略 */ }
+
+        grid.innerHTML = '';
+        statusEl.style.display = 'block';
+        statusEl.textContent = '加载中...';
+
+        const params = new URLSearchParams({
+            client_id: CLIENT_ID,
+            'app-name': APP_NAME,
+            'app-version': APP_VERSION,
+        });
+
+        fetch('https://api.simkl.com/anime/premieres/' + tab + '?' + params.toString())
+        .then(r => r.json())
+        .then(data => {
+            const items = Array.isArray(data) ? data : [];
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    data: items,
+                    expires: Date.now() + CACHE_TTL
+                }));
+            } catch (e) { /* 忽略 */ }
+            render(items);
+        })
+        .catch(() => {
+            statusEl.style.display = 'block';
+            statusEl.textContent = '加载失败，请稍后再试';
+        });
+    }
+
+    tabSoon.addEventListener('click', () => loadTab('soon'));
+    tabNew.addEventListener('click', () => loadTab('new'));
+
+    loadTab('soon');
+})();
+</script>
+
+{% endblock %}
