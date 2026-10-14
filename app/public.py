@@ -315,6 +315,26 @@ def api_anime_news():
     return resp
 
 
+@public_bp.route('/api/anime/news-image')
+def api_news_image():
+    """代理新闻图片，走 CDN 缓存"""
+    from urllib.parse import unquote
+    url = unquote(request.args.get('url', ''))
+
+    if not url.startswith('https://'):
+        abort(404)
+
+    try:
+        res = requests.get(url, headers=HEADERS_FOR_IMAGE, timeout=8)
+        return Response(
+            res.content,
+            mimetype=res.headers.get('Content-Type', 'image/jpeg'),
+            headers={'Cache-Control': 'public, max-age=604800, s-maxage=604800'},
+        )
+    except Exception:
+        abort(404)
+
+
 @public_bp.route('/api/anime/news-detail')
 def api_anime_news_detail():
     """抓取并翻译新闻原文"""
