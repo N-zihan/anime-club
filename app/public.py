@@ -315,6 +315,25 @@ def api_anime_news():
     return resp
 
 
+@public_bp.route('/api/anime/news-detail')
+def api_anime_news_detail():
+    """抓取并翻译新闻原文"""
+    from urllib.parse import unquote
+    from .anime_news import get_article_content
+
+    url = unquote(request.args.get('url', ''))
+    if not url or not url.startswith('http'):
+        return jsonify({'error': 'invalid url'}), 400
+
+    data = get_article_content(url)
+    if not data:
+        return jsonify({'error': '抓取失败'}), 404
+
+    resp = jsonify(data)
+    resp.headers['Cache-Control'] = 'public, max-age=86400, s-maxage=86400'
+    return resp
+
+
 @public_bp.route('/members')
 def members():
     users = User.query.order_by(User.registered_at.desc()).all()

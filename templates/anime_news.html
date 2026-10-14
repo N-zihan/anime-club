@@ -151,7 +151,7 @@
                     (source ? '<span class="news-source">' + escapeHtml(source) + '</span>' : '') +
                     '<span>' + escapeHtml(date) + '</span>' +
                 '</div>' +
-                '<h3 class="news-title"><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + title + '</a></h3>' +
+                '<h3 class="news-title"><a href="javascript:void(0)" onclick="openNewsModal(\'' + escapeHtml(url) + '\', \'' + title.replace(/'/g, "\\'") + '\')" style="cursor:pointer;">' + title + '</a></h3>' +
                 (excerpt ? '<div class="news-excerpt">' + escapeHtml(excerpt) + '</div>' : '') +
             '</div>' +
         '</div>';
@@ -228,8 +228,57 @@
         load(currentTag, true);
     });
 
+        window.openNewsModal = function (url, title) {
+        const modal = document.getElementById('newsModal');
+        const content = document.getElementById('newsModalContent');
+
+        content.innerHTML =
+            '<h2 style="margin:0 0 16px 0; color:var(--text-primary); font-size:1.3rem; line-height:1.4;">' + title + '</h2>' +
+            '<div style="text-align:center; padding:40px 0; color:var(--text-muted);">正在抓取原文并翻译，稍等片刻...</div>';
+        modal.style.display = 'flex';
+
+        fetch('/api/anime/news-detail?url=' + encodeURIComponent(url))
+        .then(r => r.json())
+        .then(d => {
+            if (d.error) throw new Error(d.error);
+            const paragraphs = (d.content || '').split('\n\n');
+            const html = paragraphs.map(function (p) {
+                return '<p style="color:var(--text-primary); line-height:1.9; font-size:0.95rem; margin-bottom:14px;">' + escapeHtml(p) + '</p>';
+            }).join('');
+            content.innerHTML =
+                '<h2 style="margin:0 0 16px 0; color:var(--text-primary); font-size:1.3rem; line-height:1.4;">' + title + '</h2>' +
+                html;
+        })
+        .catch(err => {
+            content.innerHTML =
+                '<h2 style="margin:0 0 16px 0; color:var(--text-primary); font-size:1.3rem; line-height:1.4;">' + title + '</h2>' +
+                '<div style="text-align:center; padding:40px 0; color:var(--text-muted);">抓取失败：' + escapeHtml(err.message || '') + '</div>';
+        });
+    };
+
+    window.closeNewsModal = function () {
+        document.getElementById('newsModal').style.display = 'none';
+    };
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            const m = document.getElementById('newsModal');
+            if (m && m.style.display === 'flex') window.closeNewsModal();
+        }
+    });
+
     load('', false);
 })();
 </script>
+
+<div id="newsModal"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:99999; align-items:flex-start; justify-content:center; padding:40px 20px; overflow-y:auto;"
+     onclick="if(event.target===this) closeNewsModal()">
+    <div style="background: var(--bg-card); border-radius:16px; max-width:720px; width:100%; padding:32px 28px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <button onclick="closeNewsModal()"
+                style="position:absolute; top:14px; right:18px; background:none; border:none; font-size:1.6rem; color: var(--text-muted); cursor:pointer; line-height:1;">×</button>
+        <div id="newsModalContent"></div>
+    </div>
+</div>
 
 {% endblock %}
