@@ -98,7 +98,7 @@
         const link = a.link || a.url || '#';
         const source = SOURCE_NAMES[a.source] || a.source || '';
         const date = formatDate(a.date || a.published_at);
-        const excerpt = a.excerpt || a.summary || '';
+        const excerpt = a.excerpt_zh || a.excerpt || a.summary || '';
         const img = a.image ? thumbUrl(a.image) : '';
 
         const thumbHtml = img

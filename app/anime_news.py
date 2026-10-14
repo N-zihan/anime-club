@@ -58,7 +58,7 @@ def get_anime_news(limit=20, tag=None, cursor=None):
         elif isinstance(data, list):
             articles = data
 
-        # ★ 关键：批量翻译标题
+        # ★ 批量翻译标题
         if articles:
             titles = [a.get('title', '') for a in articles if a.get('title')]
             if titles:
@@ -66,6 +66,15 @@ def get_anime_news(limit=20, tag=None, cursor=None):
                 for a in articles:
                     orig = a.get('title', '')
                     a['title_zh'] = translated.get(orig, orig)
+
+        # ★ 批量翻译摘要
+        if articles:
+            excerpts = [a.get('excerpt', '') for a in articles if a.get('excerpt')]
+            if excerpts:
+                translated = _translate_excerpts(excerpts)
+                for a in articles:
+                    orig = a.get('excerpt', '')
+                    a['excerpt_zh'] = translated.get(orig, orig)
 
         result = (articles, meta)
         _cache[cache_key] = (result, now + timedelta(seconds=_CACHE_TTL))
@@ -136,6 +145,68 @@ def _translate_titles(titles):
 
     except Exception as e:
         print(f'>>> 翻译失败: {type(e).__name__}: {e}')
+        for t in to_translate:
+            result[t] = t
+
+    return result
+
+
+def _translate_excerpts(excerpts):
+    """批量翻译摘要（英→中），带 24 小时内存缓存"""
+    result = {}
+    to_translate = []
+
+    for t in excerpts:
+        cached = _translate_cache.get('EX:' + t)
+        if cached:
+            result[t] = cached
+        else:
+            to_translate.append(t)
+
+    if not to_translate:
+        return result
+
+    api_key = os.getenv('OPENAI_API_KEY')
+    if not api_key:
+        for t in to_translate:
+            result[t] = t
+        return result
+
+    try:
+        client = OpenAI(
+            api_key=api_key,
+            base_url=os.getenv('OPENAI_BASE_URL', 'https://api.siliconflow.cn/v1'),
+        )
+
+        prompt = (
+            "把下面的动漫新闻摘要翻译成简体中文。"
+            "要求：简洁、通顺、口语化，保留专有名词。"
+            "只返回 JSON，格式为 {\"原文\": \"中文\"}，不要加任何解释或代码块标记。\n\n"
+            + json.dumps(to_translate, ensure_ascii=False)
+        )
+
+        response = client.chat.completions.create(
+            model=FREE_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=4000,
+            temperature=0.2,
+        )
+
+        text = response.choices[0].message.content.strip()
+        if text.startswith('```'):
+            text = text.split('```', 1)[1]
+            if text.lower().startswith('json'):
+                text = text[4:]
+            text = text.rsplit('```', 1)[0].strip()
+
+        translated = json.loads(text)
+        for orig in to_translate:
+            zh = translated.get(orig) or orig
+            result[orig] = zh
+            _translate_cache['EX:' + orig] = zh
+
+    except Exception as e:
+        print(f'>>> 摘要翻译失败: {type(e).__name__}: {e}')
         for t in to_translate:
             result[t] = t
 

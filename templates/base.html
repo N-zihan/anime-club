@@ -24,17 +24,27 @@
     <div class="nav-left">
         <a class="logo" href="/">{{ club_name }}</a>
     </div>
+
+    <!-- 桌面导航：显示 4 个主入口 + 更多下拉 -->
     <div class="nav-links">
         <a href="/home">首页</a>
-        <a href="/about">社团介绍</a>
         <a href="/activities">活动</a>
-        <a href="/gallery">珍贵历史图片</a>
         <a href="{{ url_for('public.board') }}">留言板</a>
-        <a href="{{ url_for('public.anime_resources') }}">番剧百科</a>
-        <a href="{{ url_for('public.anime_news') }}">番剧新闻</a>
         <a href="{{ url_for('public.contest_center') }}">赛事中心</a>
-        <a href="{{ url_for('public.members') }}">社员名单</a>
+        <div class="nav-dropdown">
+            <button type="button" class="dropdown-toggle" id="dropdownToggle">
+                更多 <span class="dropdown-arrow">▾</span>
+            </button>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <a href="/about">社团介绍</a>
+                <a href="/gallery">珍贵历史图片</a>
+                <a href="{{ url_for('public.anime_resources') }}">番剧百科</a>
+                <a href="{{ url_for('public.anime_news') }}">番剧新闻</a>
+                <a href="{{ url_for('public.members') }}">社员名单</a>
+            </div>
+        </div>
     </div>
+
     <div class="nav-right">
         {% if session.user_id %}
         <a href="{{ url_for('user.notifications') }}" style="position:relative; padding:6px 14px;" id="notif-bell">
@@ -50,13 +60,180 @@
         <a href="{{ url_for('admin.admin_entry') }}">管理</a>
         {% endif %}
 
-        <!-- ====== 深夜模式切换按钮 ====== -->
         <button id="theme-toggle" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 1.1rem; color: white; transition: background 0.2s; display: flex; align-items: center; justify-content: center;" title="切换深夜模式">
             🌙
         </button>
-        <!-- ================================== -->
+
+        <!-- 汉堡按钮（仅移动端） -->
+        <button type="button" id="nav-toggle" class="nav-toggle" aria-label="打开菜单">
+            <span></span><span></span><span></span>
+        </button>
     </div>
 </nav>
+
+<style>
+/* ===== 导航栏折叠 ===== */
+.nav-dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-toggle {
+    color: white !important;
+    background: transparent !important;
+    border: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 6px 14px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.dropdown-toggle:hover { background: #2a3a4a !important; }
+.dropdown-arrow {
+    font-size: 0.7rem;
+    margin-left: 2px;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+.dropdown-toggle.open .dropdown-arrow { transform: rotate(180deg); }
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    min-width: 160px;
+    padding: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    z-index: 1001;
+}
+.dropdown-menu.open { display: block; }
+.dropdown-menu a {
+    display: block;
+    padding: 8px 14px;
+    border-radius: 8px;
+    color: var(--text-primary) !important;
+    text-decoration: none;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+.dropdown-menu a:hover {
+    background: var(--bg-code) !important;
+}
+
+/* 汉堡按钮（默认隐藏，移动端显示） */
+.nav-toggle {
+    display: none;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
+}
+.nav-toggle span {
+    display: block;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: 0.2s;
+}
+
+/* 移动端抽屉 */
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    width: 260px;
+    height: 100vh;
+    background: var(--bg-card);
+    box-shadow: -4px 0 24px rgba(0,0,0,0.2);
+    z-index: 10000;
+    transition: right 0.25s ease;
+    overflow-y: auto;
+}
+.mobile-menu.open { right: 0; }
+.mobile-menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.mobile-menu-header button {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+.mobile-menu-list {
+    padding: 12px 0;
+}
+.mobile-menu-list a {
+    display: block;
+    padding: 14px 24px;
+    color: var(--text-primary) !important;
+    text-decoration: none;
+    font-size: 0.95rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.mobile-menu-list a:last-child { border-bottom: none; }
+.mobile-menu-list a:hover { background: var(--bg-code); }
+.mobile-menu-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+}
+.mobile-menu-backdrop.open { display: block; }
+
+/* 移动端媒体查询 */
+@media (max-width: 900px) {
+    .nav-links { display: none !important; }
+    .nav-toggle { display: flex !important; }
+}
+
+@media (max-width: 600px) {
+    .nav-right .user-name {
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+</style>
+
+<!-- 移动端抽屉菜单 -->
+<div id="mobileMenu" class="mobile-menu">
+    <div class="mobile-menu-header">
+        <span>{{ club_name }}</span>
+        <button type="button" id="mobileMenuClose" aria-label="关闭菜单">×</button>
+    </div>
+    <div class="mobile-menu-list">
+        <a href="/home">首页</a>
+        <a href="/about">社团介绍</a>
+        <a href="/activities">活动</a>
+        <a href="/gallery">珍贵历史图片</a>
+        <a href="{{ url_for('public.board') }}">留言板</a>
+        <a href="{{ url_for('public.anime_resources') }}">番剧百科</a>
+        <a href="{{ url_for('public.anime_news') }}">番剧新闻</a>
+        <a href="{{ url_for('public.contest_center') }}">赛事中心</a>
+        <a href="{{ url_for('public.members') }}">社员名单</a>
+    </div>
+</div>
+<div id="mobileMenuBackdrop" class="mobile-menu-backdrop"></div>
 
 {% set kanban_hidden = ['auth.login', 'auth.register', 'auth.forgot_password', 'auth.forgot_password_bind', 'auth.reset_password', 'auth.forgot_bind_send_code', 'auth.forgot_bind_verify'] %}
 {% if request.endpoint not in kanban_hidden %}
@@ -820,6 +997,48 @@
     }
     loadNotifCount();
     setInterval(loadNotifCount, 60000);  // 每分钟刷新一次
+</script>
+
+<script>
+(function () {
+    // 桌面下拉菜单
+    const toggle = document.getElementById('dropdownToggle');
+    const menu = document.getElementById('dropdownMenu');
+    if (toggle && menu) {
+        toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            menu.classList.toggle('open');
+            toggle.classList.toggle('open');
+        });
+        document.addEventListener('click', function (e) {
+            if (!menu.contains(e.target) && e.target !== toggle) {
+                menu.classList.remove('open');
+                toggle.classList.remove('open');
+            }
+        });
+    }
+
+    // 移动端抽屉
+    const navToggle = document.getElementById('nav-toggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileClose = document.getElementById('mobileMenuClose');
+    const backdrop = document.getElementById('mobileMenuBackdrop');
+
+    function openMenu() {
+        mobileMenu.classList.add('open');
+        backdrop.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMenu() {
+        mobileMenu.classList.remove('open');
+        backdrop.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    if (navToggle) navToggle.addEventListener('click', openMenu);
+    if (mobileClose) mobileClose.addEventListener('click', closeMenu);
+    if (backdrop) backdrop.addEventListener('click', closeMenu);
+})();
 </script>
 {% endif %}
 <script src="{{ url_for('static', filename='js/upload-compress.js') }}"></script>
