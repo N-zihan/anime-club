@@ -879,6 +879,8 @@ def group_vote_female(contest_id):
     candidates = {c.id: c for c in contest.candidates.all()}
 
     # 算当前轮次
+    if contest.open_at and contest.open_at.tzinfo is not None:
+        contest.open_at = contest.open_at.replace(tzinfo=None)
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     times = calc_stage_times(contest.open_at)
     round_number = None
@@ -928,6 +930,8 @@ def group_vote_male(contest_id):
     candidates = {c.id: c for c in contest.candidates.all()}
 
     # 算当前轮次
+    if contest.open_at and contest.open_at.tzinfo is not None:
+        contest.open_at = contest.open_at.replace(tzinfo=None)
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     times = calc_stage_times(contest.open_at)
     round_number = None
@@ -1089,6 +1093,8 @@ def knockout_vote_female(contest_id):
     candidates = {c.id: c for c in contest.candidates.all()}
 
     phase = _calc_current_phase(contest)
+    if contest.open_at and contest.open_at.tzinfo is not None:
+        contest.open_at = contest.open_at.replace(tzinfo=None)
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     times = calc_stage_times(contest.open_at)
     sub_round = None
@@ -1157,6 +1163,8 @@ def knockout_vote_male(contest_id):
     candidates = {c.id: c for c in contest.candidates.all()}
 
     phase = _calc_current_phase(contest)
+    if contest.open_at and contest.open_at.tzinfo is not None:
+        contest.open_at = contest.open_at.replace(tzinfo=None)
     now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
     times = calc_stage_times(contest.open_at)
     sub_round = None
