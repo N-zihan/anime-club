@@ -263,17 +263,44 @@ def search_news(keyword, limit=50):
     if not keyword:
         return []
 
+    # 搜索缓存键
+    cache_key = f'search:{keyword.lower()}:{limit}'
+    now = datetime.now()
+    if cache_key in _cache:
+        cached_data, expires = _cache[cache_key]
+        if now < expires:
+            return cached_data
+
     has_chinese = any('\u4e00' <= c <= '\u9fff' for c in keyword)
 
-    articles, _ = get_anime_news(limit=100)
+    # 使用已缓存的新闻数据，不要每次获取100篇
+    # 首先检查是否有缓存的最新新闻数据
+    articles = []
+    cache_keys = [k for k in _cache.keys() if k.startswith('news_')]
+    if cache_keys:
+        # 使用最近缓存的新闻数据
+        latest_key = max(cache_keys, key=lambda k: _cache[k][1])  # 按过期时间排序
+        cached_articles, _ = _cache[latest_key]
+        if isinstance(cached_articles, tuple):
+            articles = cached_articles[0]  # 格式：(articles, meta)
+        else:
+            articles = cached_articles
+    
+    # 如果没有缓存数据，获取少量文章
+    if not articles:
+        articles, _ = get_anime_news(limit=20)  # 只获取20篇用于搜索
 
     keywords = [keyword.lower()]
 
     if has_chinese:
-        translated = _translate_keyword(keyword)
-        if translated and translated.lower() != keyword.lower():
-            keywords.append(translated.lower())
-            print(f'>>> 搜索词翻译: "{keyword}" → "{translated}"')
+        try:
+            translated = _translate_keyword(keyword)
+            if translated and translated.lower() != keyword.lower():
+                keywords.append(translated.lower())
+                print(f'>>> 搜索词翻译: "{keyword}" → "{translated}"')
+        except Exception as e:
+            print(f'>>> 搜索词翻译失败: {e}')
+            # 翻译失败时仅使用原关键词搜索
 
     results = []
     for a in articles:
@@ -289,6 +316,9 @@ def search_news(keyword, limit=50):
             if len(results) >= limit:
                 break
 
+    # 缓存搜索结果 (5分钟)
+    _cache[cache_key] = (results, now + timedelta(minutes=5))
+    
     return results
 
 

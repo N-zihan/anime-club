@@ -221,9 +221,16 @@
 
         feed.innerHTML = '';
         statusEl.style.display = 'block';
-        statusEl.textContent = '搜索中...（首次搜索可能要几秒钟）';
+        statusEl.textContent = '搜索中...';
         loadMoreBtn.style.display = 'none';
         clearBtn.style.display = 'inline-block';
+        
+        // 禁用搜索按钮并显示加载状态
+        const originalBtnText = searchBtn.textContent;
+        searchBtn.textContent = '搜索中...';
+        searchBtn.disabled = true;
+        searchBtn.style.opacity = '0.7';
+        searchBtn.style.cursor = 'not-allowed';
 
         fetch('/api/anime/news-search?q=' + encodeURIComponent(q))
         .then(r => r.json())
@@ -239,6 +246,13 @@
         })
         .catch(() => {
             statusEl.textContent = '搜索失败，请稍后再试';
+        })
+        .finally(() => {
+            // 恢复搜索按钮
+            searchBtn.textContent = originalBtnText;
+            searchBtn.disabled = false;
+            searchBtn.style.opacity = '1';
+            searchBtn.style.cursor = 'pointer';
         });
     }
 
