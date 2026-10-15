@@ -127,6 +127,7 @@ class Candidate(db.Model):
     image_url = db.Column(db.String(500), nullable=True)
     description = db.Column(db.Text, nullable=True)
     stage = db.Column(db.String(20), default='pending')
+    banned = db.Column(db.Boolean, default=False, nullable=False)  # 禁赛标记：禁赛期间禁止投票
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     contest = db.relationship('Contest', back_populates='candidates')

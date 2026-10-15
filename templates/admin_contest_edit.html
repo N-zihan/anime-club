@@ -121,10 +121,25 @@
         <tbody>
         {% for c in candidates %}
         <tr>
-            <td>{{ c.name }}</td>
+            <td>
+                {{ c.name }}
+                {% if c.banned %}<span style="color:#e11d48; font-weight:bold; margin-left:6px;">[禁赛]</span>{% endif %}
+            </td>
             <td>{{ c.source }}</td>
             <td>{{ c.gender }}</td>
             <td>
+                {% if c.banned %}
+                <form method="POST" action="{{ url_for('admin.admin_candidate_unban', candidate_id=c.id) }}"
+                      style="display:inline;">
+                    <button type="submit" class="btn-edit" style="color:green;">恢复</button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('admin.admin_candidate_ban', candidate_id=c.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirm('确定禁赛角色「{{ c.name }}」吗？禁赛期间将禁止投票。')">
+                    <button type="submit" class="btn-delete">禁赛</button>
+                </form>
+                {% endif %}
                 <form method="POST" action="{{ url_for('admin.admin_candidate_delete', candidate_id=c.id) }}"
                       style="display:inline;"
                       onsubmit="return confirm('确定移除？')">

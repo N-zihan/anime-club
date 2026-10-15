@@ -721,6 +721,28 @@ def admin_candidate_delete(candidate_id):
     return redirect(url_for('admin.admin_contest_edit', contest_id=contest_id))
 
 
+@admin_bp.route('/admin/candidates/ban/<int:candidate_id>', methods=['POST'])
+@admin_required
+def admin_candidate_ban(candidate_id):
+    """对候选角色实施禁赛（禁止被投票），直至被淘汰或手动恢复。"""
+    candidate = get_or_404(Candidate, candidate_id)
+    candidate.banned = True
+    db.session.commit()
+    flash(f'已禁赛角色「{candidate.name}」，禁赛期间禁止投票', 'success')
+    return redirect(url_for('admin.admin_contest_edit', contest_id=candidate.contest_id))
+
+
+@admin_bp.route('/admin/candidates/unban/<int:candidate_id>', methods=['POST'])
+@admin_required
+def admin_candidate_unban(candidate_id):
+    """解除候选角色的禁赛状态。"""
+    candidate = get_or_404(Candidate, candidate_id)
+    candidate.banned = False
+    db.session.commit()
+    flash(f'已解除角色「{candidate.name}」的禁赛', 'success')
+    return redirect(url_for('admin.admin_contest_edit', contest_id=candidate.contest_id))
+
+
 @admin_bp.route('/admin/notifications/send', methods=['GET', 'POST'])
 @admin_required
 def admin_notification_send():

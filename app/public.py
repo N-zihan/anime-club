@@ -933,6 +933,16 @@ def qualifying_vote_submit(contest_id):
     if any(cid not in valid_ids for cid in new_votes):
         return fail('存在无效的角色，请刷新页面后重新投票')
 
+    # 禁赛校验：被禁赛的角色不能投票
+    banned_ids = {
+        c.id for c in Candidate.query.filter(
+            Candidate.contest_id == contest.id,
+            Candidate.banned.is_(True),
+        ).all()
+    }
+    if any(cid in banned_ids for cid in new_votes):
+        return fail('包含被禁赛的角色，禁赛期间禁止投票')
+
     # 3. 合并（历史 + 本次）
     merged = dict(existing)
     for cid, w in new_votes.items():
@@ -1208,6 +1218,11 @@ def group_vote_submit(contest_id):
 
     if target_group is None:
         return fail('该角色不在任何分组中')
+
+    # 禁赛校验：被禁赛的角色不能投票
+    _candidate = db.session.get(Candidate, candidate_id)
+    if _candidate is None or _candidate.banned:
+        return fail('该角色已被禁赛，暂不能投票')
 
     if round_number == 1:
         pairs = [(target_group[0], target_group[1]), (target_group[2], target_group[3])]
@@ -1517,6 +1532,11 @@ def knockout_vote_submit(contest_id):
             break
     if match_index is None:
         return fail('该角色不在本轮对阵中')
+
+    # 禁赛校验：被禁赛的角色不能投票
+    _cand = db.session.get(Candidate, candidate_id)
+    if _cand is None or _cand.banned:
+        return fail('该角色已被禁赛，暂不能投票')
 
     # 去重：本轮 + 本场（match_index 由服务端推导）
     existing = ContestVote.query.filter_by(

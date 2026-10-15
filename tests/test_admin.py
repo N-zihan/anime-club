@@ -204,3 +204,24 @@ class TestAdminExtra:
         assert resp.status_code == 302  # owner_required → 未授权重定向
         user = db_session.get(User, sample_user.id)
         assert user.email is None
+
+    # ---------- 禁赛功能 ----------
+    def test_admin_candidate_ban(self, admin_client, sample_candidate, db_session):
+        from app.models import Candidate
+        c = db_session.get(Candidate, sample_candidate.id)
+        c.banned = False
+        db_session.commit()
+        resp = admin_client.post(f'/admin/candidates/ban/{sample_candidate.id}', follow_redirects=True)
+        c = db_session.get(Candidate, sample_candidate.id)
+        assert c.banned is True
+        assert resp.status_code == 200
+
+    def test_admin_candidate_unban(self, admin_client, sample_candidate, db_session):
+        from app.models import Candidate
+        c = db_session.get(Candidate, sample_candidate.id)
+        c.banned = True
+        db_session.commit()
+        resp = admin_client.post(f'/admin/candidates/unban/{sample_candidate.id}', follow_redirects=True)
+        c = db_session.get(Candidate, sample_candidate.id)
+        assert c.banned is False
+        assert resp.status_code == 200
