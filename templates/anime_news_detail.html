@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title_zh if article and article.title_zh else (article.title if article else '文章详情') }}{% endblock %}
+{% block content %}
+<div class="article-container" style="max-width:720px; margin:0 auto; padding:20px 0;">
+
+{% if article and article.image %}
+<div style="margin-bottom:24px;">
+  <img src="/api/anime/news-image?url={{ article.image|urlencode }}"
+       alt="{{ article.title_zh if article.title_zh else (article.title if article else '') }}"
+       style="width:100%; border-radius:12px; max-height:400px; object-fit:cover;">
+</div>
+{% endif %}
+
+<h1 style="font-size:1.8rem; line-height:1.3; margin-bottom:12px;">
+  {{ article.title_zh if article and article.title_zh else (article.title if article else '') }}
+</h1>
+
+<div style="color: var(--text-muted); font-size:0.9rem; margin-bottom:24px;">
+  <span>{{ source_zh }}</span>
+  <span style="margin:0 10px;">•</span>
+  <span>{{ article.date[:10] if article and article.date else '' }}</span>
+</div>
+
+{% if article and article.excerpt_zh %}
+<div style="background: var(--bg-code); padding:18px 20px; border-radius:10px; margin-bottom:28px; line-height:1.6;">
+  {{ article.excerpt_zh }}
+</div>
+{% endif %}
+
+{% if images %}
+<div style="margin-bottom:28px;">
+  <h3 style="font-size:1.1rem; margin-bottom:12px;">相关图片</h3>
+  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px;">
+    {% for img_url in images %}
+    <a href="/api/anime/news-image?url={{ img_url|urlencode }}" target="_blank" rel="noopener">
+      <img src="/api/anime/news-image?url={{ img_url|urlencode }}" 
+           alt="插图 {{ loop.index }}"
+           style="width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:8px;">
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="article-body" style="line-height:1.9; font-size:1rem;">
+  {% for para in content.split('\n\n') %}
+    <p style="margin-bottom:20px;">{{ para }}</p>
+  {% endfor %}
+</div>
+
+<div style="margin-top:40px; padding-top:20px; border-top:1px solid var(--border-color);">
+  <a href="{{ url_for('public.anime_news') }}" style="color: var(--text-primary);">← 返回新闻列表</a>
+  <span style="margin:0 12px;">|</span>
+  <a href="{{ url if url.startswith('http') else '#' }}" 
+     target="_blank" 
+     rel="noopener noreferrer"
+     style="color: #4a90d9;">查看原文（{{ source_zh }}）</a>
+</div>
+
+</div>
+
+<style>
+@media (max-width: 768px) {
+  .article-container { padding:0 16px; }
+  h1 { font-size:1.5rem; }
+}
+</style>
+{% endblock %}

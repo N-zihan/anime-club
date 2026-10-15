@@ -30,7 +30,11 @@ def get_client():
             raise RuntimeError("OPENAI_API_KEY 未配置，无法使用 AI 功能")
         _client = OpenAI(
             api_key=api_key,
-            base_url=os.getenv('OPENAI_BASE_URL', 'https://api.siliconflow.cn/v1')
+            base_url=os.getenv('OPENAI_BASE_URL', 'https://api.siliconflow.cn/v1'),
+            # 显式超时：SDK 默认 600s 且自动重试 2 次，而 Vercel 函数 30s 就被强杀，
+            # 结果只表现为难以定位的随机 500。
+            timeout=float(os.getenv('AI_TIMEOUT', '20')),
+            max_retries=0,
         )
     return _client
 
@@ -59,10 +63,20 @@ def _get_cached(key: str) -> Optional[str]:
     return None
 
 
+_CACHE_MAX_ENTRIES = int(os.getenv('AI_CACHE_MAX_ENTRIES', '500'))
+
+
 def _set_cache(key: str, data: str):
     """存入缓存"""
     if not CACHE_ENABLED:
         return
+    # 缓存键含用户可控的 phase，必须限制条数，否则可被刷爆实例内存
+    if len(_cache) >= _CACHE_MAX_ENTRIES:
+        _now = datetime.now()
+        for _k in [k for k, v in _cache.items() if v['expires'] <= _now]:
+            _cache.pop(_k, None)
+        while len(_cache) >= _CACHE_MAX_ENTRIES:
+            _cache.pop(next(iter(_cache)), None)
     _cache[key] = {
         'data': data,
         'expires': datetime.now() + timedelta(seconds=CACHE_TTL)

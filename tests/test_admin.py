@@ -130,3 +130,77 @@ class TestAdminExtra:
         db_session.refresh(user)
         assert user.is_owner == (not original)
         assert resp.status_code == 200
+
+    # ---------- 友好闭环：站长代绑邮箱 / 重置密码 ----------
+    def test_admin_bind_email(self, admin_client, sample_user, db_session):
+        from app.models import User
+        sample_user.email = None
+        db_session.commit()
+        resp = admin_client.post(
+            f'/admin/users/bind_email/{sample_user.id}',
+            data={'email': 'bound@qq.com'}, follow_redirects=True)
+        user = db_session.get(User, sample_user.id)
+        assert user.email == 'bound@qq.com'
+        assert resp.status_code == 200
+
+    def test_admin_bind_email_invalid_format(self, admin_client, sample_user, db_session):
+        from app.models import User
+        sample_user.email = None
+        db_session.commit()
+        resp = admin_client.post(
+            f'/admin/users/bind_email/{sample_user.id}',
+            data={'email': 'not-an-email'}, follow_redirects=True)
+        user = db_session.get(User, sample_user.id)
+        assert user.email is None  # 拒绝写入
+        assert resp.status_code == 200
+
+    def test_admin_bind_email_rejects_duplicate(self, admin_client, sample_user, db_session):
+        from app.models import User
+        holder = User(username='holder', qq='333333333')
+        holder.set_password('pass123')
+        holder.email = 'dup@qq.com'
+        db_session.add(holder)
+        db_session.commit()
+        sample_user.email = None
+        db_session.commit()
+        resp = admin_client.post(
+            f'/admin/users/bind_email/{sample_user.id}',
+            data={'email': 'dup@qq.com'}, follow_redirects=True)
+        user = db_session.get(User, sample_user.id)
+        assert user.email is None  # 已被占用，拒绝
+        assert resp.status_code == 200
+
+    def test_admin_reset_password_sends_link(self, admin_client, sample_user, db_session):
+        from app.models import User
+        sample_user.email = 'reset@qq.com'
+        db_session.commit()
+        with patch('app.admin.send_reset_email', return_value=True) as mocked:
+            resp = admin_client.post(
+                f'/admin/users/reset_password/{sample_user.id}', follow_redirects=True)
+            user = db_session.get(User, sample_user.id)
+            assert user.reset_token is not None
+            assert mocked.call_count == 1
+            assert resp.status_code == 200
+
+    def test_admin_reset_password_requires_email(self, admin_client, sample_user, db_session):
+        from app.models import User
+        sample_user.email = None
+        db_session.commit()
+        with patch('app.admin.send_reset_email', return_value=True) as mocked:
+            resp = admin_client.post(
+                f'/admin/users/reset_password/{sample_user.id}', follow_redirects=True)
+            user = db_session.get(User, sample_user.id)
+            assert user.reset_token is None   # 未绑邮箱不发
+            assert mocked.call_count == 0
+            assert resp.status_code == 200
+
+    def test_admin_bind_email_blocked_for_member(self, logged_in_client, sample_user, db_session):
+        from app.models import User
+        sample_user.email = None
+        db_session.commit()
+        resp = logged_in_client.post(
+            f'/admin/users/bind_email/{sample_user.id}',
+            data={'email': 'nope@qq.com'}, follow_redirects=False)
+        assert resp.status_code == 302  # owner_required → 未授权重定向
+        user = db_session.get(User, sample_user.id)
+        assert user.email is None

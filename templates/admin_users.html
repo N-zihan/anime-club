@@ -17,6 +17,7 @@
         <th>用户名</th>
         <th>QQ</th>
         <th>邮箱</th>
+        <th>邮箱操作</th>
         <th>注册时间</th>
         <th style="text-align:center;">运营</th>
         <th style="text-align:center;">站长</th>
@@ -34,6 +35,23 @@
         <td><strong>{{ user.username }}</strong></td>
         <td>{{ user.qq }}</td>
         <td>{{ user.email or '未绑定' }}</td>
+        <td>
+            {% if user.id != session.user_id %}
+                {% if user.email %}
+                <form method="POST" action="{{ url_for('admin.admin_reset_password', user_id=user.id) }}" style="display:inline;">
+                    <button type="submit" class="btn-edit" title="给该社员邮箱发送密码重置链接">重置链接</button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('admin.admin_bind_email', user_id=user.id) }}" style="display:inline;">
+                    <input type="email" name="email" placeholder="输入邮箱代绑" required
+                           style="width:140px; padding:4px 8px; border:1px solid var(--border-color); border-radius:6px; font-size:0.8rem;">
+                    <button type="submit" class="btn-edit">代绑</button>
+                </form>
+                {% endif %}
+            {% else %}
+                <span style="color:#aaa; font-size:0.85rem;">—</span>
+            {% endif %}
+        </td>
         <td>{{ user.registered_at.strftime('%Y-%m-%d') }}</td>
         <td style="text-align:center;">
             {% if user.is_staff %}✅{% else %}—{% endif %}
@@ -48,7 +66,8 @@
             </form>
             <form method="POST" action="{{ url_for('admin.admin_toggle_owner', user_id=user.id) }}"
                   style="display:inline;"
-                  onsubmit="return confirm('确定将站长转移给 {{ user.username }} 吗？')">
+                  data-confirm="确定将站长身份转移给该用户吗？"
+                  data-username="{{ user.username }}">
                 <button type="submit" class="btn-edit"
                         style="color:{{ 'gold' if user.is_owner else '#2c3e50' }};">
                     {{ '取消站长' if user.is_owner else '设为站长' }}
@@ -57,7 +76,8 @@
             {% if user.id != session.user_id %}
             <form method="POST" action="{{ url_for('admin.admin_delete_user', user_id=user.id) }}"
                   style="display:inline;"
-                  onsubmit="return confirm('确定删除用户 {{ user.username }} 吗？')">
+                  data-confirm="确定删除该用户吗？"
+                  data-username="{{ user.username }}">
                 <button type="submit" class="btn-delete">删除</button>
             </form>
             {% else %}
@@ -69,4 +89,19 @@
     </tbody>
 </table>
 <p style="margin-top:20px;"><a href="{{ url_for('admin.dashboard') }}">← 返回后台首页</a></p>
+
+<script>
+    // 用 data-* + 事件监听代替 onsubmit 里拼字符串。
+    // 原先把用户名插进 onsubmit="confirm('...')" 的 JS 字符串里：Jinja 会把 ' 转成
+    // &#39;，但 HTML 解析器在 JS 解析前又把它还原成 '，所以转义在这个上下文无效，
+    // 用户名写成 `');...//` 就能在站长打开本页时执行脚本。
+    document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            var name = form.dataset.username || '';
+            var text = form.dataset.confirm;
+            if (name) text = text.replace('该用户', '「' + name + '」');
+            if (!window.confirm(text)) e.preventDefault();
+        });
+    });
+</script>
 {% endblock %}

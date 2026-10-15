@@ -17,6 +17,8 @@ from urllib.parse import quote
 import requests
 from bs4 import BeautifulSoup
 
+from .utils import safe_get
+
 ANI_NEWS_API = 'https://news.nanyi-anime-club.top/'
 
 _cache = {}
@@ -319,7 +321,10 @@ def get_article_content(url):
             return data
 
     try:
-        res = requests.get(url, headers={'User-Agent': _UA}, timeout=15)
+        res = safe_get(url, headers={'User-Agent': _UA}, timeout=15)
+        if res is None:
+            print('>>> 抓取原文被拦截（非公网地址或重定向过多）')
+            return None
         res.raise_for_status()
     except Exception as e:
         print(f'>>> 抓取原文失败: {e}')
@@ -363,9 +368,25 @@ def get_article_content(url):
         # 翻译正文
         translated = _translate_article(full_text)
 
+        # 提取文章中所有 https 图片链接
+        images = []
+        for img in article.find_all('img'):
+            src = img.get('src')
+            if not src:
+                continue
+            # 转为绝对地址
+            import urllib.parse
+            abs_url = urllib.parse.urljoin(url, src)
+            if abs_url.startswith('https://'):
+                images.append(abs_url)
+        # 去重并限制数量
+        seen = set()
+        images = [u for u in images if u not in seen and not seen.add(u)][:8]
+        
         result = {
             'title': soup.title.string.strip() if soup.title and soup.title.string else '',
             'content': translated,
+            'images': images,
         }
         _article_cache[url] = (result, now + timedelta(seconds=_ARTICLE_TTL))
         return result

@@ -82,7 +82,7 @@ class TestVoting:
         """测试海选投票成功提交"""
         contest = db_session.get(Contest, sample_contest.id)
         contest.status = 'open'
-        contest.open_at = datetime.now() - timedelta(days=2)  # 仅用于满足业务逻辑，但提交接口不检查时间
+        contest.open_at = datetime.now() - timedelta(days=10)  # 落在海选投票期内（第8~12天）
         db_session.commit()
         db_session.refresh(contest)
 
@@ -111,7 +111,7 @@ class TestVoting:
         """测试同一用户不能重复投票（同一组别）"""
         contest = db_session.get(Contest, sample_contest.id)
         contest.status = 'open'
-        contest.open_at = datetime.now() - timedelta(days=2)
+        contest.open_at = datetime.now() - timedelta(days=10)
         db_session.commit()
         db_session.refresh(contest)
 
@@ -156,7 +156,7 @@ class TestVoting:
         """测试投票数量限制（总票数≤15，单角色≤3）"""
         contest = db_session.get(Contest, sample_contest.id)
         contest.status = 'open'
-        contest.open_at = datetime.now() - timedelta(days=2)
+        contest.open_at = datetime.now() - timedelta(days=10)
         db_session.commit()
         db_session.refresh(contest)
 
@@ -276,7 +276,7 @@ class TestPublicExtra:
     def test_qualifying_vote_zero_votes(self, logged_in_client, sample_contest, db_session, sample_user):
         contest = sample_contest
         contest.status = 'open'
-        contest.open_at = datetime.now() - timedelta(days=8)
+        contest.open_at = datetime.now() - timedelta(days=10)
         db_session.commit()
 
         resp = logged_in_client.post(
@@ -300,7 +300,7 @@ class TestPublicExtra:
     def test_qualifying_vote_exceed_candidates(self, logged_in_client, sample_contest, db_session, sample_user):
         contest = sample_contest
         contest.status = 'open'
-        contest.open_at = datetime.now() - timedelta(days=8)
+        contest.open_at = datetime.now() - timedelta(days=10)
         db_session.commit()
 
         candidates = contest.candidates.filter_by(gender='female').limit(6).all()
@@ -403,6 +403,97 @@ class TestPublicExtra:
                 candidate_id=female_candidates[0].id
             ).first()
             assert vote is not None
+
+    def test_knockout_cannot_vote_twice_by_switching_match_index(
+            self, logged_in_client, sample_contest, db_session, sample_user):
+        """回归：换 match_index 不能再给同一角色重复投票（原可无限刷票）"""
+        contest = sample_contest
+        contest.status = 'knockout'
+        contest.open_at = datetime.now() - timedelta(days=40)
+        female_candidates = contest.candidates.filter_by(gender='female').limit(2).all()
+        if len(female_candidates) < 2:
+            pytest.skip("Need 2 female candidates")
+        contest.config = {
+            'knockout_matches_female': [
+                {
+                    'candidate1': female_candidates[0].id,
+                    'candidate2': female_candidates[1].id,
+                    'status': 'active'
+                }
+            ]
+        }
+        db_session.commit()
+
+        from app.models import ContestVote
+
+        with patch('app.public.datetime') as mock_dt:
+            mock_dt.now.return_value = datetime.now() - timedelta(days=35)
+            mock_dt.side_effect = lambda *args, **kw: datetime(*args, **kw)
+
+            first = logged_in_client.post(
+                f'/contest/{contest.id}/knockout/submit',
+                data={'gender': 'female', 'candidate_id': female_candidates[0].id,
+                      'match_index': 1},
+                headers={'X-Requested-With': 'XMLHttpRequest'})
+            assert first.get_json()['success'] is True
+
+            # 换一个 match_index 再投同一角色：必须被拒绝
+            second = logged_in_client.post(
+                f'/contest/{contest.id}/knockout/submit',
+                data={'gender': 'female', 'candidate_id': female_candidates[0].id,
+                      'match_index': 99},
+                headers={'X-Requested-With': 'XMLHttpRequest'})
+            assert second.get_json()['success'] is False
+
+            # 不在本轮对阵中的角色不能投票
+            outsider = contest.candidates.filter_by(gender='female').all()
+            outsider_id = [c.id for c in outsider if c.id not in
+                           (female_candidates[0].id, female_candidates[1].id)][0]
+            third = logged_in_client.post(
+                f'/contest/{contest.id}/knockout/submit',
+                data={'gender': 'female', 'candidate_id': outsider_id,
+                      'match_index': 1},
+                headers={'X-Requested-With': 'XMLHttpRequest'})
+            assert third.get_json()['success'] is False
+
+        votes = ContestVote.query.filter_by(
+            contest_id=contest.id, user_id=sample_user.id,
+            round_number=4, sub_round=1, candidate_id=female_candidates[0].id).all()
+        assert len(votes) == 1
+
+    def test_qualifying_vote_outside_window_rejected(
+            self, logged_in_client, sample_contest, db_session, sample_user):
+        """回归：提名期内不能投海选票（原先只检查 status）"""
+        contest = sample_contest
+        contest.status = 'open'
+        contest.open_at = datetime.now() - timedelta(days=2)  # 提名期
+        db_session.commit()
+
+        from app.models import ContestVote
+        candidate = contest.candidates.filter_by(gender='female').first()
+        resp = logged_in_client.post(
+            f'/contest/{contest.id}/qualifying/submit',
+            data={'gender': 'female', f'vote_{candidate.id}': '3'},
+            headers={'X-Requested-With': 'XMLHttpRequest'})
+        assert resp.get_json()['success'] is False
+        assert ContestVote.query.filter_by(
+            contest_id=contest.id, user_id=sample_user.id,
+            round_number=0).count() == 0
+
+    def test_qualifying_vote_cross_gender_rejected(
+            self, logged_in_client, sample_contest, db_session, sample_user):
+        """回归：用 gender=female 给男角色投票必须被拒绝（原先可双计票）"""
+        contest = sample_contest
+        contest.status = 'open'
+        contest.open_at = datetime.now() - timedelta(days=10)
+        db_session.commit()
+
+        male_candidate = contest.candidates.filter_by(gender='male').first()
+        resp = logged_in_client.post(
+            f'/contest/{contest.id}/qualifying/submit',
+            data={'gender': 'female', f'vote_{male_candidate.id}': '3'},
+            headers={'X-Requested-With': 'XMLHttpRequest'})
+        assert resp.get_json()['success'] is False
 
     def test_ai_commentary_api(self, logged_in_client, sample_contest):
         with patch('app.public.generate_commentary', return_value=(True, 'AI commentary', None)):

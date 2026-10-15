@@ -29,7 +29,9 @@ from sqlalchemy.exc import IntegrityError
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 
-from .models import db, User, Nomination, ContestVote, Message, Reply, Notification
+from .models import (db, User, Nomination, Candidate, Contest, ContestVote,
+                     Message, Reply, Notification)
+from .utils import code_digest, code_matches, throttle_ok
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -158,13 +160,14 @@ def send_email_batch(email_list, subject, body, is_html=True):
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form.get('username')
-        qq = request.form.get('qq')
-        email = request.form.get('email')
-        group = request.form.get('group')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        code = request.form.get('code')
+        # 缺字段时 get() 返回 None，后面 re.match(None) / qq.isdigit() 会直接 500
+        username = (request.form.get('username') or '').strip()
+        qq = (request.form.get('qq') or '').strip()
+        email = (request.form.get('email') or '').strip()
+        group = request.form.get('group') or ''
+        password = request.form.get('password') or ''
+        confirm_password = request.form.get('confirm_password') or ''
+        code = request.form.get('code') or ''
 
         # 验证用户名
         username_pattern = r'^[\u4e00-\u9fa5A-Za-z0-9_]{2,20}$'
@@ -182,8 +185,8 @@ def register():
             flash('邮箱格式不正确', 'danger')
             return redirect(url_for('auth.register'))
 
-        # 验证社团验证码
-        if group != GROUP_VERIFICATION_CODE:
+        # 验证社团验证码（未配置时一律拒绝，避免 fail-open 让任何人都能注册）
+        if not GROUP_VERIFICATION_CODE or group != GROUP_VERIFICATION_CODE:
             flash('验证码错误，请确认你是社团成员', 'danger')
             return redirect(url_for('auth.register'))
 
@@ -208,12 +211,12 @@ def register():
 
         # 验证邮箱验证码（测试环境完全跳过）
         if 'pytest' not in sys.modules and os.getenv('TESTING') != '1':
-            stored_code = session.get('email_code')
+            stored_digest = session.get('email_code_digest')
             stored_email = session.get('pending_email')
-            if not stored_code or not stored_email or stored_email != email:
+            if not stored_digest or not stored_email or stored_email != email:
                 flash('请先获取验证码', 'danger')
                 return redirect(url_for('auth.register'))
-            if stored_code != code:
+            if not code_matches(stored_digest, code):
                 flash('验证码错误', 'danger')
                 return redirect(url_for('auth.register'))
             expires = session.get('email_code_expires')
@@ -237,7 +240,7 @@ def register():
             return redirect(url_for('auth.register'))
 
         # 清理 session
-        session.pop('email_code', None)
+        session.pop('email_code_digest', None)
         session.pop('pending_email', None)
         session.pop('email_code_expires', None)
 
@@ -263,8 +266,13 @@ def send_register_code():
     if User.query.filter_by(email=email).first():
         return {'error': '该邮箱已被绑定'}, 400
 
+    if not throttle_ok(f'send_register_code:{request.remote_addr}:{email}', 60):
+        return {'error': '发送过于频繁，请稍后再试'}, 429
+
     code = ''.join(secrets.choice('0123456789') for _ in range(6))
-    session['email_code'] = code
+    # 只把摘要写进 session：session 是签名而非加密的 cookie，客户端能自行解出
+    # 明文验证码，等于邮箱验证完全失效（可用任意别人的邮箱注册）。
+    session['email_code_digest'] = code_digest(code)
     session['pending_email'] = email
     session['email_code_expires'] = (datetime.now() + timedelta(minutes=10)).isoformat()
 
@@ -329,21 +337,41 @@ def delete_account():
         return redirect(url_for('auth.login'))
     user = db.session.get(User, session['user_id'])
     if user:
-        # 级联删除：先删子表，再删主表
-        # 1. 该用户作为作者的所有回复
-        Reply.query.filter_by(user_id=user.id).delete()
-        # 2. 该用户消息下的所有回复（含他人回复）
-        for msg in Message.query.filter_by(user_id=user.id).all():
-            Reply.query.filter_by(message_id=msg.id).delete()
-        # 3. 该用户的留言
-        Message.query.filter_by(user_id=user.id).delete()
-        # 4. 提名 / 投票 / 番剧推荐 / 通知
-        Nomination.query.filter_by(user_id=user.id).delete()
-        ContestVote.query.filter_by(user_id=user.id).delete()
-        Notification.query.filter_by(user_id=user.id).delete()
-        # 5. 最后删用户
-        db.session.delete(user)
-        db.session.commit()
+        try:
+            # 0. 先解除别人对"我"的引用，否则外键会拦下删除（原先直接 500）
+            Contest.query.filter_by(created_by=user.id).update(
+                {'created_by': None}, synchronize_session=False)
+
+            my_nomination_ids = [n.id for n in Nomination.query.filter_by(user_id=user.id).all()]
+            if my_nomination_ids:
+                Candidate.query.filter(
+                    Candidate.nomination_id.in_(my_nomination_ids)
+                ).update({'nomination_id': None}, synchronize_session=False)
+
+            my_reply_ids = [r.id for r in Reply.query.filter_by(user_id=user.id).all()]
+            if my_reply_ids:
+                Reply.query.filter(
+                    Reply.parent_reply_id.in_(my_reply_ids)
+                ).update({'parent_reply_id': None}, synchronize_session=False)
+
+            # 1. 该用户作为作者的所有回复
+            Reply.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+            # 2. 该用户消息下的所有回复（含他人回复）
+            for msg in Message.query.filter_by(user_id=user.id).all():
+                Reply.query.filter_by(message_id=msg.id).delete(synchronize_session=False)
+            # 3. 该用户的留言
+            Message.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+            # 4. 提名 / 投票 / 通知
+            Nomination.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+            ContestVote.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+            Notification.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+            # 5. 最后删用户
+            db.session.delete(user)
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash('注销失败：账号仍有关联数据（例如创建的赛事），请联系站长处理。', 'danger')
+            return redirect(url_for('user.profile'))
     session.clear()
     flash('账号已注销', 'info')
     return redirect(url_for('auth.register'))
@@ -373,7 +401,14 @@ def forgot_password():
                 flash('邮件发送失败，请稍后重试或联系站长', 'danger')
             return redirect(url_for('auth.login'))
 
-        # 未绑定 → 进入绑定流程
+        # 未绑定邮箱的账号：**不允许**在未认证状态下把邮箱绑到别人账号上。
+        # 原实现仅凭 QQ 号就把 user.id 写进攻击者自己的 session，随后攻击者用
+        # 自己的邮箱完成"绑定"，系统又把密码重置链接发到该邮箱 → 任意账号接管。
+        if not session.get('user_id') or session.get('user_id') != user.id:
+            flash('该账号尚未绑定邮箱，请先登录后在「个人设置」中绑定，或联系站长协助重置。',
+                  'warning')
+            return redirect(url_for('auth.login'))
+
         session['pending_bind_user_id'] = user.id
         flash('该账号尚未绑定邮箱，请先绑定', 'info')
         return render_template('forgot_password_bind.html', user=user)
@@ -385,7 +420,7 @@ def forgot_password():
 @auth_bp.route('/forgot_bind_send_code', methods=['POST'])
 def forgot_bind_send_code():
     user_id = session.get('pending_bind_user_id')
-    if not user_id:
+    if not user_id or session.get('user_id') != user_id:
         flash('会话已超时，请重新操作', 'danger')
         return redirect(url_for('auth.forgot_password'))
 
@@ -398,8 +433,12 @@ def forgot_bind_send_code():
         flash('该邮箱已被其他账号绑定', 'danger')
         return redirect(url_for('auth.forgot_password_bind'))
 
+    if not throttle_ok(f'forgot_bind:{request.remote_addr}:{email}', 60):
+        flash('发送过于频繁，请稍后再试', 'warning')
+        return redirect(url_for('auth.forgot_password_bind'))
+
     code = ''.join(secrets.choice('0123456789') for _ in range(6))
-    session['forgot_bind_code'] = code
+    session['forgot_bind_code_digest'] = code_digest(code)
     session['forgot_bind_email'] = email
     session['forgot_bind_expires'] = (datetime.now() + timedelta(minutes=10)).isoformat()
 
@@ -413,19 +452,19 @@ def forgot_bind_send_code():
 @auth_bp.route('/forgot_bind_verify', methods=['POST'])
 def forgot_bind_verify():
     user_id = session.get('pending_bind_user_id')
-    if not user_id:
+    if not user_id or session.get('user_id') != user_id:
         flash('会话已超时，请重新操作', 'danger')
         return redirect(url_for('auth.forgot_password'))
 
     code = request.form.get('code')
-    stored_code = session.get('forgot_bind_code')
+    stored_digest = session.get('forgot_bind_code_digest')
     email = session.get('forgot_bind_email')
 
-    if not stored_code or not email:
+    if not stored_digest or not email:
         flash('请先获取验证码', 'danger')
         return redirect(url_for('auth.forgot_password_bind'))
 
-    if stored_code != code:
+    if not code_matches(stored_digest, code):
         flash('验证码错误', 'danger')
         return redirect(url_for('auth.forgot_password_bind'))
 
@@ -442,7 +481,7 @@ def forgot_bind_verify():
     user.email = email
     db.session.commit()
 
-    session.pop('forgot_bind_code', None)
+    session.pop('forgot_bind_code_digest', None)
     session.pop('forgot_bind_email', None)
     session.pop('forgot_bind_expires', None)
 
@@ -468,7 +507,7 @@ def forgot_bind_verify():
 @auth_bp.route('/forgot_password_bind')
 def forgot_password_bind():
     user_id = session.get('pending_bind_user_id')
-    if not user_id:
+    if not user_id or session.get('user_id') != user_id:
         flash('会话已超时，请重新操作', 'danger')
         return redirect(url_for('auth.forgot_password'))
     user = db.session.get(User, user_id)

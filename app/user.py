@@ -21,6 +21,7 @@
 """
 
 import base64
+import re
 import secrets
 from datetime import datetime, timedelta
 
@@ -29,7 +30,8 @@ from sqlalchemy import func
 
 from .config import AVATAR_MAX_SIZE
 from .models import db, User, Message, Notification
-from .utils import allowed_file, compress_image, get_or_404, upload_avatar_to_storage
+from .utils import (allowed_file, compress_image, get_or_404,
+                    upload_avatar_to_storage, code_digest, code_matches)
 from .auth import send_verification_email, send_welcome_email
 
 user_bp = Blueprint('user', __name__)
@@ -92,6 +94,9 @@ def profile():
         return redirect(url_for('auth.login'))
 
     user = db.session.get(User, session['user_id'])
+    if not user:
+        session.clear()
+        return redirect(url_for('auth.login'))
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -124,10 +129,13 @@ def profile():
         # ---------- 修改用户名 ----------
         if action == 'change_username':
             new_username = request.form.get('new_username', '').strip()
+            # 与注册使用同一套校验（原先只校验长度，`');alert(1)//` 这类字符
+            # 能进库，并被拼进后台模板的 onsubmit JS 字符串 → 打向站长的存储型 XSS）
+            username_pattern = r'^[\u4e00-\u9fa5A-Za-z0-9_]{2,20}$'
             if not new_username:
                 flash('用户名不能为空', 'danger')
-            elif len(new_username) < 2 or len(new_username) > 20:
-                flash('用户名长度应在2-20个字符之间', 'danger')
+            elif not re.match(username_pattern, new_username):
+                flash('用户名只允许中文、字母、数字、下划线，长度2-20个字符', 'danger')
             else:
                 existing = User.query.filter(User.username == new_username, User.id != user.id).first()
                 if existing:
@@ -144,12 +152,12 @@ def profile():
         # 绑定邮箱：验证验证码
         if action == 'verify_email_code':
             code = request.form.get('code')
-            stored_code = session.get('profile_email_code')
+            stored_digest = session.get('profile_email_digest')
             pending_email = session.get('profile_pending_email')
 
             if not pending_email:
                 return jsonify({'error': '请先发送验证码'}), 400
-            if not stored_code or stored_code != code:
+            if not code_matches(stored_digest, code):
                 return jsonify({'error': '验证码错误'}), 400
 
             expires = session.get('profile_email_expires')
@@ -158,7 +166,7 @@ def profile():
 
             user.email = pending_email
             db.session.commit()
-            session.pop('profile_email_code', None)
+            session.pop('profile_email_digest', None)
             session.pop('profile_pending_email', None)
             session.pop('profile_email_expires', None)
             session.pop('show_bind_prompt', None)
@@ -235,7 +243,7 @@ def bind_email():
                 return jsonify({'error': '该邮箱已被其他用户绑定'}), 400
 
             code = ''.join(secrets.choice('0123456789') for _ in range(6))
-            session['profile_email_code'] = code
+            session['profile_email_digest'] = code_digest(code)
             session['profile_pending_email'] = email
             session['profile_email_expires'] = (datetime.now() + timedelta(minutes=10)).isoformat()
 
@@ -246,12 +254,12 @@ def bind_email():
         # ---------- 验证并绑定 ----------
         if action == 'verify_email_code':
             code = request.form.get('code')
-            stored_code = session.get('profile_email_code')
+            stored_digest = session.get('profile_email_digest')
             pending_email = session.get('profile_pending_email')
 
             if not pending_email:
                 return jsonify({'error': '请先发送验证码'}), 400
-            if not stored_code or stored_code != code:
+            if not code_matches(stored_digest, code):
                 return jsonify({'error': '验证码错误'}), 400
 
             expires = session.get('profile_email_expires')
@@ -260,7 +268,7 @@ def bind_email():
 
             user.email = pending_email
             db.session.commit()
-            session.pop('profile_email_code', None)
+            session.pop('profile_email_digest', None)
             session.pop('profile_pending_email', None)
             session.pop('profile_email_expires', None)
             session.pop('show_bind_prompt', None)

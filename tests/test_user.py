@@ -109,9 +109,12 @@ class TestUserExtra:
             resp = logged_in_client.post('/bind_email', data={'action': 'send_email_code', 'email': 'new@qq.com'})
             assert resp.json['success'] is True
 
-    def test_bind_email_verify_code(self, logged_in_client, sample_user, db_session):
+    def test_bind_email_verify_code(self, app, logged_in_client, sample_user, db_session):
+        from app.utils import code_digest
+        with app.app_context():
+            digest = code_digest('123456')
         with logged_in_client.session_transaction() as sess:
-            sess['profile_email_code'] = '123456'
+            sess['profile_email_digest'] = digest
             sess['profile_pending_email'] = 'new@qq.com'
             sess['profile_email_expires'] = (datetime.now() + timedelta(minutes=5)).isoformat()
         resp = logged_in_client.post('/bind_email', data={'action': 'verify_email_code', 'code': '123456'})
@@ -120,3 +123,16 @@ class TestUserExtra:
         from app.models import User
         user = db_session.get(User, sample_user.id)
         assert user.email == 'new@qq.com'
+
+    def test_email_code_stored_as_digest_only(self, logged_in_client):
+        """回归：验证码只能以摘要形式存在于 session。
+
+        前端可以自行 base64 解码 Flask 的 session cookie，原实现直接存明文，
+        等于邮箱验证码形同虚设。
+        """
+        with patch('app.user.send_verification_email', return_value=True):
+            logged_in_client.post('/bind_email',
+                                  data={'action': 'send_email_code', 'email': 'new@qq.com'})
+        with logged_in_client.session_transaction() as sess:
+            assert 'profile_email_code' not in sess
+            assert 'profile_email_digest' in sess

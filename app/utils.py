@@ -16,13 +16,20 @@
 本模块是整个项目中唯一与 Supabase SDK 直接交互的地方。
 """
 
+import hashlib
+import hmac
 import io
+import ipaddress
 import os
+import socket
+import time
 import uuid
+from urllib.parse import urljoin, urlparse
 
+import requests
 from PIL import Image
 from dotenv import load_dotenv
-from flask import abort
+from flask import abort, current_app
 from supabase import create_client, Client
 
 from .models import db
@@ -48,6 +55,100 @@ def get_supabase() -> Client:
             raise RuntimeError("Supabase 未配置：请检查 SUPABASE_URL 和 SUPABASE_KEY 环境变量")
         _supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
     return _supabase_client
+
+
+# ============================================================
+# SSRF 防护：只允许访问公网的 http(s) 地址
+# ============================================================
+
+def is_public_http_url(url):
+    """校验 URL 是否指向公网 http(s) 地址。
+
+    阻止内网 / 环回 / 链路本地（含云元数据 169.254.169.254）/ 保留地址，
+    避免服务端被当成跳板去访问内网。
+    """
+    try:
+        parsed = urlparse(url)
+    except (ValueError, AttributeError):
+        return False
+    if parsed.scheme not in ('http', 'https'):
+        return False
+    host = parsed.hostname
+    if not host:
+        return False
+    try:
+        port = parsed.port or (443 if parsed.scheme == 'https' else 80)
+    except ValueError:
+        return False
+    try:
+        infos = socket.getaddrinfo(host, port, proto=socket.IPPROTO_TCP)
+    except (socket.gaierror, UnicodeError, OSError):
+        return False
+    if not infos:
+        return False
+    for info in infos:
+        try:
+            ip = ipaddress.ip_address(info[4][0])
+        except ValueError:
+            return False
+        if (ip.is_private or ip.is_loopback or ip.is_link_local
+                or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
+            return False
+    return True
+
+
+def safe_get(url, max_redirects=4, **kwargs):
+    """带 SSRF 防护的 requests.get：逐跳校验目标地址。
+
+    返回 requests.Response；地址不合法或重定向过多时返回 None。
+    """
+    kwargs.pop('allow_redirects', None)
+    for _ in range(max_redirects + 1):
+        if not is_public_http_url(url):
+            return None
+        try:
+            res = requests.get(url, allow_redirects=False, **kwargs)
+        except requests.RequestException:
+            return None
+        if res.is_redirect and res.headers.get('Location'):
+            url = urljoin(url, res.headers['Location'])
+            continue
+        return res
+    return None
+
+
+# ============================================================
+# 邮箱验证码：session 是「签名但未加密」的 cookie，不能存明文
+# ============================================================
+
+def code_digest(code):
+    """验证码摘要。客户端能自行解出 session 里的明文，故只存摘要。"""
+    return hashlib.sha256(f'{current_app.secret_key}:{code}'.encode()).hexdigest()
+
+
+def code_matches(stored_digest, code):
+    if not stored_digest or not code:
+        return False
+    return hmac.compare_digest(stored_digest, code_digest(code))
+
+
+_ACTION_THROTTLE = {}
+
+
+def throttle_ok(key, seconds):
+    """进程内简易限流，用于挡住最粗暴的邮件轰炸/验证码枚举循环。
+
+    注意：Serverless 多实例下不是强保证，生产建议再叠加 Flask-Limiter
+    或平台级（WAF）限流。
+    """
+    now = time.monotonic()
+    last = _ACTION_THROTTLE.get(key)
+    if last is not None and now - last < seconds:
+        return False
+    if len(_ACTION_THROTTLE) > 5000:  # 防止自身无上限增长
+        _ACTION_THROTTLE.clear()
+    _ACTION_THROTTLE[key] = now
+    return True
 
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

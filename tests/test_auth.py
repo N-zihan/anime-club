@@ -110,18 +110,28 @@ class TestAuthExtra:
             resp = client.post('/forgot_password', data={'qq': sample_user.qq}, follow_redirects=True)
             assert '重置链接已发送' in resp.text
 
-    def test_forgot_password_no_email(self, client, sample_user, db_session):
+    def test_forgot_password_no_email_requires_login(self, client, sample_user, db_session):
+        """回归：未绑定邮箱的账号，未登录时不得进入「绑定邮箱」流程。
+
+        原实现仅凭 QQ 号就把 user.id 写进请求者自己的 session，随后请求者可以用
+        自己的邮箱完成绑定，系统又把重置链接发到该邮箱 → 任意账号接管。
+        """
         sample_user.email = None
         db_session.commit()
         resp = client.post('/forgot_password', data={'qq': sample_user.qq}, follow_redirects=True)
-        assert '请先绑定' in resp.text
+        assert '请先登录' in resp.text
+        with client.session_transaction() as sess:
+            assert 'pending_bind_user_id' not in sess
 
-    def test_forgot_bind_send_code(self, client, sample_user, db_session):
+    def test_forgot_bind_send_code_requires_login(self, client, sample_user, db_session):
+        """回归：未登录时不能给任意邮箱发「绑定」验证码"""
         with client.session_transaction() as sess:
             sess['pending_bind_user_id'] = sample_user.id
-        with patch('app.auth.send_verification_email', return_value=True):
-            resp = client.post('/forgot_bind_send_code', data={'email': 'bind@qq.com'}, follow_redirects=True)
-            assert '验证码已发送' in resp.text
+        with patch('app.auth.send_verification_email', return_value=True) as mocked:
+            resp = client.post('/forgot_bind_send_code', data={'email': 'bind@qq.com'},
+                               follow_redirects=True)
+            assert '会话已超时' in resp.text
+            assert mocked.call_count == 0
 
     def test_reset_password_token_expired(self, client, sample_user, db_session):
         sample_user.reset_token = 'expired'

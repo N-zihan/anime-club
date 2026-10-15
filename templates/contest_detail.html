@@ -371,7 +371,7 @@
             <span style="font-weight:600; color: var(--text-primary); font-size:0.9rem;">实时战报</span>
             <span id="commentary-time" style="color: var(--text-muted); font-size:0.7rem;"></span>
         </div>
-        <div id="commentary-content" style="color: var(--text-secondary); line-height:1.8; font-size:0.95rem;">
+        <div id="commentary-content" style="color: var(--text-secondary); line-height:1.8; font-size:0.95rem; white-space: pre-wrap;">
             <span style="color: var(--text-muted);">加载中...</span>
         </div>
     </div>
@@ -419,14 +419,16 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        commentaryContent.innerHTML = data.commentary.replace(/\n/g, '<br>');
+                        // 必须用 textContent：AI 解说里会带上用户提名的角色名，
+                        // 用 innerHTML 渲染等于把提名内容当 HTML 执行（存储型 XSS）
+                        commentaryContent.textContent = data.commentary;
                         commentaryTime.textContent = '更新于 ' + new Date().toLocaleTimeString();
                     } else {
-                        commentaryContent.innerHTML = '解说员暂时休息中，请稍后再试。';
+                        commentaryContent.textContent = '解说员暂时休息中，请稍后再试。';
                     }
                 })
                 .catch(() => {
-                    commentaryContent.innerHTML = '解说员暂时离线，请稍后再试。';
+                    commentaryContent.textContent = '解说员暂时离线，请稍后再试。';
                 })
                 .finally(() => { isLoading = false; });
         }

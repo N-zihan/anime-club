@@ -18,6 +18,8 @@
 """
 
 import io
+import re
+import secrets
 import uuid
 from datetime import datetime, timedelta
 from functools import wraps
@@ -29,8 +31,12 @@ from openpyxl.styles import Font, Alignment
 
 from .models import (db, User, Activity, Photo, Message, Reply,
                      Contest, Nomination, Candidate, ContestVote, Notification)
+from sqlalchemy.exc import IntegrityError
+
 from .utils import get_supabase, allowed_file, compress_image, get_or_404
 from .notify import notify
+from .auth import send_reset_email, EMAIL_PATTERN
+from .contest_engine import calc_stage_times
 from .config import STAGE_DAYS, PHOTO_COMPRESS_SIZE, COMPRESS_QUALITY
 
 TOTAL_CONTEST_DAYS = sum(STAGE_DAYS.values())
@@ -39,13 +45,32 @@ admin_bp = Blueprint('admin', __name__)
 
 
 # ---------- 权限装饰器 ----------
+def _current_role():
+    """每次请求都用数据库现算角色。
+
+    session['user_role'] 只是登录那一刻的快照：撤销运营/站长权限、甚至删除用户，
+    都不会让已发出的会话失效。原实现只读 session，等于撤权不生效。
+    """
+    user_id = session.get('user_id')
+    if not user_id:
+        return None
+    user = db.session.get(User, user_id)
+    if not user:
+        session.clear()
+        return None
+    if user.is_owner:
+        return 'owner'
+    if user.is_staff:
+        return 'staff'
+    return 'member'
+
+
 def admin_required(f):
-    """运营或站长均可访问，直接从 Session 读取角色"""
+    """运营或站长均可访问"""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        role = session.get('user_role')
-        if role not in ('owner', 'staff'):
+        if _current_role() not in ('owner', 'staff'):
             flash('你没有管理权限', 'danger')
             return redirect(url_for('public.index'))
         return f(*args, **kwargs)
@@ -54,11 +79,11 @@ def admin_required(f):
 
 
 def owner_required(f):
-    """仅站长可访问，直接从 Session 读取角色"""
+    """仅站长可访问"""
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if session.get('user_role') != 'owner':
+        if _current_role() != 'owner':
             flash('该功能仅站长可用', 'danger')
             return redirect(url_for('admin.dashboard'))
         return f(*args, **kwargs)
@@ -69,7 +94,7 @@ def owner_required(f):
 # ---------- 统一入口 ----------
 @admin_bp.route('/admin/entry')
 def admin_entry():
-    role = session.get('user_role')
+    role = _current_role()
     if role == 'owner':
         return redirect(url_for('admin.dashboard'))
     if role == 'staff':
@@ -189,7 +214,12 @@ def admin_gallery_upload():
 
     activity_id = request.form.get('activity_id')
     if activity_id:
-        activity_id = int(activity_id)
+        try:
+            activity_id = int(activity_id)
+        except (TypeError, ValueError):
+            activity_id = None
+        if activity_id is not None and db.session.get(Activity, activity_id) is None:
+            activity_id = None
 
     if file and allowed_file(file.filename):
         ext = file.filename.rsplit('.', 1)[1].lower()
@@ -262,29 +292,48 @@ def admin_delete_user(user_id):
 
     # 级联删除所有关联数据
     # 注意：删除顺序很重要，先删子表，再删主表
+    try:
+        # 0. 先解除别人对该用户的引用，否则 PostgreSQL 的外键会拦下删除（原先直接 500）
+        Contest.query.filter_by(created_by=user.id).update(
+            {'created_by': None}, synchronize_session=False)
 
-    # 1. 删除该用户的提名（Nomination）
-    Nomination.query.filter_by(user_id=user.id).delete()
+        nomination_ids = [n.id for n in Nomination.query.filter_by(user_id=user.id).all()]
+        if nomination_ids:
+            Candidate.query.filter(
+                Candidate.nomination_id.in_(nomination_ids)
+            ).update({'nomination_id': None}, synchronize_session=False)
 
-    # 2. 删除该用户的投票（ContestVote）
-    ContestVote.query.filter_by(user_id=user.id).delete()
+        reply_ids = [r.id for r in Reply.query.filter_by(user_id=user.id).all()]
+        if reply_ids:
+            Reply.query.filter(
+                Reply.parent_reply_id.in_(reply_ids)
+            ).update({'parent_reply_id': None}, synchronize_session=False)
 
-    # 3. 删除该用户的回复（作为作者）
-    Reply.query.filter_by(user_id=user.id).delete()
+        # 1. 删除该用户的提名（Nomination）
+        Nomination.query.filter_by(user_id=user.id).delete(synchronize_session=False)
 
-    # 4. 删除该用户的留言及这些留言下的所有回复（含他人回复）
-    for msg in Message.query.filter_by(user_id=user.id).all():
-        Reply.query.filter_by(message_id=msg.id).delete()
-    Message.query.filter_by(user_id=user.id).delete()
+        # 2. 删除该用户的投票（ContestVote）
+        ContestVote.query.filter_by(user_id=user.id).delete(synchronize_session=False)
 
-    # 5. 删除该用户的通知
-    Notification.query.filter_by(user_id=user.id).delete()
+        # 3. 删除该用户的回复（作为作者）
+        Reply.query.filter_by(user_id=user.id).delete(synchronize_session=False)
 
-    # 6. 最后删除用户
-    db.session.delete(user)
-    db.session.commit()
+        # 4. 删除该用户的留言及这些留言下的所有回复（含他人回复）
+        for msg in Message.query.filter_by(user_id=user.id).all():
+            Reply.query.filter_by(message_id=msg.id).delete(synchronize_session=False)
+        Message.query.filter_by(user_id=user.id).delete(synchronize_session=False)
 
-    flash('用户及其所有关联数据已删除', 'success')
+        # 5. 删除该用户的通知
+        Notification.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+
+        # 6. 最后删除用户
+        db.session.delete(user)
+        db.session.commit()
+        flash('用户及其所有关联数据已删除', 'success')
+    except IntegrityError:
+        db.session.rollback()
+        flash('删除失败：该用户仍有关联数据，请先处理其创建的赛事。', 'danger')
+
     return redirect(url_for('admin.admin_users'))
 
 
@@ -333,8 +382,59 @@ def admin_toggle_owner(user_id):
     return redirect(url_for('admin.admin_users'))
 
 
+# ---------- 友好闭环：站长代绑邮箱 / 后台发送重置链接 ----------
+@admin_bp.route('/admin/users/bind_email/<int:user_id>', methods=['POST'])
+@admin_required
+@owner_required
+def admin_bind_email(user_id):
+    """站长直接为用户绑定邮箱（无需验证码，站长身份即授权）。
+
+    解决「未绑定邮箱又忘了密码、无法自助找回」的社员困局。
+    """
+    user = get_or_404(User, user_id)
+    email = (request.form.get('email') or '').strip().lower()
+    if not email or not re.match(EMAIL_PATTERN, email):
+        flash('邮箱格式无效', 'danger')
+        return redirect(url_for('admin.admin_users'))
+    if User.query.filter(User.email == email, User.id != user_id).first():
+        flash('该邮箱已被其他账号绑定', 'danger')
+        return redirect(url_for('admin.admin_users'))
+    user.email = email
+    db.session.commit()
+    notify(user.id, '站长已为你绑定邮箱',
+           '以后你可以在「个人设置」或「忘记密码」中通过该邮箱找回密码。',
+           notify_type='system', send_mail=False)
+    flash(f'已为 {user.username} 绑定 {email}', 'success')
+    return redirect(url_for('admin.admin_users'))
+
+
+@admin_bp.route('/admin/users/reset_password/<int:user_id>', methods=['POST'])
+@admin_required
+@owner_required
+def admin_reset_password(user_id):
+    """站长后台直接给指定用户发一条密码重置链接（发送至其邮箱）。"""
+    user = get_or_404(User, user_id)
+    if not user.email:
+        flash(f'用户 {user.username} 尚未绑定邮箱，请先为其绑定再发送重置链接', 'warning')
+        return redirect(url_for('admin.admin_users'))
+    token = secrets.token_urlsafe(32)
+    user.reset_token = token
+    user.reset_token_expires = datetime.now() + timedelta(hours=1)
+    db.session.commit()
+    reset_link = url_for('auth.reset_password', token=token, _external=True)
+    if send_reset_email(user.email, reset_link):
+        flash(f'重置链接已发送至 {user.email}', 'success')
+    else:
+        flash('邮件发送失败，请检查 SMTP 配置', 'danger')
+    notify(user.id, '站长已发送密码重置链接',
+           '请登录邮箱查收重置链接；如果没收到，请联系站长。',
+           notify_type='system', send_mail=False)
+    return redirect(url_for('admin.admin_users'))
+
+
 @admin_bp.route('/admin/users/export')
 @admin_required
+@owner_required
 def export_users_excel():
     users = User.query.order_by(User.registered_at.desc()).all()
 
@@ -446,7 +546,9 @@ def admin_contest_create():
             status='draft',
             created_by=session.get('user_id'),
             open_at=open_at,
-            close_at=open_at + timedelta(days=TOTAL_CONTEST_DAYS),  # 自动计算结束时间
+            # 用真实赛程终点（第 50 天的 18:00），而不是 open_at + 50 天。
+            # 否则「进行中」列表会在真实结束前 8~22 小时就把赛事移走。
+            close_at=calc_stage_times(open_at)['final_result_end'],
         )
         db.session.add(contest)
         db.session.commit()
@@ -470,7 +572,7 @@ def admin_contest_edit(contest_id):
         open_at_str = request.form.get('open_at')
         if open_at_str:
             contest.open_at = datetime.strptime(open_at_str, '%Y-%m-%dT%H:%M')
-            contest.close_at = contest.open_at + timedelta(days=TOTAL_CONTEST_DAYS)  # 更新开始时间时自动刷新结束时间
+            contest.close_at = calc_stage_times(contest.open_at)['final_result_end']
 
         db.session.commit()
         flash('赛事信息已更新', 'success')
@@ -490,18 +592,26 @@ def admin_contest_edit(contest_id):
 def admin_contest_delete(contest_id):
     contest = get_or_404(Contest, contest_id)
 
-    # 1. 手动删除所有关联的候选角色 (Candidates)
-    #    使用 delete() 直接执行 SQL，比循环删除更高效
-    Candidate.query.filter_by(contest_id=contest.id).delete()
+    try:
+        # 0. 先删投票：contest_votes 同时外键引用 contests / candidates，
+        #    不清理的话 PostgreSQL 会直接抛外键错误（原先没有任何处理）
+        ContestVote.query.filter_by(contest_id=contest.id).delete(synchronize_session=False)
 
-    # 2. 手动删除所有关联的提名 (Nominations)
-    Nomination.query.filter_by(contest_id=contest.id).delete()
+        # 1. 手动删除所有关联的候选角色 (Candidates)
+        #    使用 delete() 直接执行 SQL，比循环删除更高效
+        Candidate.query.filter_by(contest_id=contest.id).delete(synchronize_session=False)
 
-    # 3. 最后删除赛事本身
-    db.session.delete(contest)
-    db.session.commit()
+        # 2. 手动删除所有关联的提名 (Nominations)
+        Nomination.query.filter_by(contest_id=contest.id).delete(synchronize_session=False)
 
-    flash('赛事已删除', 'success')
+        # 3. 最后删除赛事本身
+        db.session.delete(contest)
+        db.session.commit()
+        flash('赛事已删除', 'success')
+    except IntegrityError:
+        db.session.rollback()
+        flash('删除失败：赛事仍有关联数据，请先清理提名/投票。', 'danger')
+
     return redirect(url_for('admin.admin_contests_manage'))
 
 
@@ -510,6 +620,11 @@ def admin_contest_delete(contest_id):
 @admin_required
 def admin_nomination_approve(nomination_id):
     nomination = get_or_404(Nomination, nomination_id)
+    # 幂等/防重放：对已处理过的提名重复 POST 会把状态改成 rejected，
+    # 造成候选池与提名状态不一致。
+    if nomination.status != 'pending':
+        flash('该提名已处理过，无需重复操作', 'warning')
+        return redirect(url_for('admin.admin_contest_edit', contest_id=nomination.contest_id))
     contest = nomination.contest
 
     existing = Candidate.query.filter_by(
@@ -551,6 +666,11 @@ def admin_nomination_approve(nomination_id):
 @admin_required
 def admin_nomination_reject(nomination_id):
     nomination = get_or_404(Nomination, nomination_id)
+    # 已通过的提名不能被"拒绝"掉：原先会删掉提名行、候选却仍在池中，
+    # 用户还被告知"名额已退回"，重新提名后必然再被拒，名额白白作废。
+    if nomination.status != 'pending':
+        flash('该提名已处理过，无需重复操作', 'warning')
+        return redirect(url_for('admin.admin_contest_edit', contest_id=nomination.contest_id))
     contest_id = nomination.contest_id
     user_id = nomination.user_id
     name = nomination.name
@@ -577,19 +697,27 @@ def admin_candidate_delete(candidate_id):
     contest_id = candidate.contest_id
     nomination = candidate.nomination
 
-    # 如果有关联的提名，撤回它的"已通过"状态，并通知用户
-    if nomination:
-        notify(
-            nomination.user_id,
-            f'你的提名「{nomination.name}」已被移除',
-            '名额已退回。',
-            notify_type='audit',
-        )
-        db.session.delete(nomination)
+    try:
+        # 先删该角色的投票记录，否则 PostgreSQL 外键会拦下删除
+        ContestVote.query.filter_by(candidate_id=candidate.id).delete(synchronize_session=False)
 
-    db.session.delete(candidate)
-    db.session.commit()
-    flash('已从候选池移除该角色', 'success')
+        # 如果有关联的提名，撤回它的"已通过"状态，并通知用户
+        if nomination:
+            notify(
+                nomination.user_id,
+                f'你的提名「{nomination.name}」已被移除',
+                '名额已退回。',
+                notify_type='audit',
+            )
+            db.session.delete(nomination)
+
+        db.session.delete(candidate)
+        db.session.commit()
+        flash('已从候选池移除该角色', 'success')
+    except IntegrityError:
+        db.session.rollback()
+        flash('移除失败：该角色仍有关联数据。', 'danger')
+
     return redirect(url_for('admin.admin_contest_edit', contest_id=contest_id))
 
 

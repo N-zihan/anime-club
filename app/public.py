@@ -36,8 +36,10 @@ from .contest_engine import (
     run_knockout_advance, run_final_ranking,
     prepare_group_round_data
 )
-from .models import db, User, Activity, Photo, Message, Reply, Contest, Nomination, ContestVote
-from .utils import get_supabase, compress_image, get_or_404
+from .models import (db, User, Activity, Photo, Message, Reply, Contest,
+                     Nomination, Candidate, ContestVote)
+from .utils import (get_supabase, compress_image, get_or_404, allowed_file,
+                    is_public_http_url, safe_get)
 from .notify import notify
 
 public_bp = Blueprint('public', __name__)
@@ -108,6 +110,11 @@ def gallery():
 @public_bp.route('/board', methods=['GET', 'POST'])
 def board():
     if request.method == 'POST':
+        # 发帖必须登录：原先只靠全局拦截器兜着，而拦截器的爬虫 UA 旁路可伪造，
+        # 用 `-A Googlebot` 就能匿名发帖。
+        if not session.get('user_id'):
+            return redirect(url_for('auth.login'))
+
         nickname = session.get('username', '匿名')
         content = request.form.get('content')
         if content:
@@ -303,6 +310,50 @@ def anime_news():
     return render_template('anime_news.html')
 
 
+@public_bp.route('/anime_news/article')
+def anime_news_article():
+    """独立文章详情页（卡片点击进入）"""
+    from urllib.parse import unquote
+    url = unquote(request.args.get('url', ''))
+    if not url or not is_public_http_url(url):
+        abort(404)
+
+    # 从缓存的新列表中查找元数据（中文标题、摘要、来源、日期、缩略图）
+    article_meta = None
+    for limit in (20, 100):
+        articles, _ = get_anime_news(limit=limit)
+        for a in articles:
+            if (a.get('link') or a.get('url')) == url:
+                article_meta = a
+                break
+        if article_meta:
+            break
+
+    # 抓取正文和图片
+    data = get_article_content(url)
+    content = data.get('content') if data else ''
+    images = data.get('images') if data else []
+
+    # 中文来源映射（保留一些品牌词）
+    source_zh_map = {
+        'MyAnimeList': '动漫百科',
+        'Anime News Network': '动漫新闻网',
+        'Anime Corner': '动漫角落',
+        'Crunchyroll': 'Crunchyroll',
+        'Comic Book': '漫画媒体',
+        'Otaku USA': '宅文化美刊',
+    }
+    source_zh = source_zh_map.get(article_meta.get('source') if article_meta else '', 
+                                  article_meta.get('source') if article_meta else '')
+
+    return render_template('anime_news_detail.html',
+                           article=article_meta,
+                           url=url,
+                           content=content,
+                           images=images,
+                           source_zh=source_zh)
+
+
 @public_bp.route('/api/anime/news')
 def api_anime_news():
     """API：获取新闻列表"""
@@ -335,15 +386,25 @@ def api_news_image():
     if not url.startswith('https://'):
         abort(404)
 
-    try:
-        res = requests.get(url, headers=HEADERS_FOR_IMAGE, timeout=8)
-        return Response(
-            res.content,
-            mimetype=res.headers.get('Content-Type', 'image/jpeg'),
-            headers={'Cache-Control': 'public, max-age=604800, s-maxage=604800'},
-        )
-    except Exception:
+    # SSRF 防护：只允许公网地址并逐跳校验重定向。
+    # 原实现任意 https 都放行，且把上游的 Content-Type 原样回给浏览器——
+    # 攻击者可以让本站同源渲染任意 HTML（同源 XSS）。
+    res = safe_get(url, headers=HEADERS_FOR_IMAGE, timeout=8)
+    if res is None or res.status_code >= 400:
         abort(404)
+
+    content_type = (res.headers.get('Content-Type') or '').split(';')[0].strip().lower()
+    if not content_type.startswith('image/'):
+        abort(404)
+
+    return Response(
+        res.content,
+        mimetype=content_type,
+        headers={
+            'Cache-Control': 'public, max-age=604800, s-maxage=604800',
+            'X-Content-Type-Options': 'nosniff',
+        },
+    )
 
 
 @public_bp.route('/api/anime/news-detail')
@@ -354,6 +415,9 @@ def api_anime_news_detail():
 
     url = unquote(request.args.get('url', ''))
     if not url or not url.startswith('http'):
+        return jsonify({'error': 'invalid url'}), 400
+    # SSRF 防护：抓取前先确认目标是公网地址（get_article_content 内部也用 safe_get 逐跳校验）
+    if not is_public_http_url(url):
         return jsonify({'error': 'invalid url'}), 400
 
     data = get_article_content(url)
@@ -615,13 +679,24 @@ def submit_nomination(contest_id):
         flash('该赛事未开放提名', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest_id))
 
-    name = request.form.get('name')
-    source = request.form.get('source')
+    name = (request.form.get('name') or '').strip()
+    source = (request.form.get('source') or '').strip()
     gender = request.form.get('gender')
     description = request.form.get('description')
 
     if not name or not source or not gender:
         flash('角色名、作品名、性别为必填项', 'danger')
+        return redirect(url_for('public.contest_detail', contest_id=contest_id))
+
+    # 长度与字符校验：
+    # 1) 超长会直接撞数据库列宽报 500；
+    # 2) 角色名会被拼进 AI 解说的 prompt，而前端用 innerHTML 渲染解说，
+    #    `<img src=x onerror=...>` 这类名字等于存储型 XSS 的载荷。
+    if len(name) > 60 or len(source) > 100 or (description and len(description) > 500):
+        flash('角色名不超过60字、作品名不超过100字、简介不超过500字', 'danger')
+        return redirect(url_for('public.contest_detail', contest_id=contest_id))
+    if any(ch in name + source for ch in '<>"\'`&'):
+        flash('角色名/作品名不能包含 < > " \' ` & 等特殊字符', 'danger')
         return redirect(url_for('public.contest_detail', contest_id=contest_id))
 
     if gender not in ['female', 'male']:
@@ -649,6 +724,9 @@ def submit_nomination(contest_id):
     if 'image' in request.files:
         file = request.files['image']
         if file and file.filename:
+            if not allowed_file(file.filename):
+                flash('图片格式不支持（支持 png, jpg, jpeg, gif）', 'danger')
+                return redirect(url_for('public.contest_detail', contest_id=contest_id))
             ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'png'
             filename = f"contest_{contest_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{uuid.uuid4().hex[:8]}.{ext}"
             try:
@@ -797,6 +875,27 @@ def qualifying_vote_submit(contest_id):
     if gender not in ['female', 'male']:
         return fail('无效的组别')
 
+    # 海选时间窗校验：原先只检查 status，而 status 从提名期一直到海选公示期结束
+    # 都是 'open'，于是提名期/审核期/公示期都能投票——公示期内投的票虽然不显示，
+    # 却会在 qualifying_end 计算 32 强时生效。
+    if contest.open_at and contest.open_at.tzinfo is not None:
+        contest.open_at = contest.open_at.replace(tzinfo=None)
+    if not contest.open_at:
+        return fail('赛事开始时间未设置')
+    _now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
+    _times = calc_stage_times(contest.open_at)
+    if _now <= _times['review_end']:
+        return fail('海选投票尚未开始')
+    if _now > _times['qualifying_vote_end']:
+        return fail('海选投票已结束')
+
+    # 同一用户的并发提交串行化（PostgreSQL 行锁；SQLite 会自动忽略 FOR UPDATE）。
+    # 原先是「读历史 → 校验 → 删旧 → 写新」，两个并发请求各自读到空历史后
+    # 都能通过 15 票上限校验，最终两套角色集合并存，票数直接翻倍。
+    db.session.query(User.id).filter(
+        User.id == session.get('user_id')
+    ).with_for_update().first()
+
     # 1. 读历史
     existing_rows = ContestVote.query.filter_by(
         contest_id=contest.id,
@@ -820,6 +919,19 @@ def qualifying_vote_submit(contest_id):
 
     if not new_votes:
         return fail('请至少给一个角色投票')
+
+    # 校验每个 candidate 属于本赛事、且性别与提交的组别一致。
+    # 原先 candidate_id 直接来自表单 key 且完全不校验，而计票函数按 candidate_id
+    # 汇总、忽略 vote.gender，于是同一角色可分别在 female / male 两个桶里各投 3 票，
+    # 单人给单角色的票数上限（3）被翻倍，可选角色数也从 5 变成 10。
+    valid_ids = {
+        c.id for c in Candidate.query.filter(
+            Candidate.contest_id == contest.id,
+            Candidate.gender == gender,
+        ).all()
+    }
+    if any(cid not in valid_ids for cid in new_votes):
+        return fail('存在无效的角色，请刷新页面后重新投票')
 
     # 3. 合并（历史 + 本次）
     merged = dict(existing)
@@ -879,6 +991,16 @@ def qualifying_vote_reset(contest_id):
     gender = request.form.get('gender')
     if gender not in ['female', 'male']:
         return jsonify({'success': False, 'message': '无效的组别'})
+
+    # 只允许在海选投票窗口内清空，避免赛后清票掩盖刷票痕迹
+    if contest.open_at and contest.open_at.tzinfo is not None:
+        contest.open_at = contest.open_at.replace(tzinfo=None)
+    if not contest.open_at:
+        return jsonify({'success': False, 'message': '赛事开始时间未设置'})
+    _now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
+    _times = calc_stage_times(contest.open_at)
+    if _now <= _times['review_end'] or _now > _times['qualifying_vote_end']:
+        return jsonify({'success': False, 'message': '当前不在海选投票期，无法清空投票'})
 
     deleted = ContestVote.query.filter_by(
         contest_id=contest.id,
@@ -1067,7 +1189,10 @@ def group_vote_submit(contest_id):
     candidate_id = request.form.get('candidate_id')
     if not candidate_id:
         return fail('请选择你要支持的角色')
-    candidate_id = int(candidate_id)
+    try:
+        candidate_id = int(candidate_id)
+    except (TypeError, ValueError):
+        return fail('角色信息无效')
 
     groups = contest.config.get(f'{gender}_groups', []) if contest.config else []
     if not groups:
@@ -1367,15 +1492,33 @@ def knockout_vote_submit(contest_id):
     sub_round_map = {'16强': 1, '8强': 2, '4强': 3, '决赛': 4}
     sub_round = sub_round_map.get(round_name, 0)
 
-    match_index = request.form.get('match_index')
-    if not match_index:
-        return fail('缺少场次信息')
+    candidate_id = request.form.get('candidate_id')
+    if not candidate_id:
+        return fail('请选择你要支持的角色')
     try:
-        match_index = int(match_index)
-    except ValueError:
-        return fail('场次信息无效')
+        candidate_id = int(candidate_id)
+    except (TypeError, ValueError):
+        return fail('角色信息无效')
 
-    # 去重：本轮 + 本场
+    # ===== 场次由服务端从对阵里推导，不再相信客户端传来的 match_index =====
+    # 原实现直接采信表单里的 match_index 做去重，而计票函数 get_knockout_votes
+    # 只按 (candidate_id, sub_round, gender) 汇总、**不看 match_index**，
+    # 于是同一个人只要不断变换 match_index 就能给同一角色无限投票，直接决定冠军。
+    matches = contest.config.get(f'knockout_matches_{gender}', []) if contest.config else []
+    if not matches:
+        return fail('本轮对阵尚未生成，请稍后再试')
+
+    match_index = None
+    for _idx, _match in enumerate(matches, start=1):
+        if candidate_id in (_match.get('candidate1'), _match.get('candidate2')):
+            if _match.get('status') != 'active':
+                return fail('该场对决当前不可投票')
+            match_index = _idx
+            break
+    if match_index is None:
+        return fail('该角色不在本轮对阵中')
+
+    # 去重：本轮 + 本场（match_index 由服务端推导）
     existing = ContestVote.query.filter_by(
         contest_id=contest.id,
         user_id=session.get('user_id'),
@@ -1388,13 +1531,9 @@ def knockout_vote_submit(contest_id):
     if existing:
         return fail(f'{round_name}第{match_index}场你已经投过票了')
 
-    candidate_id = request.form.get('candidate_id')
-    if not candidate_id:
-        return fail('请选择你要支持的角色')
-
     vote = ContestVote(
         contest_id=contest.id,
-        candidate_id=int(candidate_id),
+        candidate_id=candidate_id,
         user_id=session.get('user_id'),
         weight=1,
         round_number=4,
@@ -1451,8 +1590,13 @@ def api_votes(candidate_id):
 @public_bp.route('/contest/<int:contest_id>/commentary')
 def ai_commentary(contest_id):
     """获取 AI 实时战报"""
-    phase = request.args.get('phase', '')
-    force = request.args.get('force') == 'true'
+    # phase 由服务端推导，不再采信 query string：否则任何陌生字符串都是一个
+    # 新的缓存键，每次都绕过缓存并触发一次真实（付费）的模型调用。
+    contest = get_or_404(Contest, contest_id)
+    phase = _calc_current_phase(contest)
+    # force 只对管理层开放：该接口在白名单里（匿名可达），force=true 会跳过缓存。
+    force = (request.args.get('force') == 'true'
+             and session.get('user_role') in ('owner', 'staff'))
     success, content, error = generate_commentary(contest_id, phase, force=force)
     if success:
         return jsonify({'success': True, 'commentary': content})

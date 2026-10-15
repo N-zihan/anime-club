@@ -73,9 +73,13 @@
     const searchBtn = document.getElementById('newsSearchBtn');
     const clearBtn = document.getElementById('newsClearBtn');
 
-    const SOURCE_NAMES = {
-        'MyAnimeList': 'MAL',
-        'Anime News Network': 'ANN',
+        const SOURCE_NAMES = {
+        'MyAnimeList': '动漫百科',
+        'Anime News Network': '动漫新闻网',
+        'Anime Corner': '动漫角落',
+        'Crunchyroll': 'Crunchyroll',
+        'Comic Book': '漫画媒体',
+        'Otaku USA': '宅文化美刊',
     };
 
     let currentTag = '';
@@ -109,17 +113,22 @@
         return '/api/anime/news-image?url=' + encodeURIComponent(url);
     }
 
-    function itemHtml(a) {
-        const title = escapeHtml(a.title_zh || a.title || '无标题');
+        function itemHtml(a) {
+        // 中文标题：优先显示翻译，没有翻译时显示占位符
+        const title = escapeHtml(a.title_zh ? a.title_zh : (a.title ? a.title : '(标题翻译中)'));
         const link = a.link || a.url || '#';
         const source = SOURCE_NAMES[a.source] || a.source || '';
         const date = formatDate(a.date || a.published_at);
-        const excerpt = a.excerpt_zh || a.excerpt || a.summary || '';
+        // 摘要优先显示翻译，没有则省略
+        const excerpt = a.excerpt_zh ? escapeHtml(a.excerpt_zh) : '';
         const img = a.image ? thumbUrl(a.image) : '';
 
         const thumbHtml = img
-            ? '<img class="news-thumb" src="' + escapeHtml(img) + '" loading="lazy" alt="" onerror="this.style.display=\'none\'">'
+            ? '<img class="news-thumb" src="' + escapeHtml(img) + '" loading="lazy" alt="" onerror="this.style.display='none'">'
             : '';
+
+        // 卡片直接链接到独立详情页，不再触发模态框
+        const detailUrl = '/anime_news/article?url=' + encodeURIComponent(link);
 
         return '<div class="news-item">' +
             thumbHtml +
@@ -128,8 +137,8 @@
                     (source ? '<span class="news-source">' + escapeHtml(source) + '</span>' : '') +
                     '<span>' + escapeHtml(date) + '</span>' +
                 '</div>' +
-                '<h3 class="news-title"><a href="javascript:void(0)" data-url="' + escapeHtml(link) + '" class="news-link">' + title + '</a></h3>' +
-                (excerpt ? '<div class="news-excerpt">' + escapeHtml(excerpt) + '</div>' : '') +
+                '<h3 class="news-title"><a href="' + detailUrl + '" class="news-link">' + title + '</a></h3>' +
+                (excerpt ? '<div class="news-excerpt">' + excerpt + '</div>' : '') +
             '</div>' +
         '</div>';
     }
@@ -262,52 +271,37 @@
         if (!searchKeyword) load(currentTag, true);
     });
 
-    // ===== 详情模态框 =====
-    window.openNewsModal = function (url, title) {
-        const modal = document.getElementById('newsModal');
-        const content = document.getElementById('newsModalContent');
-        content.innerHTML =
-            '<h2 style="margin:0 0 16px 0; color:var(--text-primary); font-size:1.3rem; line-height:1.4;">' + title + '</h2>' +
-            '<div style="text-align:center; padding:40px 0; color:var(--text-muted);">正在抓取原文并翻译，稍等片刻...</div>';
-        modal.style.display = 'flex';
-
-        fetch('/api/anime/news-detail?url=' + encodeURIComponent(url))
-        .then(r => r.json())
-        .then(d => {
-            if (d.error) throw new Error(d.error);
-            const paragraphs = (d.content || '').split('\n\n');
-            const html = paragraphs.map(function (p) {
-                return '<p style="color:var(--text-primary); line-height:1.9; font-size:0.95rem; margin-bottom:14px;">' + escapeHtml(p) + '</p>';
-            }).join('');
-            content.innerHTML =
-                '<h2 style="margin:0 0 16px 0; color:var(--text-primary); font-size:1.3rem; line-height:1.4;">' + title + '</h2>' +
-                html;
-        })
-        .catch(err => {
-            content.innerHTML =
-                '<h2 style="margin:0 0 16px 0; color:var(--text-primary); font-size:1.3rem; line-height:1.4;">' + title + '</h2>' +
-                '<div style="text-align:center; padding:40px 0; color:var(--text-muted);">抓取失败：' + escapeHtml(err.message || '') + '</div>';
-        });
-    };
-
-    window.closeNewsModal = function () {
-        document.getElementById('newsModal').style.display = 'none';
-    };
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            const m = document.getElementById('newsModal');
-            if (m && m.style.display === 'flex') window.closeNewsModal();
+        // 搜索框和列表逻辑不变，但移除模态框相关绑定
+    searchBtn.addEventListener('click', doSearch);
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            doSearch();
         }
     });
-
-    feed.addEventListener('click', function (e) {
-        const link = e.target.closest('.news-link');
-        if (!link) return;
-        e.preventDefault();
-        window.openNewsModal(link.dataset.url, link.textContent);
+    clearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        searchKeyword = '';
+        clearBtn.style.display = 'none';
+        load('', false);
     });
 
+    filterBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+            if (searchKeyword) {
+                searchKeyword = '';
+                searchInput.value = '';
+                clearBtn.style.display = 'none';
+            }
+            load(b.dataset.tag, false);
+        });
+    });
+
+    loadMoreBtn.addEventListener('click', function () {
+        if (!searchKeyword) load(currentTag, true);
+    });
+
+    // 卡片点击已由链接 href 负责，无需额外绑定
     load('', false);
 })();
 </script>

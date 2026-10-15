@@ -18,7 +18,7 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, session, request, redirect, url_for, flash
+from flask import Flask, session, request, redirect, url_for, flash, render_template
 from flask_wtf import CSRFProtect
 from flask_wtf.csrf import CSRFError
 
@@ -26,7 +26,10 @@ from .admin import admin_bp
 from .auth import auth_bp
 from .config import PWA_THEME_COLOR, PWA_BACKGROUND_COLOR
 from .models import db
-from .public import public_bp, page_not_found, internal_server_error, forbidden
+from .public import (
+    public_bp, page_not_found, internal_server_error, forbidden,
+    method_not_allowed, bad_request, request_entity_too_large,
+)
 from .user import user_bp
 
 load_dotenv()
@@ -44,11 +47,19 @@ def create_app():
     if not app.secret_key:
         raise RuntimeError("SECRET_KEY must be set in environment variables")
 
-    # ====== 新增：Session Cookie 安全配置 ======
+    # ====== Session Cookie 安全配置 ======
+    # 原实现依赖 FLASK_ENV == 'production'，而全项目从未设置过 FLASK_ENV
+    # （.env.example / vercel.json / README 都没有），Secure 标志实际上永远是关的。
+    # 改为：Vercel（HTTPS）上默认开启，本地开发默认关闭，可用环境变量显式覆盖。
+    _cookie_secure_default = '1' if os.getenv('VERCEL') else '0'
     app.config.update(
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE='Lax',
-        SESSION_COOKIE_SECURE=os.getenv('FLASK_ENV') == 'production',  # 生产环境启用 HTTPS
+        SESSION_COOKIE_SECURE=os.getenv('SESSION_COOKIE_SECURE', _cookie_secure_default) == '1',
+        # 上传体积上限：由框架在解析请求体之前拦截。
+        # 原先三处上传（头像/提名图/照片墙）都没有兜底限制，且头像那处只在带
+        # Content-Length 时检查，chunked 请求可绕过，file.read() 会把整个请求体读进内存。
+        MAX_CONTENT_LENGTH=int(os.getenv('MAX_CONTENT_LENGTH', str(4 * 1024 * 1024))),  # 4MB
     )
     # ==========================================
 
@@ -76,10 +87,13 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(admin_bp)
 
-    # 注册错误处理器
+    # 注册错误处理器（400/405/413 的自定义页面此前已写好，但从未注册）
     app.register_error_handler(404, page_not_found)
     app.register_error_handler(500, internal_server_error)
     app.register_error_handler(403, forbidden)
+    app.register_error_handler(400, bad_request)
+    app.register_error_handler(405, method_not_allowed)
+    app.register_error_handler(413, request_entity_too_large)
 
     CLUB_NAME = os.getenv('CLUB_NAME', '动漫社') # pylint: disable=invalid-name
 
@@ -98,15 +112,29 @@ def create_app():
 
     @app.errorhandler(CSRFError)
     def handle_csrf_error(_e):
-        flash('页面已过期，请重新登录', 'warning')
-        session.clear()
-        return redirect(url_for('auth.login'))
+        # 不要在这里 session.clear()：否则任何跨站 POST 都能把用户强制登出。
+        return render_template('400.html'), 400
+
+    # 允许搜索引擎收录的只读页面（按需增删；不要把写接口放进来）
+    crawlable_routes = [
+        'public.splash',
+        'public.about',
+        'public.history',
+        'public.activities',
+        'public.anime_resources',
+        'public.anime_news',
+        'public.contest_rules',
+        'public.robots',
+        'public.manifest',
+    ]
 
     # 登录拦截器
     @app.before_request
     def require_login():
 
-        # 放行搜索引擎爬虫
+        # 放行搜索引擎爬虫：**仅限 GET**，且仅限上面的只读白名单。
+        # 旧实现只要 UA 里含 'Googlebot' 就整段跳过登录判断，而 UA 完全可以伪造，
+        # 等于给所有路由（含 POST /board、/api/*）开了一个匿名后门。
         ua = request.headers.get('User-Agent', '')
         bot_agents = [
             'bingbot',  # Bing
@@ -117,7 +145,9 @@ def create_app():
             'YisouSpider',  # 神马搜索
             'yisouspider'  # 神马搜索（小写变体）
         ]
-        if any(bot in ua for bot in bot_agents):
+        if (request.method == 'GET'
+                and request.endpoint in crawlable_routes
+                and any(bot in ua for bot in bot_agents)):
             return None
 
         public_routes = [
@@ -137,7 +167,10 @@ def create_app():
             'public.robots',
             'public.service_worker',
         ]
-        if not session.get('user_id') and request.endpoint not in public_routes and request.endpoint != 'static':
+        # request.endpoint 为 None 表示没有匹配任何路由：应交给 404 处理器，
+        # 而不是把匿名访客重定向到登录页（原先会让所有 404 看起来像 302）。
+        if (not session.get('user_id') and request.endpoint is not None
+                and request.endpoint not in public_routes and request.endpoint != 'static'):
             return redirect(url_for('auth.login'))
         return None
 
