@@ -166,6 +166,13 @@ def create_app():
             'public.manifest',
             'public.robots',
             'public.service_worker',
+            # 新闻相关API（允许匿名访问）
+            'public.api_anime_news',
+            'public.api_anime_news_search',
+            'public.api_news_image',
+            'public.api_anime_news_detail',
+            'public.anime_news',
+            'public.anime_news_article',
         ]
         # request.endpoint 为 None 表示没有匹配任何路由：应交给 404 处理器，
         # 而不是把匿名访客重定向到登录页（原先会让所有 404 看起来像 302）。

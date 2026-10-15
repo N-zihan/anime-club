@@ -113,7 +113,7 @@
         return '/api/anime/news-image?url=' + encodeURIComponent(url);
     }
 
-        function itemHtml(a) {
+    function itemHtml(a) {
         // 中文标题：优先显示翻译，没有翻译时显示占位符
         const title = escapeHtml(a.title_zh ? a.title_zh : (a.title ? a.title : '(标题翻译中)'));
         const link = a.link || a.url || '#';
@@ -124,7 +124,7 @@
         const img = a.image ? thumbUrl(a.image) : '';
 
         const thumbHtml = img
-            ? '<img class="news-thumb" src="' + escapeHtml(img) + '" loading="lazy" alt="" onerror="this.style.display='none'">'
+            ? '<img class="news-thumb" src="' + escapeHtml(img) + '" loading="lazy" alt="" onerror="this.style.display=\'none\'">'
             : '';
 
         // 卡片直接链接到独立详情页，不再触发模态框
