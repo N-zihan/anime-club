@@ -17,7 +17,7 @@ from urllib.parse import quote
 import requests
 from bs4 import BeautifulSoup
 
-ANI_NEWS_API = 'https://anime-news.nanyi-anime-club.top/'
+ANI_NEWS_API = 'https://news.nanyi-anime-club.top/'
 
 _cache = {}
 _CACHE_TTL = 1800

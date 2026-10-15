@@ -20,6 +20,7 @@ from .bangumi import (
     get_subjects, search_subjects, get_subject_detail,
     get_subject_characters, get_character_detail,
 )
+from .anime_news import get_anime_news, get_article_content, search_news
 from .ai import generate_commentary, generate_prediction
 from .config import (
     NOMINATION_LIMIT,
@@ -313,6 +314,16 @@ def api_anime_news():
     resp = jsonify({'articles': articles, 'meta': meta})
     resp.headers['Cache-Control'] = 'public, max-age=1800, s-maxage=1800'
     return resp
+
+
+@public_bp.route('/api/anime/news-search')
+def api_anime_news_search():
+    """搜索动漫新闻"""
+    keyword = (request.args.get('q') or '').strip()
+    if not keyword:
+        return jsonify({'articles': []})
+    results = search_news(keyword, limit=50)
+    return jsonify({'articles': results})
 
 
 @public_bp.route('/api/anime/news-image')
