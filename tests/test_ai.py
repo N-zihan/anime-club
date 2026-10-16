@@ -1,5 +1,5 @@
 from app.ai import generate_commentary, generate_prediction, _get_cached, _set_cache, _cache
-from app.models import Candidate
+from app.models import Candidate, ContestVote
 from unittest.mock import patch, MagicMock
 
 
@@ -251,7 +251,8 @@ class TestAIPromptBuilders:
             'ranking': [{'name': cands[0].name, 'points': 3}],
         }
         prompt = _build_group_prompt(sample_contest, 'group_round_1', extra_data)
-        assert '女组 小组赛' in prompt
+        assert '小组赛第1轮' in prompt
+        assert '【女组】' in prompt
         assert 'A组' in prompt
         assert cands[0].name in prompt
 
@@ -267,3 +268,97 @@ class TestAIPromptBuilders:
         assert '女组 16强' in prompt
         assert 'K1' in prompt
         assert 'K2' in prompt
+
+
+# ========== 小组赛解说（曾经只会回「数据加载中」占位） ==========
+from app.ai import _auto_group_extra_data
+
+
+class TestAICommentaryGroupStage:
+    """小组赛 AI 解说：投票期与公示期都必须产出真实 prompt（男女组都覆盖）"""
+
+    def _setup_group(self, sample_contest, db_session, sample_user):
+        f = sample_contest.candidates.filter_by(gender='female').limit(4).all()
+        m = sample_contest.candidates.filter_by(gender='male').limit(4).all()
+        for c in f + m:
+            c.stage = 'group_stage'
+        sample_contest.config = {
+            'female_groups': [[f[0].id, f[1].id, f[2].id, f[3].id]],
+            'male_groups': [[m[0].id, m[1].id, m[2].id, m[3].id]],
+        }
+        f[3].banned = True  # f2 vs f3：f3 禁赛，f2 不战而胜
+        # 第1轮票数：f0 5票胜 f1 3票；m1 7票胜 m0 2票
+        for cand, weight in [(f[0], 5), (f[1], 3), (m[0], 2), (m[1], 7)]:
+            db_session.add(ContestVote(
+                contest_id=sample_contest.id, candidate_id=cand.id,
+                user_id=sample_user.id, weight=weight,
+                round_number=1, gender=cand.gender
+            ))
+        db_session.commit()
+        return f, m
+
+    def _mock_client(self, text='这是一段小组赛战报。'):
+        client = MagicMock()
+        client.chat.completions.create.return_value.choices = [
+            MagicMock(message=MagicMock(content=text))
+        ]
+        return client
+
+    def test_vote_phase_commentary_uses_real_group_data(self, sample_contest, db_session, sample_user):
+        """投票期 /commentary 不带 extra_data：解说必须自建数据而非回占位文案"""
+        _cache.clear()
+        f, m = self._setup_group(sample_contest, db_session, sample_user)
+        mock = self._mock_client()
+
+        with patch('app.ai.get_client', return_value=mock):
+            success, content, error = generate_commentary(sample_contest.id, 'group_round_1')
+
+        assert success is True and content == '这是一段小组赛战报。'
+        user_message = mock.chat.completions.create.call_args[1]['messages'][1]['content']
+        assert '小组赛第1轮' in user_message
+        assert '【女组】' in user_message and '【男组】' in user_message
+        assert f[0].name in user_message and f[1].name in user_message
+        assert m[1].name in user_message
+        assert '🏆' in user_message            # 票数胜者有标记
+        assert '不战而胜' in user_message        # 禁赛判负有标注
+        assert '总积分排名' in user_message      # 积分榜进入 prompt
+
+    def test_result_phase_commentary(self, sample_contest, db_session, sample_user):
+        """公示期同样产出真实 prompt"""
+        _cache.clear()
+        f, m = self._setup_group(sample_contest, db_session, sample_user)
+        mock = self._mock_client()
+
+        with patch('app.ai.get_client', return_value=mock):
+            success, content, error = generate_commentary(sample_contest.id, 'group_round_1_result')
+
+        assert success is True and content == '这是一段小组赛战报。'
+        user_message = mock.chat.completions.create.call_args[1]['messages'][1]['content']
+        assert '第1轮公示' in user_message
+        assert f[0].name in user_message and m[0].name in user_message
+
+    def test_no_groups_returns_placeholder_without_api(self, sample_contest, db_session):
+        """连分组都没有（小组赛未开始/无入围）：友好占位且不打付费 API"""
+        _cache.clear()
+
+        mock = MagicMock()
+        with patch('app.ai.get_client', return_value=mock):
+            success, content, error = generate_commentary(sample_contest.id, 'group_round_1')
+
+        assert success is True
+        assert '数据加载中' in content
+        assert mock.chat.completions.create.call_count == 0
+
+    def test_auto_extra_data_covers_both_genders(self, sample_contest, db_session, sample_user):
+        """_auto_group_extra_data 按性别分节，round_info 供缓存键使用"""
+        f, m = self._setup_group(sample_contest, db_session, sample_user)
+
+        data = _auto_group_extra_data(sample_contest, 'group_round_1')
+
+        assert data['round_info'] == 'group_round_1'
+        assert data['female']['group_results'] and data['male']['group_results']
+        fr = data['female']['group_results'][0]
+        assert fr['group_name'] == 'A组'
+        pairs = fr['matches']
+        assert pairs[0]['winner'] == f[0].id        # f0 5票 > f1 3票
+        assert pairs[1]['winner'] == f[2].id        # f3 禁赛，f2 不战而胜

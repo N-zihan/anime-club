@@ -243,66 +243,123 @@ def _build_qualifying_prompt(contest: Contest) -> str:
 """
 
 
+def _auto_group_extra_data(contest: Contest, phase: str) -> dict:
+    """小组赛阶段自建解说数据。
+
+    /commentary 路由不带 extra_data；contest_detail 的 group_round_results 又
+    只在公示期才有值（prepare_group_round_data 对投票期返回 None），直接用会让
+    小组赛整个阶段只能回占位文案。这里按轮次现算：投票期取当前累计票数，
+    公示期取最终结果，男女组都覆盖。
+    """
+    from .contest_engine import prepare_group_round_data
+
+    parts = phase.split('_')
+    try:
+        round_num = int(parts[2])
+    except (IndexError, ValueError):
+        round_num = 1
+    # prepare_* 只认公示期阶段名（其内部查询不受阶段时间限制，投票期同样可用）
+    result_phase = f'group_round_{round_num}_result'
+    results, rank_f, rank_m = prepare_group_round_data(contest, result_phase)
+    results = results or {'female': [], 'male': []}
+    config = contest.config or {}
+
+    return {
+        'round_info': phase,
+        'female': {
+            'groups': config.get('female_groups', []) or [],
+            'group_results': results.get('female', []),
+            'ranking': rank_f or [],
+        },
+        'male': {
+            'groups': config.get('male_groups', []) or [],
+            'group_results': results.get('male', []),
+            'ranking': rank_m or [],
+        },
+    }
+
+
+def _group_section_lines(section: dict, round_num: int) -> list:
+    """单个性别的对局与积分数据行"""
+    lines = []
+    group_results = section.get('group_results') or []
+    for group in group_results[:8]:
+        group_name = group.get('group_name', '')
+        matches = group.get('matches', [])
+        if not matches:
+            continue
+        lines.append(f"\n{group_name}：")
+        for m in matches:
+            c1 = m.get('candidate1')
+            c2 = m.get('candidate2')
+            v1 = m.get('votes1', 0)
+            v2 = m.get('votes2', 0)
+            winner = m.get('winner')
+            getter = (lambda c: getattr(c, 'name', '')) if hasattr(c1, 'name') else (lambda c: c)
+            c1_name = getter(c1) if c1 else ('轮空' if not m.get('removed1') else '已移除')
+            c2_name = getter(c2) if c2 else ('轮空' if not m.get('removed2') else '已移除')
+            mark = ""
+            if m.get('bye'):
+                mark = "（轮空场）"
+            elif m.get('banned1') and m.get('banned2'):
+                mark = "（双方禁赛，无人晋级）"
+            elif m.get('banned1') or m.get('banned2'):
+                mark = "（一方禁赛，对手不战而胜）"
+            c1_id = getattr(c1, 'id', None)
+            if winner is not None and winner == c1_id:
+                mark += "🏆"
+            lines.append(f"  {c1_name}({v1}票) vs {c2_name}({v2}票){mark}")
+
+    ranking = section.get('ranking') or []
+    if ranking:
+        lines.append("\n总积分排名（前5）：")
+        for i, item in enumerate(ranking[:5], 1):
+            extra = "（禁赛）" if item.get('banned') else ""
+            lines.append(f"  {i}. {item.get('name')}：{item.get('points')}分{extra}")
+    return lines
+
+
 def _build_group_prompt(contest: Contest, _phase: str, extra_data: dict) -> str:
-    """小组赛阶段 prompt"""
+    """小组赛进行中 prompt"""
     if not extra_data:
         return "小组赛数据加载中，请稍后再看 AI 分析。"
 
-    gender = extra_data.get('gender', 'female')
-    groups = extra_data.get('groups', [])
-    group_results = extra_data.get('group_results', {})
+    # 新结构：female/male 各含 groups/group_results/ranking
+    if 'female' in extra_data or 'male' in extra_data:
+        sections = [(g, extra_data.get(g, {})) for g in ('female', 'male')]
+    else:
+        # 兼容旧单性别结构
+        gender = extra_data.get('gender', 'female')
+        sections = [(gender, extra_data)]
 
-    gender_name = "女组" if gender == 'female' else "男组"
+    round_num = 1
+    parts = (_phase or '').split('_')
+    if len(parts) >= 3 and parts[2].isdigit():
+        round_num = int(parts[2])
 
-    lines = []
-    lines.append(f"赛事：{contest.title}")
-    lines.append(f"阶段：{gender_name} 小组赛")
-
-    # 构建分组信息
-    group_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-    for idx, _ in enumerate(groups[:8]):
-        if idx >= len(group_names):
-            break
-        group_name = group_names[idx]
-        # group_results 是 list，按下标取
-        if idx < len(group_results):
-            matches = group_results[idx].get('matches', [])
-        else:
-            matches = []
-        lines.append(f"\n{group_name}组：")
-        if matches:
-            for match in matches:
-                c1 = match.get('candidate1')
-                c2 = match.get('candidate2')
-                v1 = match.get('votes1', 0)
-                v2 = match.get('votes2', 0)
-                winner = match.get('winner')
-                if c1 and c2:
-                    win_mark = "🏆" if winner == c1.id else ""
-                    lines.append(f"  {c1.name}({v1}票) VS {c2.name}({v2}票){win_mark}")
-        else:
-            lines.append("  暂无比赛数据")
-
-    # 积分排名（如果有）
-    ranking = extra_data.get('ranking', [])
-    if ranking:
-        lines.append("\n当前积分排名（前5）：")
-        for i, item in enumerate(ranking[:5], 1):
-            lines.append(f"  {i}. {item.get('name')}：{item.get('points')}分")
+    lines = [f"赛事：{contest.title}", f"阶段：小组赛第{round_num}轮"]
+    has_data = False
+    for gender, section in sections:
+        data_lines = _group_section_lines(section, round_num)
+        if data_lines:
+            has_data = True
+            lines.append("\n【女组】" if gender == 'female' else "\n【男组】")
+            lines.extend(data_lines)
+    if not has_data:
+        return "小组赛数据加载中，请稍后再看 AI 分析。"
 
     return f"""
-你是萌战解说员，正在解说小组赛。
+你是萌战解说员，正在解说小组赛第{round_num}轮。
 
 当前数据：
 {chr(10).join(lines)}
 
 请根据以上数据，生成一段 120-180 字的小组赛战报。
 要求：
-1. 突出各组的关键对决
-2. 分析各组的出线形势
+1. 男女组分开点评（若某组没有数据则略过该组）
+2. 突出各组的关键对决和出线形势
 3. 提到 1-2 个亮点选手
-4. 语气要像真正的赛事解说
-5. 不要编造数据
+4. 语气要像真正的赛事解说，不要编造数据
 """
 
 
@@ -406,36 +463,23 @@ def _build_group_result_prompt(contest: Contest, phase: str, extra_data: dict) -
     }
     round_num = round_map.get(phase, 1)
 
-    gender = extra_data.get('gender', 'female')
-    gender_name = "女组" if gender == 'female' else "男组"
+    # 新结构：female/male 各含 group_results/ranking；兼容旧单性别结构
+    if 'female' in extra_data or 'male' in extra_data:
+        sections = [(g, extra_data.get(g, {})) for g in ('female', 'male')]
+    else:
+        gender = extra_data.get('gender', 'female')
+        sections = [(gender, extra_data)]
 
-    lines = [f"赛事：{contest.title}", f"阶段：{gender_name} 第{round_num}轮公示"]
-
-    group_results = extra_data.get('group_results', [])
-    if group_results:
-        lines.append("\n本轮对决结果：")
-        for group in group_results[:8]:
-            group_name = group.get('group_name', '')
-            matches = group.get('matches', [])
-            if matches:
-                lines.append(f"\n{group_name}：")
-                for m in matches:
-                    c1 = m.get('candidate1')
-                    c2 = m.get('candidate2')
-                    v1 = m.get('votes1', 0)
-                    v2 = m.get('votes2', 0)
-                    winner = m.get('winner')
-                    c1_name = c1.name if c1 else '已移除'
-                    c2_name = c2.name if c2 else '已移除'
-                    c1_id = c1.id if c1 else None
-                    win_mark = "🏆" if winner == c1_id else ""
-                    lines.append(f"  {c1_name}({v1}票) vs {c2_name}({v2}票){win_mark}")
-
-    ranking = extra_data.get('ranking', [])
-    if ranking:
-        lines.append("\n总积分前 5 名：")
-        for i, item in enumerate(ranking[:5], 1):
-            lines.append(f"  {i}. {item.get('name')}：{item.get('points')}分")
+    lines = [f"赛事：{contest.title}", f"阶段：第{round_num}轮公示"]
+    has_data = False
+    for gender, section in sections:
+        data_lines = _group_section_lines(section, round_num)
+        if data_lines:
+            has_data = True
+            lines.append("\n【女组】" if gender == 'female' else "\n【男组】")
+            lines.extend(data_lines)
+    if not has_data:
+        return "小组赛本轮数据加载中，请稍后再看 AI 分析。"
 
     return f"""
 你是萌战解说员，正在解说小组赛第{round_num}轮的结果公示。
@@ -445,11 +489,10 @@ def _build_group_result_prompt(contest: Contest, phase: str, extra_data: dict) -
 
 请生成一段 150-200 字的小组赛总结。
 要求：
-1. 突出本轮的精彩对决
-2. 分析各组的出线形势
+1. 男女组分开总结（若某组没有数据则略过该组）
+2. 突出本轮的精彩对决和出线形势
 3. 提到积分榜上的领先者
-4. 语气热情、专业
-5. 不要编造数据
+4. 语气热情、专业，不要编造数据
 """
 
 
@@ -578,6 +621,11 @@ def generate_commentary(contest_id: int, phase: str, extra_data: dict = None, fo
             'closed': '已结束'
         }
         phase_name = phase_names.get(phase, phase)
+
+        # 小组赛阶段调用方不带 extra_data（/commentary 路由没有比赛数据可传），
+        # 这里按轮次自建男女组数据，否则整个小组赛只能回「数据加载中」占位
+        if (extra_data is None and phase.startswith('group_round')):
+            extra_data = _auto_group_extra_data(contest, phase)
 
         prompt = _build_commentary_prompt(contest, phase, phase_name, extra_data)
 
