@@ -530,9 +530,11 @@ def contest_detail(contest_id):
         if advanced:
             changed = True
 
-        # ⑥ 决赛投票结束 → 生成最终排名
+        # ⑥ 决赛投票结束 → 生成最终排名（两性别都已有终榜才跳过，
+        # 否则单性别赛事会每个请求重跑一次终榜计算）
         if now >= times['final_vote_end'] and contest.status == 'knockout':
-            if not (contest.config and contest.config.get('female_ranking')):
+            if not (contest.config and (contest.config.get('female_ranking')
+                                        or contest.config.get('male_ranking'))):
                 run_final_ranking(contest)
                 changed = True
 
@@ -1233,12 +1235,14 @@ def group_vote_submit(contest_id):
     if _candidate is None or _candidate.banned:
         return fail('该角色已被禁赛，暂不能投票')
 
+    # 4 槽不变量防御：旧数据/异常数据中短组以 None 补齐后再索引
+    slots = list(target_group) + [None] * (4 - len(target_group))
     if round_number == 1:
-        pairs = [(target_group[0], target_group[1]), (target_group[2], target_group[3])]
+        pairs = [(slots[0], slots[1]), (slots[2], slots[3])]
     elif round_number == 2:
-        pairs = [(target_group[0], target_group[2]), (target_group[1], target_group[3])]
+        pairs = [(slots[0], slots[2]), (slots[1], slots[3])]
     else:
-        pairs = [(target_group[0], target_group[3]), (target_group[1], target_group[2])]
+        pairs = [(slots[0], slots[3]), (slots[1], slots[2])]
 
     match_index = None
     for mi, (cid1, cid2) in enumerate(pairs, start=1):

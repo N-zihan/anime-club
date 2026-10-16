@@ -32,17 +32,24 @@
                 {% if c1 and c1.image_url %}
                 <img src="{{ c1.image_url }}" style="max-width:50px; max-height:50px; width:auto; height:auto; border-radius:6px; display:block; margin:0 auto 4px;">
                 {% endif %}
-                <div><strong style="color: var(--text-primary);">{{ c1.name if c1 else '已移除' }}</strong></div>
+                <div><strong style="color: var(--text-primary);">{% if pair[0] is none %}轮空{% else %}{{ c1.name if c1 else '已移除' }}{% endif %}</strong>
+                    {% if c1 and c1.banned %}<span style="color:#e11d48; font-size:0.78rem; font-weight:700; margin-left:4px;">🚫 禁赛</span>{% endif %}</div>
                 <div style="font-size:0.75rem; color: var(--text-muted);">{{ c1.source if c1 else '' }}</div>
                 <div style="font-size:0.9rem; color:#4caf50; font-weight:600; margin-top:2px;">
                     票数：<span class="vote-count" data-candidate-id="{{ pair[0] }}">{{ vote_totals.get(pair[0], 0) }}</span>
                 </div>
-                <button class="vote-btn" data-candidate="{{ pair[0] }}"
-                        data-group-index="{{ group_index }}"
-                        data-match-index="{{ match_index }}"
-                        style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
-                    投票
-                </button>
+                {% if pair[0] is not none %}
+                    {% if c1 and c1.banned %}
+                    <div style="font-size:0.78rem; color:#e11d48; margin-top:6px; font-weight:600;">🚫 已禁赛，无法投票</div>
+                    {% else %}
+                    <button class="vote-btn" data-candidate="{{ pair[0] }}"
+                            data-group-index="{{ group_index }}"
+                            data-match-index="{{ match_index }}"
+                            style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
+                        投票
+                    </button>
+                    {% endif %}
+                {% endif %}
             </div>
             <div style="font-size:1.2rem; font-weight:700; color: var(--text-muted);">VS</div>
             <div style="text-align:center;" data-candidate-id="{{ pair[1] }}">
@@ -50,17 +57,24 @@
                 {% if c2 and c2.image_url %}
                 <img src="{{ c2.image_url }}" style="max-width:50px; max-height:50px; width:auto; height:auto; border-radius:6px; display:block; margin:0 auto 4px;">
                 {% endif %}
-                <div><strong style="color: var(--text-primary);">{{ c2.name if c2 else '已移除' }}</strong></div>
+                <div><strong style="color: var(--text-primary);">{% if pair[1] is none %}轮空{% else %}{{ c2.name if c2 else '已移除' }}{% endif %}</strong>
+                    {% if c2 and c2.banned %}<span style="color:#e11d48; font-size:0.78rem; font-weight:700; margin-left:4px;">🚫 禁赛</span>{% endif %}</div>
                 <div style="font-size:0.75rem; color: var(--text-muted);">{{ c2.source if c2 else '' }}</div>
                 <div style="font-size:0.9rem; color:#4caf50; font-weight:600; margin-top:2px;">
                     票数：<span class="vote-count" data-candidate-id="{{ pair[1] }}">{{ vote_totals.get(pair[1], 0) }}</span>
                 </div>
-                <button class="vote-btn" data-candidate="{{ pair[1] }}"
-                        data-group-index="{{ group_index }}"
-                        data-match-index="{{ match_index }}"
-                        style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
-                    投票
-                </button>
+                {% if pair[1] is not none %}
+                    {% if c2 and c2.banned %}
+                    <div style="font-size:0.78rem; color:#e11d48; margin-top:6px; font-weight:600;">🚫 已禁赛，无法投票</div>
+                    {% else %}
+                    <button class="vote-btn" data-candidate="{{ pair[1] }}"
+                            data-group-index="{{ group_index }}"
+                            data-match-index="{{ match_index }}"
+                            style="margin-top:6px; padding:4px 20px; background:#1e2a3a; color:white; border:none; border-radius:30px; cursor:pointer; font-size:0.85rem;">
+                        投票
+                    </button>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
     </div>
@@ -166,14 +180,29 @@
     {% for match in group.matches %}
     <div style="display:flex; align-items:center; gap:12px; padding:4px 0; border-bottom:1px solid var(--border-color); {% if loop.last %}border-bottom:none;{% endif %}">
         <span style="font-weight:500; color: var(--text-primary);">
-            {{ match.candidate1.name }}（{{ match.votes1 }}票）
-            {% if match.winner == match.candidate1.id %}🏆{% endif %}
+            {% if match.candidate1 %}
+                {{ match.candidate1.name }}{% if match.banned1 %} <span style="color:#e11d48;">🚫禁赛</span>{% endif %}（{{ match.votes1 }}票）
+                {% if match.winner == match.candidate1.id %}🏆{% endif %}
+            {% elif match.removed1 %}已移除{% else %}轮空{% endif %}
         </span>
         <span style="color: var(--text-muted);">VS</span>
         <span style="font-weight:500; color: var(--text-primary);">
-            {{ match.candidate2.name }}（{{ match.votes2 }}票）
-            {% if match.winner == match.candidate2.id %}🏆{% endif %}
+            {% if match.candidate2 %}
+                {{ match.candidate2.name }}{% if match.banned2 %} <span style="color:#e11d48;">🚫禁赛</span>{% endif %}（{{ match.votes2 }}票）
+                {% if match.winner == match.candidate2.id %}🏆{% endif %}
+            {% elif match.removed2 %}已移除{% else %}轮空{% endif %}
         </span>
+        {% if match.bye and match.winner %}
+        <span style="font-size:0.78rem; color: var(--text-muted);">对手轮空，晋级</span>
+        {% elif match.bye %}
+        <span style="font-size:0.78rem; color: var(--text-muted);">轮空场，无人晋级</span>
+        {% elif match.banned1 and match.banned2 %}
+        <span style="font-size:0.78rem; color:#e11d48;">双方禁赛，本场无晋级</span>
+        {% elif (match.banned1 or match.banned2) and match.winner %}
+        <span style="font-size:0.78rem; color: var(--text-muted);">对方禁赛，不战而胜</span>
+        {% elif match.winner is none %}
+        <span style="font-size:0.78rem; color: var(--text-muted);">平局</span>
+        {% endif %}
     </div>
     {% endfor %}
 </div>
@@ -199,9 +228,9 @@
         <div style="font-size:0.85rem; margin-top:6px; color: var(--text-primary);">
             {% set c1 = candidates.get(pair[0]) %}
             {% set c2 = candidates.get(pair[1]) %}
-            {{ c1.name if c1 else '已移除' }}
+            {% if c1 %}{{ c1.name }}{% if c1.banned %} <span style="color:#e11d48;">🚫禁赛</span>{% endif %}{% else %}{{ '轮空' if pair[0] is none else '已移除' }}{% endif %}
             <span style="color: var(--text-muted);">vs</span>
-            {{ c2.name if c2 else '已移除' }}
+            {% if c2 %}{{ c2.name }}{% if c2.banned %} <span style="color:#e11d48;">🚫禁赛</span>{% endif %}{% else %}{{ '轮空' if pair[1] is none else '已移除' }}{% endif %}
         </div>
         {% endfor %}
     </div>
@@ -240,6 +269,7 @@
             <img src="{{ item.image_url }}" style="max-width:28px; max-height:28px; width:auto; height:auto; border-radius:4px;">
             {% endif %}
             {{ item.name }}
+            {% if item.banned %}<span style="color:#e11d48; font-size:0.78rem; font-weight:700;">🚫禁赛</span>{% endif %}
         </td>
         <td style="padding:6px 10px; color: var(--text-secondary);">{{ item.group }}</td>
         <td style="padding:6px 10px; text-align:center; color: var(--text-primary);">{{ item.wins }}</td>

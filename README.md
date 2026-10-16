@@ -4,7 +4,7 @@
 
 [![Vercel](https://img.shields.io/badge/Deployments-Vercel-000000?logo=vercel)](https://www.nanyi-anime-club.top)
 [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask)](https://flask.palletsprojects.com)
+[![Flask](https://img.shields.io/badge/Flask-3.1-000000?logo=flask)](https://flask.palletsprojects.com)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
 [![Python application](https://github.com/N-zihan/anime-club/actions/workflows/python-app.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/python-app.yml)
 [![Pylint](https://github.com/N-zihan/anime-club/actions/workflows/pylint.yml/badge.svg)](https://github.com/N-zihan/anime-club/actions/workflows/pylint.yml)
@@ -15,7 +15,7 @@
 
 > 建站即用 · 开箱即改
 
-动漫社网站，集社团展示、互动交流、资源分享、线上赛事于一体
+动漫社网站，集社团展示、互动交流、资源分享、动漫资讯、线上赛事于一体
 
 ***在线访问***：[www.nanyi-anime-club.top](https://www.nanyi-anime-club.top)
 
@@ -28,32 +28,40 @@
 | 用户系统 | 注册、登录、邮箱绑定、密码重置、头像上传           |
 | 留言板   | 支持嵌套回复，关联用户头像                         |
 | 番剧资源 | 社员推荐 → 管理员审核 → 公开显示                   |
+| 番剧百科 | Bangumi API 拉取番剧条目，支持分页浏览与搜索      |
+| 动漫新闻 | 自部署 AniNewsAPI 聚合资讯，附全文阅读与机器翻译   |
 | 照片墙   | 活动照片分类展示，存储于 Supabase Storage          |
-| 萌战系统 | 线上赛事引擎：提名 → 海选 → 小组赛 → 淘汰赛 → 冠军 |
+| 萌战系统 | 线上赛事引擎：提名 → 海选 → 小组赛 → 淘汰赛 → 冠军，内置禁赛/轮空/复活赛守则 |
 | 管理后台 | 站长 / 运营双角色权限分离                          |
 
 ## 萌战系统
 
-> 社团内部赛事引擎，男女分组独立比赛
+> 社团内部赛事引擎，男女分组独立比赛，全阶段按预设时间自动推进
 
-| 阶段                                           | 赛制                                           | 晋级                  |
-|------------------------------------------------|------------------------------------------------|-----------------------|
-| **提名期**（5天）                              | 每人每组提名 5 个角色                          | 进入海选池            |
-| **审核期**（3天）                              | 管理员进行角色审核                             | 准许进行海选          |
-| **海选**（5天）                                | 每人每组 15 票，每组最多投 5 人，单角色 ≤ 3 票 | 男女各前 32 名        |
-| **小组赛**（3×5天）                            | 8 组 × 4 人，单循环积分制                      | 每组前 2 名，共 16 人 |
-| **淘汰赛**（4×5天）                            | 16 强 → 8 强 → 4 强 → 决赛                     | 冠军 + 最终排名       |
-| **注**: 除提名期外，每个五天的最后一天为公示期 |
+| 阶段                                           | 赛制                                           | 晋级                          |
+|------------------------------------------------|------------------------------------------------|-------------------------------|
+| **提名期**（5天）                              | 每人每组提名 5 个角色                          | 进入海选池                    |
+| **审核期**（3天）                              | 管理员进行角色审核                             | 准许进行海选                  |
+| **海选**（4天投票+1天公示）                    | 每人每组 15 票，最多投 5 人，单角色 ≤ 3 票     | 男女各前 32 名，自动分组      |
+| **小组赛**（3轮×4天投票+1天公示）              | 8 组 × 4 人，单循环三轮积分制，胜 3 分平 1 分  | 每组前 2 名，共 16 人         |
+| **淘汰赛**（3轮×4天投票+1天公示）              | 16 强 → 8 强 → 4 强，单场定胜负                | 逐轮晋级                      |
+| **决赛**（4天投票+3天公示）                    | 男女组各决一场                                 | 冠军 + 最终排名               |
 
-> 平票处理：淘汰赛平票时比较海选总票数
-> 
-> 自动推进：所有阶段按预设时间自动切换
+### 赛事守则
+
+- **禁赛**：禁赛角色不能被投票、不能晋级、已排对阵中自动判负（对手不战而胜）；前台全程显示禁赛徽章，由管理员在后台随时执行
+- **双禁赛**：同一场双方均禁赛时本场无晋级名额，由该轮**票数最高的合法落败者替补复活**（复活赛赛制），保证下一轮人数链不断
+- **轮空**：对阵为奇数或缺员时自动生成轮空场，一方不战而胜直接晋级
+- **人数不足**：海选出线不足 32 人时自动缩编组数（最少 1 组），缺额以轮空槽占位，不会生成空组或抛错
+- **平票处理**：小组赛按积分 → 总票数排序；淘汰赛平票时比较海选总票数
+- **冠军空缺**：决赛双方均无法完赛时该届冠军空缺，仅公布其后排名
+- 所有特殊状态（禁赛、轮空、替补晋级、无人晋级）均在投票页与公示页实时展示
 
 ## 技术栈
 
 | 类别     | 技术                                      |
 |----------|-------------------------------------------|
-| 后端框架 | Python 3.14.4 + Flask 3.0                 |
+| 后端框架 | Python 3.14 + Flask 3.1                   |
 | ORM      | SQLAlchemy 2.0                            |
 | 数据库   | PostgreSQL(Supabase)                      |
 | 文件存储 | Supabase Storage                          |
@@ -63,6 +71,8 @@
 | 部署     | Vercel                                    |
 | 认证     | Session-based + Werkzeug 密码哈希         |
 | 安全     | CSRFProtect(Flask-WTF)                    |
+| 数据源   | Bangumi API · AniNewsAPI(自部署)          |
+| 机器翻译 | 阿里云机器翻译（新闻正文）                |
 | AI 解说  | SiliconFlow API(DeepSeek-V3)              |
 | PWA      | Service Worker + Manifest（可安装至桌面） |
 
@@ -79,7 +89,9 @@
 │   ├── __init__.py                         # Flask 应用工厂
 │   ├── admin.py                            # 管理后台（站长/运营双角色）
 │   ├── ai.py                               # AI 解说与预测
+│   ├── anime_news.py                       # 动漫新闻聚合与机器翻译
 │   ├── auth.py                             # 用户认证
+│   ├── bangumi.py                          # 番剧百科（Bangumi API）
 │   ├── changelog.py                        # github日志更新
 │   ├── config.py                           # 赛事全局配置
 │   ├── contest_engine.py                   # 萌战引擎
@@ -159,6 +171,11 @@ SMTP_PORT=465 # 默认465
 SMTP_USE_SSL=true # 默认true开启
 MAIL_USERNAME=你的邮箱 # 建议额外注册一个
 MAIL_PASSWORD=SMTP邮箱授权码
+
+# 可选配置
+SITE_URL= # 站点公网地址，用于通知里的链接（默认 https://www.nanyi-anime-club.top）
+ALIBABA_CLOUD_ACCESS_KEY_ID= # 阿里云 AccessKey，用于新闻正文机器翻译
+ALIBABA_CLOUD_ACCESS_KEY_SECRET= # 阿里云 AccessKey Secret，不配置则新闻不翻译
 ```
 
 > API_key从[siliconflow](https://cloud.siliconflow.cn)获取
@@ -236,11 +253,11 @@ npm test
 
 ## 项目状态
 
-- 核心功能完整
-- 后端测试：128 个用例全部通过
-- 前端测试：27 个用例，23 通过，4 跳过（投票流程依赖数据，暂不阻塞 CI）
-- Pylint 评分 9.22/10
-- 已部署至生产环境
+- 核心功能完整，已部署至生产环境
+- 萌战引擎：禁赛 / 轮空 / 复活赛 / 冠军空缺等赛事守则完备，人数短缺全链路不崩
+- 后端测试：164 个用例全部通过
+- 前端测试：Playwright 六大 E2E 套件（登录、留言板、内容、萌战、投票、管理后台）
+- CI：GitHub Actions（pytest + flake8 + CodeQL + Playwright）
 
 ## 许可证
 

@@ -131,18 +131,21 @@
                 {% if c.banned %}
                 <form method="POST" action="{{ url_for('admin.admin_candidate_unban', candidate_id=c.id) }}"
                       style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn-edit" style="color:green;">恢复</button>
                 </form>
                 {% else %}
                 <form method="POST" action="{{ url_for('admin.admin_candidate_ban', candidate_id=c.id) }}"
                       style="display:inline;"
                       onsubmit="return confirm('确定禁赛角色「{{ c.name }}」吗？禁赛期间将禁止投票。')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn-delete">禁赛</button>
                 </form>
                 {% endif %}
                 <form method="POST" action="{{ url_for('admin.admin_candidate_delete', candidate_id=c.id) }}"
                       style="display:inline;"
                       onsubmit="return confirm('确定移除？')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn-delete">移除</button>
                 </form>
             </td>
