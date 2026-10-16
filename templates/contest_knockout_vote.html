@@ -101,9 +101,9 @@
     {# 投票按钮：只在投票期显示 #}
     {% if phase in voting_phases and match.status == 'active' %}
     <div style="text-align:center; margin-top:12px;">
-        <button class="btn-primary vote-btn" data-candidate="{{ match.candidate1 }}" data-name="{{ c1.name if c1 else '' }}" data-match-index="{{ match_index }}" style="padding:6px 24px; background:#e91e63; border:none; border-radius:30px; cursor:pointer; color:white;">投给 {{ c1.name if c1 else '' }}</button>
+        <button class="btn-primary vote-btn" data-candidate="{{ match.candidate1 }}" data-name="{{ c1.name if c1 else '' }}" data-match-index="{{ match_index }}" style="padding:6px 24px; background:#e91e63; border:none; border-radius:30px; cursor:pointer; color:white;">投给 {{ c1.name if c1 else '' }}{% if c1 and c1.banned %} 禁赛{% endif %}</button>
         <span style="margin:0 16px; color: var(--text-muted);">或</span>
-        <button class="btn-primary vote-btn" data-candidate="{{ match.candidate2 }}" data-name="{{ c2.name if c2 else '' }}" data-match-index="{{ match_index }}" style="padding:6px 24px; background:#2196f3; border:none; border-radius:30px; cursor:pointer; color:white;">投给 {{ c2.name if c2 else '' }}</button>
+        <button class="btn-primary vote-btn" data-candidate="{{ match.candidate2 }}" data-name="{{ c2.name if c2 else '' }}" data-match-index="{{ match_index }}" style="padding:6px 24px; background:#2196f3; border:none; border-radius:30px; cursor:pointer; color:white;">投给 {{ c2.name if c2 else '' }}{% if c2 and c2.banned %} 禁赛{% endif %}</button>
     </div>
     {% elif phase in result_phases %}
     <div style="text-align:center; margin-top:12px; color: var(--text-muted); font-size:0.9rem;">

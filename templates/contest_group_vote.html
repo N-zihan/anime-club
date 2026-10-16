@@ -269,7 +269,7 @@
     <strong style="color: var(--text-primary);">晋级：</strong>
     {% for cid in top16 %}
     {% set c = candidates|selectattr('id', 'equalto', cid)|first %}
-    <span style="display:inline-block; background: var(--bg-code); padding:2px 12px; border-radius:20px; margin:2px 4px; color: var(--text-primary);">{{ c.name if c else '已移除' }}</span>
+    <span style="display:inline-block; background: var(--bg-code); padding:2px 12px; border-radius:20px; margin:2px 4px; color: var(--text-primary);">{{ c.name if c else '已移除' }}{% if c and c.banned %} 禁赛{% endif %}</span>
     {% endfor %}
 </div>
 {% else %}

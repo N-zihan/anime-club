@@ -258,8 +258,11 @@ def run_qualifying_promotion(contest):
     female_result = count_votes(female_candidates)
     male_result = count_votes(male_candidates)
 
-    female_top_32 = [item['candidate'] for item in female_result[:QUALIFYING_TOP_N]]
-    male_top_32 = [item['candidate'] for item in male_result[:QUALIFYING_TOP_N]]
+    # 方案 A：禁赛角色无法晋级（过滤掉 banned=True）
+    qualified_fem = [item for item in female_result if item['candidate'].banned == False]
+    qualified_mal = [item for item in male_result if item['candidate'].banned == False]
+    female_top_32 = [item['candidate'] for item in qualified_fem[:QUALIFYING_TOP_N]]
+    male_top_32 = [item['candidate'] for item in qualified_mal[:QUALIFYING_TOP_N]]
 
     for c in female_top_32:
         c.stage = 'group_stage'
@@ -412,8 +415,10 @@ def run_group_promotion(contest, session=None):
         top16_info = []
         for gi, group in enumerate(groups):
             group_candidates = [cid for cid in group if cid in result]
-            group_candidates.sort(key=lambda cid: (result[cid]['points'], result[cid]['total_votes']), reverse=True)
-            top2 = group_candidates[:2]
+            # 过滤掉被禁赛的角色
+            qualified = [cid for cid in group_candidates if result[cid]['candidate'].banned == False]
+            qualified.sort(key=lambda cid: (result[cid]['points'], result[cid]['total_votes']), reverse=True)
+            top2 = qualified[:2] if qualified else []
             for rank, cid in enumerate(top2, start=1):
                 top16.append(cid)
                 top16_info.append({'id': cid, 'group_index': gi, 'rank': rank})
@@ -558,14 +563,25 @@ def get_knockout_votes(contest, candidate_id, gender, sub_round):
 
 
 def get_match_winner(contest, match, gender, sub_round):
-    """确定一场比赛的胜者（票数高者，平票则比较海选总票数）"""
-    c1_votes = get_knockout_votes(contest, match['candidate1'], gender, sub_round)
-    c2_votes = get_knockout_votes(contest, match['candidate2'], gender, sub_round)
+    """确定一场比赛的胜者（票数高者，平票则比较海选总票数；禁赛角色自动落败，不晋级）"""
+    c1_id = match['candidate1']
+    c2_id = match['candidate2']
+
+    # 禁赛角色自动落败：有 ban 角色直接让另一方晋级（方案 A：禁赛 = 不能晋级）
+    c1_candidate = db.session.get(Candidate, c1_id) if c1_id else None
+    c2_candidate = db.session.get(Candidate, c2_id) if c2_id else None
+    if c1_candidate and c1_candidate.banned:
+        return c2_id
+    if c2_candidate and c2_candidate.banned:
+        return c1_id
+
+    c1_votes = get_knockout_votes(contest, c1_id, gender, sub_round)
+    c2_votes = get_knockout_votes(contest, c2_id, gender, sub_round)
 
     if c1_votes > c2_votes:
-        return match['candidate1']
+        return c1_id
     if c2_votes > c1_votes:
-        return match['candidate2']
+        return c2_id
 
     if gender == 'female':
         results = contest.config.get('female_result', [])

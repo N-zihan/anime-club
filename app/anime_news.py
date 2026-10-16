@@ -316,6 +316,10 @@ def search_news(keyword, limit=50):
             if len(results) >= limit:
                 break
 
+    # 不缓存空结果：避免首次搜索无数据后，后续相同关键词也永远返回空
+    if not results:
+        return []
+
     # 缓存搜索结果 (5分钟)
     _cache[cache_key] = (results, now + timedelta(minutes=5))
     
