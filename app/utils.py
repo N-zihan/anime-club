@@ -151,6 +151,41 @@ def throttle_ok(key, seconds):
     return True
 
 
+# 登录失败计数器：window 秒内连续失败 max_failures 次才拦截，
+# 只计失败、成功即清零，避免正常用户输错一次密码就被锁 30 秒。
+_LOGIN_FAILS = {}
+
+
+def login_fail_hit_limit(key, max_failures=5, window=60):
+    """记录一次登录失败；该 key 在 window 秒内失败超过 max_failures 次时返回 True。"""
+    now = time.monotonic()
+    count, start = _LOGIN_FAILS.get(key, (0, now))
+    if now - start > window:
+        count, start = 0, now
+    count += 1
+    if len(_LOGIN_FAILS) > 5000:  # 防止自身无上限增长
+        _LOGIN_FAILS.clear()
+    _LOGIN_FAILS[key] = (count, start)
+    return count > max_failures
+
+
+def login_fail_is_limited(key, max_failures=5, window=60):
+    """该 key 在 window 秒内失败次数是否已超过 max_failures（不计数，只查询）。"""
+    now = time.monotonic()
+    entry = _LOGIN_FAILS.get(key)
+    if entry is None:
+        return False
+    count, start = entry
+    if now - start > window:
+        return False
+    return count > max_failures
+
+
+def login_fail_reset(key):
+    """登录成功后清除失败计数。"""
+    _LOGIN_FAILS.pop(key, None)
+
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 

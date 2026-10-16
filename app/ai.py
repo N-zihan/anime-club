@@ -85,16 +85,38 @@ def _set_cache(key: str, data: str):
 
 def _get_qualifying_top_votes(contest_id: int, gender: str = None, limit: int = 10) -> list:
     """获取海选票数前 N 名（可按性别过滤）"""
+    # 构建基础查询
     query = Candidate.query.filter_by(contest_id=contest_id)
     if gender:
         query = query.filter_by(gender=gender)
-    candidates = query.all()
+    
+    # 获取所有候选角色 ID
+    candidate_ids = [c.id for c in query.all()]
+    
+    if not candidate_ids:
+        return []
+    
+    # 一次性查询所有票数
+    vote_totals = dict(
+        db.session.query(
+            ContestVote.candidate_id,
+            db.func.sum(ContestVote.weight)
+        )
+        .filter(
+            ContestVote.candidate_id.in_(candidate_ids),
+            ContestVote.round_number == 0
+        )
+        .group_by(ContestVote.candidate_id)
+        .all()
+    )
+    
+    # 构建结果列表
     result = []
-    for c in candidates:
-        total = ContestVote.query.filter_by(
-            candidate_id=c.id, round_number=0
-        ).with_entities(db.func.sum(ContestVote.weight)).scalar() or 0
-        result.append((c.id, c.name, total))
+    for candidate in query.all():
+        total = vote_totals.get(candidate.id, 0)
+        result.append((candidate.id, candidate.name, total))
+    
+    # 按票数排序并返回前 N 名
     result.sort(key=lambda x: x[2], reverse=True)
     return result[:limit]
 

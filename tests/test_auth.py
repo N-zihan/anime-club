@@ -71,9 +71,14 @@ class TestAuth:
         assert '用户名或密码错误' in response.text
 
     def test_logout(self, logged_in_client):
-        response = logged_in_client.get('/logout', follow_redirects=True)
+        response = logged_in_client.post('/logout', follow_redirects=True)
         assert response.status_code == 200
         assert '已退出登录' in response.text
+
+    def test_logout_rejects_get(self, logged_in_client):
+        """GET /logout 应返回 405：防止外站用 <img src="/logout"> 踢人下线"""
+        response = logged_in_client.get('/logout')
+        assert response.status_code == 405
 
     def test_delete_account(self, logged_in_client, sample_user):
         response = logged_in_client.post('/delete_account', follow_redirects=True)

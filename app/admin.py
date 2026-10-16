@@ -137,6 +137,11 @@ def admin_activity_add():
             flash('标题、日期和内容不能为空', 'danger')
             return redirect(url_for('admin.admin_activity_add'))
 
+        # 上限校验：超长会直接撞数据库列宽报 500（title 100 / date 20）
+        if len(title) > 100 or len(date) > 20:
+            flash('标题不超过100字、日期格式无效', 'danger')
+            return redirect(url_for('admin.admin_activity_add'))
+
         new_activity = Activity(title=title, date=date, content=content)
         db.session.add(new_activity)
         db.session.commit()

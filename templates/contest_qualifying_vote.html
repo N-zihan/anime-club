@@ -20,7 +20,10 @@
             <img alt="{{ c.name }}" src="{{ c.image_url }}"
                  style="max-width:80px; max-height:80px; width:auto; height:auto; border-radius:8px; margin-bottom:8px;">
             {% endif %}
-            <div><strong style="color: var(--text-primary);">{{ c.name }}</strong></div>
+            <div>
+                <strong style="color: var(--text-primary);">{{ c.name }}</strong>
+                {% if c.banned %}<span style="color:#e11d48;font-weight:bold;margin-left:6px;">禁赛</span>{% endif %}
+            </div>
             <div style="font-size:0.85rem; color: var(--text-secondary);">{{ c.source }}</div>
 
             <!-- 总票数 -->

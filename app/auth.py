@@ -31,7 +31,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 
 from .models import (db, User, Nomination, Candidate, Contest, ContestVote,
                      Message, Reply, Notification)
-from .utils import code_digest, code_matches, throttle_ok
+from .utils import (code_digest, code_matches, throttle_ok,
+                    login_fail_hit_limit, login_fail_is_limited, login_fail_reset)
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -289,12 +290,23 @@ def login():
         login_id = request.form.get('username', '').strip()
         username = login_id
         password = request.form.get('password', '')
+
+        # 登录限流：只针对失败尝试计数，防止爆破；成功登录不占额度。
+        # 同一 IP + 同一账号 60 秒内连续失败超过 5 次才拦截。
+        throttle_key = f'login_fail:{request.remote_addr}:{login_id}'
+        if login_fail_is_limited(throttle_key):
+            flash('登录尝试过于频繁，请稍后重试', 'danger')
+            return render_template('login.html', username=username)
+
         user = User.query.filter(
             (User.username == login_id) |
             (User.qq == login_id) |
             (User.email == login_id)
         ).first()
         if user and user.check_password(password):
+            # 登录成功，清除失败计数
+            login_fail_reset(throttle_key)
+
             session['user_id'] = user.id
             session['username'] = user.username
 
@@ -317,13 +329,16 @@ def login():
                 return redirect(url_for('user.welcome'))
 
             return redirect(url_for('public.index'))
+
+        # 失败才计数（60 秒窗口内超过 5 次失败后触发限流）
+        login_fail_hit_limit(throttle_key)
         flash('用户名或密码错误', 'danger')
         return render_template('login.html', username=username)
     return render_template('login.html', username=username)
 
 
 # ---------- 登出 ----------
-@auth_bp.route('/logout')
+@auth_bp.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     flash('已退出登录', 'info')

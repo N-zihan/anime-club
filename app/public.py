@@ -62,7 +62,10 @@ def _calc_current_phase(contest):
 
 @public_bp.route('/')
 def splash():
-    return render_template('splash.html')
+    return render_template('splash.html',
+                          og_title='动漫社官网',
+                          og_description='动漫社官网，集社团展示、互动交流、资源分享、线上赛事于一体',
+                          og_image='/static/images/icon-512.png')
 
 
 @public_bp.route('/home')
@@ -491,6 +494,11 @@ def contest_detail(contest_id):
     # 3. 计算当前阶段
     phase = calc_phase(contest, now, times)
 
+    # OG 元数据：分享卡片标题/描述/缩略图（用站内图标）
+    og_title = f'{contest.title} - 动漫社官网'
+    og_description = contest.description[:200] + ('...' if len(contest.description) > 200 else '')
+    og_image = '/static/images/icon-512.png'
+
     # 4. 执行自动推进
     # 循环处理，防止因为跳过了中间阶段而卡住
     for _ in range(10):
@@ -664,7 +672,11 @@ def contest_detail(contest_id):
                            group_round_results=group_round_results,
                            overall_ranking_female=overall_ranking_female,
                            overall_ranking_male=overall_ranking_male,
-                           extra_data=extra_data)
+                           extra_data=extra_data,
+                           # OG 元数据
+                           og_title=og_title,
+                           og_description=og_description,
+                           og_image=og_image)
 
 
 @public_bp.route('/contest/<int:contest_id>/nominate', methods=['POST'])
