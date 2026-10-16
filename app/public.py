@@ -20,7 +20,7 @@ from .bangumi import (
     get_subjects, search_subjects, get_subject_detail,
     get_subject_characters, get_character_detail,
 )
-from .anime_news import get_anime_news, get_article_content, search_news
+from .anime_news import get_anime_news, get_article_content, find_article_meta, search_news
 from .ai import generate_commentary, generate_prediction
 from .config import (
     NOMINATION_LIMIT,
