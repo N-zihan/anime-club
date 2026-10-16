@@ -321,16 +321,9 @@ def anime_news_article():
     if not url or not is_public_http_url(url):
         abort(404)
 
-    # 从缓存的新列表中查找元数据（中文标题、摘要、来源、日期、缩略图）
-    article_meta = None
-    for limit in (20, 100):
-        articles, _ = get_anime_news(limit=limit)
-        for a in articles:
-            if (a.get('link') or a.get('url')) == url:
-                article_meta = a
-                break
-        if article_meta:
-            break
+    # 从预取搜索语料中查找元数据；取代原先 20/100 两轮列表查询，
+    # 避免每次进详情页都可能触发"上游抓取+逐批翻译"的慢链路
+    article_meta = find_article_meta(url)
 
     # 抓取正文和图片
     data = get_article_content(url)
@@ -359,14 +352,15 @@ def anime_news_article():
 
 @public_bp.route('/api/anime/news')
 def api_anime_news():
-    """API：获取新闻列表"""
-    from .anime_news import get_anime_news
+    """API：获取新闻列表（get_anime_news 已在模块顶部导入）"""
     limit = request.args.get('limit', 20, type=int)
     tag = request.args.get('tag') or None
     cursor = request.args.get('cursor') or None
     articles, meta = get_anime_news(limit=limit, tag=tag, cursor=cursor)
     resp = jsonify({'articles': articles, 'meta': meta})
-    resp.headers['Cache-Control'] = 'public, max-age=1800, s-maxage=1800'
+    # stale-while-revalidate：边缘命中旧副本立即返回并后台刷新，
+    # 冷实例的抓取+翻译耗时不再由用户承担
+    resp.headers['Cache-Control'] = 'public, max-age=1800, s-maxage=1800, stale-while-revalidate=86400'
     return resp
 
 
@@ -377,7 +371,10 @@ def api_anime_news_search():
     if not keyword:
         return jsonify({'articles': []})
     results = search_news(keyword, limit=50)
-    return jsonify({'articles': results})
+    resp = jsonify({'articles': results})
+    # 短缓存：相同关键词在边缘直接命中；SWR 允许后台刷新，避免每次现算
+    resp.headers['Cache-Control'] = 'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+    return resp
 
 
 @public_bp.route('/api/anime/news-image')

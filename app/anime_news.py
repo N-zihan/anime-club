@@ -11,6 +11,7 @@ import os
 import re
 import traceback
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from urllib.parse import quote
 
@@ -83,7 +84,7 @@ def _aliyun_call(text, source='en', target='zh'):
     params['Signature'] = signature
 
     try:
-        res = requests.get(_ALIYUN_MT_ENDPOINT, params=params, timeout=10)
+        res = requests.get(_ALIYUN_MT_ENDPOINT, params=params, timeout=8)
         data = res.json()
         if data.get('Code') == '200':
             return data.get('Data', {}).get('Translated', '')
@@ -144,18 +145,20 @@ def _translate_batch(texts):
     if current:
         batches.append(current)
 
-    for batch in batches:
+    def _run_batch(batch):
+        """翻译单个批次，返回 {原文: 译文}"""
+        out = {}
         # 单条超长的情况，直接单独调用
         if len(batch) == 1 and len(batch[0]) > _ALIYUN_SINGLE_MAX:
             # 截断处理（超过 4500 字符的文本很少见）
             truncated = batch[0][:_ALIYUN_SINGLE_MAX]
             translated = _aliyun_call(truncated)
             if translated:
-                result[batch[0]] = translated
+                out[batch[0]] = translated
                 _translate_cache[batch[0]] = translated
             else:
-                result[batch[0]] = batch[0]
-            continue
+                out[batch[0]] = batch[0]
+            return out
 
         joined = '\n'.join(batch)
         translated = _aliyun_call(joined)
@@ -163,8 +166,8 @@ def _translate_batch(texts):
         if translated is None:
             # 调用失败，原样返回
             for t in batch:
-                result[t] = t
-            continue
+                out[t] = t
+            return out
 
         lines = translated.split('\n')
 
@@ -174,14 +177,20 @@ def _translate_batch(texts):
             for t in batch:
                 single = _aliyun_call(t)
                 zh = single if single else t
-                result[t] = zh
+                out[t] = zh
                 _translate_cache[t] = zh
-            continue
+            return out
 
         for orig, trans in zip(batch, lines):
             zh = trans.strip() or orig
-            result[orig] = zh
+            out[orig] = zh
             _translate_cache[orig] = zh
+        return out
+
+    # 并发翻译各批次：原先串行执行，20 条新闻冷启动可累计 30 秒以上
+    with ThreadPoolExecutor(max_workers=min(4, len(batches))) as pool:
+        for partial in pool.map(_run_batch, batches):
+            result.update(partial)
 
     return result
 
@@ -189,6 +198,85 @@ def _translate_batch(texts):
 # ============================================================
 # 新闻列表
 # ============================================================
+def _decode_cursor(cursor):
+    """AniNews 游标是 base64(JSON)，解析出 offset；失败返回 None"""
+    try:
+        padded = cursor + '=' * (-len(cursor) % 4)
+        return json.loads(base64.b64decode(padded).decode('utf-8')).get('offset')
+    except Exception:
+        return None
+
+
+def _encode_cursor(offset):
+    """生成与上游格式兼容的 base64(JSON) 游标"""
+    payload = json.dumps({'offset': int(offset)}, separators=(',', ':'))
+    return base64.b64encode(payload.encode('utf-8')).decode('utf-8')
+
+
+# 搜索语料：预取一次全量新闻（当前约百条）并只翻译标题，6 小时内供列表与搜索复用
+_CORPUS_KEY = 'corpus_search'
+_CORPUS_TTL = 21600
+
+
+def _get_search_corpus():
+    """获取搜索语料（标题已译）。空语料做短时负缓存，避免上游抖动时反复超时"""
+    now = datetime.now()
+    entry = _cache.get(_CORPUS_KEY)
+    if entry:
+        arts, expires = entry
+        if now < expires:
+            if arts:
+                # 顺带回填已缓存的摘要翻译
+                for a in arts:
+                    e = a.get('excerpt') or ''
+                    if e and not a.get('excerpt_zh') and _translate_cache.get(e):
+                        a['excerpt_zh'] = _translate_cache[e]
+            return arts
+
+    try:
+        res = requests.get(f'{ANI_NEWS_API}/api/news', params={'limit': 100}, timeout=12)
+        data = res.json()
+        arts = data.get('data') if isinstance(data, dict) else None
+        if not isinstance(arts, list):
+            return []
+        arts = [a for a in arts if isinstance(a, dict)]
+
+        # 只批量翻译标题：摘要不额外翻译，控制冷启动耗时
+        titles = [a.get('title') for a in arts if a.get('title')]
+        if titles:
+            zh = _translate_batch(titles)
+            for a in arts:
+                if a.get('title'):
+                    a['title_zh'] = zh.get(a['title'], a['title'])
+
+        if arts:
+            _cache[_CORPUS_KEY] = (arts, now + timedelta(seconds=_CORPUS_TTL))
+        return arts
+    except Exception as e:
+        print(f'>>> 搜索语料拉取失败: {e}')
+        # 负缓存 60 秒：防止上游抖动时每个请求都拖一次 12 秒超时
+        _cache[_CORPUS_KEY] = ([], now + timedelta(seconds=60))
+        return []
+
+
+def find_article_meta(url):
+    """按链接查找文章元数据：先查搜索语料，再回退已缓存列表；找不到返回 None"""
+    if not url:
+        return None
+    for a in _get_search_corpus():
+        if (a.get('link') or a.get('url')) == url:
+            return a
+    cache_keys = [k for k in _cache if str(k).startswith('news_')]
+    if cache_keys:
+        latest_key = max(cache_keys, key=lambda k: _cache[k][1])
+        cached_articles = _cache[latest_key][0]
+        arts = cached_articles[0] if isinstance(cached_articles, tuple) else cached_articles
+        for a in arts:
+            if (a.get('link') or a.get('url')) == url:
+                return a
+    return None
+
+
 def get_anime_news(limit=20, tag=None, cursor=None):
     """获取动漫新闻列表，返回 (articles, meta)"""
     cache_key = f'news_{limit}_{tag or "all"}_{cursor or "start"}'
@@ -198,6 +286,21 @@ def get_anime_news(limit=20, tag=None, cursor=None):
         data, expires = _cache[cache_key]
         if now < expires:
             return data
+
+    # 无 tag 且游标可解析时，直接从本地语料切片返回：
+    # 避免冷启动串行等待上游抓取 + 逐批翻译
+    if not tag:
+        offset = _decode_cursor(cursor) if cursor else 0
+        if offset is not None and offset >= 0:
+            corpus = _get_search_corpus()
+            if corpus:
+                page = corpus[offset:offset + limit]
+                has_more = offset + limit < len(corpus)
+                next_cursor = _encode_cursor(offset + limit) if has_more else None
+                result = (page, {'total': len(corpus), 'hasMore': has_more,
+                                 'nextCursor': next_cursor})
+                _cache[cache_key] = (result, now + timedelta(seconds=_CACHE_TTL))
+                return result
 
     params = {'limit': limit}
     if tag:
@@ -273,28 +376,32 @@ def search_news(keyword, limit=50):
 
     has_chinese = any('\u4e00' <= c <= '\u9fff' for c in keyword)
 
-    # 使用已缓存的新闻数据，不要每次获取100篇
-    # 首先检查是否有缓存的最新新闻数据
-    articles = []
-    cache_keys = [k for k in _cache.keys() if k.startswith('news_')]
-    if cache_keys:
-        # 使用最近缓存的新闻数据
-        latest_key = max(cache_keys, key=lambda k: _cache[k][1])  # 按过期时间排序
-        cached_articles, _ = _cache[latest_key]
-        if isinstance(cached_articles, tuple):
-            articles = cached_articles[0]  # 格式：(articles, meta)
-        else:
-            articles = cached_articles
-    
-    # 如果没有缓存数据，获取少量文章
+    # 语料拉取与关键词翻译并行执行：原实现三段串行
+    # （列表抓取→批量翻译→关键词翻译），冷启动最坏可累计 30 秒以上
+    kw_future = None
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        corpus_future = pool.submit(_get_search_corpus)
+        if has_chinese:
+            kw_future = pool.submit(_translate_keyword, keyword)
+        articles = corpus_future.result()
+
+    # 语料不可用时回退已缓存的列表数据
     if not articles:
-        articles, _ = get_anime_news(limit=20)  # 只获取20篇用于搜索
+        cache_keys = [k for k in _cache if k.startswith('news_')]
+        if cache_keys:
+            latest_key = max(cache_keys, key=lambda k: _cache[k][1])  # 按过期时间排序
+            cached_articles, _ = _cache[latest_key]
+            if isinstance(cached_articles, tuple):
+                articles = cached_articles[0]  # 格式：(articles, meta)
+            else:
+                articles = cached_articles
 
     keywords = [keyword.lower()]
 
-    if has_chinese:
+    # 关键词翻译已在语料拉取时并行执行，这里只取结果
+    if kw_future is not None:
         try:
-            translated = _translate_keyword(keyword)
+            translated = kw_future.result()
             if translated and translated.lower() != keyword.lower():
                 keywords.append(translated.lower())
                 print(f'>>> 搜索词翻译: "{keyword}" → "{translated}"')
@@ -432,31 +539,37 @@ def get_article_content(url):
 
 
 def _translate_article(text):
-    """翻译整篇文章。按段落分批调用阿里云。"""
+    """翻译整篇文章。按段落分批调用阿里云，各批次并发执行。"""
     paragraphs = [p for p in text.split('\n\n') if p.strip()]
     if not paragraphs:
         return text
 
-    translated_parts = []
     BATCH_SIZE = 5  # 每批 5 段
 
-    for i in range(0, len(paragraphs), BATCH_SIZE):
-        batch = paragraphs[i:i + BATCH_SIZE]
+    def _run_batch(batch):
+        """翻译一批段落，返回译文片段列表"""
         joined = '\n'.join(batch)
 
-        # 超过单次限制的段落单独处理
+        # 超过单次限制的批次拆成单段处理
         if len(joined) > _ALIYUN_SINGLE_MAX:
+            parts = []
             for p in batch:
                 if len(p) > _ALIYUN_SINGLE_MAX:
                     p = p[:_ALIYUN_SINGLE_MAX]
                 single = _aliyun_call(p)
-                translated_parts.append(single if single else p)
-            continue
+                parts.append(single if single else p)
+            return parts
 
         translated = _aliyun_call(joined)
         if translated:
-            translated_parts.append(translated)
-        else:
-            translated_parts.append('\n'.join(batch))
+            return [translated]
+        return ['\n'.join(batch)]
 
-    return '\n\n'.join(translated_parts)
+    jobs = [paragraphs[i:i + BATCH_SIZE]
+            for i in range(0, len(paragraphs), BATCH_SIZE)]
+
+    # 各批次并发翻译：原先串行执行，长文每多一批就多等一次阿里云往返
+    with ThreadPoolExecutor(max_workers=min(4, len(jobs))) as pool:
+        chunk_lists = list(pool.map(_run_batch, jobs))
+
+    return '\n\n'.join(chunk for chunks in chunk_lists for chunk in chunks)
