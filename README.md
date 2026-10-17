@@ -107,11 +107,13 @@
 │   │   └── style.css                       # 全局样式
 │   ├── images/
 │   │   ├── icon-192.png                    # PWA 图标（192x192）
-│   │   └── icon-512.png                    # PWA 图标（512x512）
+│   │   ├── icon-512.png                    # PWA 图标（512x512）
+│   │   └── kanban.png                      # 看板娘立绘
+│   ├── js/
+│   │   └── upload-compress.js              # 上传前图片压缩
 │   ├── favicon.ico                         # 浏览器标签页图标
 │   ├── robots.txt                          # 搜索引擎爬虫抓取规则
-│   ├── sitemap.xml                         # 站点地图
-│   └── sw.js                               # Service Worker
+│   └── sitemap.xml                         # 站点地图
 ├── templates/                              # Jinja2 前端模板
 │   └── ...
 ├── tests/                                  # Pytest 测试套件
@@ -124,13 +126,16 @@
 ├── init.py                                 # 手动运维文件
 ├── LICENSE                                 # MIT 许可证
 ├── package.json                            # Node.js 构建配置
+├── package-lock.json                       # Node.js 依赖锁定
+├── playwright.config.js                    # Playwright E2E 配置
 ├── pytest.ini                              # Pytest 配置
 ├── README.md                               # 项目说明文档
 ├── requirements.txt                        # Python 依赖列表
 ├── run.py                                  # 应用启动入口
+├── sw.js                                   # Service Worker
 └── vercel.json                             # Vercel 部署配置
 ```
-> /static 文件夹中有 favicon.ico、icon-192.png、icon-512.png、og-image.png
+> /static 文件夹中有 favicon.ico、icon-192.png、icon-512.png
 > 
 > 这些是我为我的社团放的预览图，你可以换成你喜欢的
 
@@ -255,7 +260,7 @@ npm test
 
 - 核心功能完整，已部署至生产环境
 - 萌战引擎：禁赛 / 轮空 / 复活赛 / 冠军空缺等赛事守则完备，人数短缺全链路不崩
-- 后端测试：164 个用例全部通过
+- 后端测试：182 个用例全部通过
 - 前端测试：Playwright 六大 E2E 套件（登录、留言板、内容、萌战、投票、管理后台）
 - CI：GitHub Actions（pytest + flake8 + CodeQL + Playwright）
 
