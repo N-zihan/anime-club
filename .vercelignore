@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+reports/
+playwright-report/
+test-results/
+node_modules/
+.env
+.git/
+.idea/
+_t4_*
+tmp*

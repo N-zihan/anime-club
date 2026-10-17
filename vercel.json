@@ -1,7 +1,7 @@
 {
   "version": 2,
   "regions": [
-    "bom1"
+    "hkg1"
   ],
   "builds": [
     {
@@ -9,7 +9,7 @@
       "use": "@vercel/python",
       "config": {
         "pythonVersion": "3.14",
-        "maxDuration": 30,
+        "maxDuration": 60,
         "installCommand": "pip install -r requirements.txt"
       }
     }
