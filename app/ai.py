@@ -9,11 +9,18 @@ AI 解说与预测模块
 import hashlib
 import logging
 import os
-from datetime import datetime, timedelta
+import threading
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 
 from openai import OpenAI
 
+# contest_engine 只依赖 config/models，不反向依赖本模块，可顶层安全导入。
+# 此前阶段计算要靠 public._calc_current_phase 延迟导入（public 顶层又 import 本模块），
+# 形成 ai → public 的反向依赖，现改为直接复用引擎的阶段计算函数。
+from .contest_engine import (
+    calc_phase, calc_stage_times, auto_activate_contest, prepare_group_round_data,
+)
 from .models import Contest, Candidate, ContestVote, db
 
 logger = logging.getLogger(__name__)
@@ -83,6 +90,69 @@ def _set_cache(key: str, data: str):
     }
 
 
+# 同键并发的单飞锁：缓存未命中时只放行一个请求真正调用模型，其余请求等锁后
+# 直接读缓存，避免冷启动或并发穿透把付费 API 打爆。用定长锁数组（按缓存键哈希
+# 取模）而非按 key 建锁：数量有界，不需要额外清理，碰撞最多造成轻微串行。
+_KEY_LOCK_COUNT = 64
+_key_locks = [threading.Lock() for _ in range(_KEY_LOCK_COUNT)]
+
+
+def _key_lock(key: str) -> threading.Lock:
+    """按缓存键取一把定长锁（缓存键为 md5 十六进制）"""
+    try:
+        slot = int(key[:8], 16) % _KEY_LOCK_COUNT
+    except (ValueError, TypeError):
+        slot = 0
+    return _key_locks[slot]
+
+
+def _cached_or_compute(key: str, compute, force: bool = False) -> str:
+    """缓存优先；未命中时单飞执行 compute，并把结果写回缓存"""
+    if not CACHE_ENABLED:
+        return compute()
+    if not force:
+        cached = _get_cached(key)
+        if cached is not None:
+            return cached
+    with _key_lock(key):
+        if not force:
+            cached = _get_cached(key)
+            if cached is not None:
+                return cached
+        data = compute()
+        _set_cache(key, data)
+        return data
+
+
+def _chat(prompt: str, system: str, max_tokens: int, temperature: float) -> str:
+    """统一的模型调用入口（解说与预测共用）"""
+    client = get_client()
+    response = client.chat.completions.create(
+        model=os.getenv('AI_MODEL', 'deepseek-ai/DeepSeek-V3'),
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt},
+        ],
+        max_tokens=max_tokens,
+        temperature=temperature,
+    )
+    return response.choices[0].message.content
+
+
+def _current_phase(contest: Contest) -> str:
+    """赛事当前阶段。
+
+    此处原先借道 public._calc_current_phase（public 顶层又 import 本模块），
+    形成 ai → public 的反向依赖；现直接调用引擎的阶段计算函数。
+    """
+    if contest.open_at and contest.open_at.tzinfo is not None:
+        contest.open_at = contest.open_at.replace(tzinfo=None)
+    now = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=8)
+    times = calc_stage_times(contest.open_at)
+    auto_activate_contest(contest, now)
+    return calc_phase(contest, now, times)
+
+
 def _get_qualifying_top_votes(contest_id: int, gender: str = None, limit: int = 10) -> list:
     """获取海选票数前 N 名（可按性别过滤）"""
     # 构建基础查询
@@ -131,10 +201,10 @@ def _build_commentary_prompt(contest: Contest, phase: str, phase_name: str, extr
         return _build_qualifying_prompt(contest)
     if phase == 'qualifying_result':
         return _build_qualifying_result_prompt(contest)
-    if phase in ['group_round_1', 'group_round_2', 'group_round_3']:
+    # 投票期与公示期共用同一个构建器（内部按 phase 是否以 _result 结尾切换
+    # 标题与收尾要求），原先两个近乎复制的函数已合并，避免只改一处
+    if phase.startswith('group_round'):
         return _build_group_prompt(contest, phase, extra_data)
-    if phase in ['group_round_1_result', 'group_round_2_result', 'group_round_3_result']:
-        return _build_group_result_prompt(contest, phase, extra_data)
     if phase in ['knockout_16', 'knockout_8', 'knockout_4', 'final_vote']:
         return _build_knockout_prompt(contest, phase, extra_data)
     if phase in ['knockout_16_result', 'knockout_8_result', 'knockout_4_result']:
@@ -251,8 +321,6 @@ def _auto_group_extra_data(contest: Contest, phase: str) -> dict:
     小组赛整个阶段只能回占位文案。这里按轮次现算：投票期取当前累计票数，
     公示期取最终结果，男女组都覆盖。
     """
-    from .contest_engine import prepare_group_round_data
-
     parts = phase.split('_')
     try:
         round_num = int(parts[2])
@@ -279,11 +347,25 @@ def _auto_group_extra_data(contest: Contest, phase: str) -> dict:
     }
 
 
-def _group_section_lines(section: dict, round_num: int) -> list:
+def _slot_name(candidate) -> str:
+    """对局槽位显示名：Candidate 取 name，其余类型统一转字符串，绝不写对象 repr"""
+    name = getattr(candidate, 'name', None)
+    return str(name) if name else str(candidate)
+
+
+def _slot_id(candidate):
+    """槽位候选人 id：Candidate 对象取 id，裸 id 原样返回"""
+    if candidate is None:
+        return None
+    return getattr(candidate, 'id', candidate)
+
+
+def _group_section_lines(section: dict, round_num: int = 0) -> list:
     """单个性别的对局与积分数据行"""
     lines = []
     group_results = section.get('group_results') or []
-    for group in group_results[:8]:
+    # 组数由赛事配置决定，不再写死 8：扩组后第 9 组及以后同样要进 prompt
+    for group in group_results:
         group_name = group.get('group_name', '')
         matches = group.get('matches', [])
         if not matches:
@@ -295,9 +377,10 @@ def _group_section_lines(section: dict, round_num: int) -> list:
             v1 = m.get('votes1', 0)
             v2 = m.get('votes2', 0)
             winner = m.get('winner')
-            getter = (lambda c: getattr(c, 'name', '')) if hasattr(c1, 'name') else (lambda c: c)
-            c1_name = getter(c1) if c1 else ('轮空' if not m.get('removed1') else '已移除')
-            c2_name = getter(c2) if c2 else ('轮空' if not m.get('removed2') else '已移除')
+            # 逐槽位判定：此前仅凭 c1 是否为对象来选择取名方式，当 c1 轮空（None）
+            # 而 c2 正常时，会把 <Candidate ...> 的对象 repr 直接写进 prompt
+            c1_name = _slot_name(c1) if c1 is not None else ('已移除' if m.get('removed1') else '轮空')
+            c2_name = _slot_name(c2) if c2 is not None else ('已移除' if m.get('removed2') else '轮空')
             mark = ""
             if m.get('bye'):
                 mark = "（轮空场）"
@@ -305,8 +388,7 @@ def _group_section_lines(section: dict, round_num: int) -> list:
                 mark = "（双方禁赛，无人晋级）"
             elif m.get('banned1') or m.get('banned2'):
                 mark = "（一方禁赛，对手不战而胜）"
-            c1_id = getattr(c1, 'id', None)
-            if winner is not None and winner == c1_id:
+            if winner is not None and winner == _slot_id(c1):
                 mark += "🏆"
             lines.append(f"  {c1_name}({v1}票) vs {c2_name}({v2}票){mark}")
 
@@ -319,25 +401,41 @@ def _group_section_lines(section: dict, round_num: int) -> list:
     return lines
 
 
-def _build_group_prompt(contest: Contest, _phase: str, extra_data: dict) -> str:
-    """小组赛进行中 prompt"""
-    if not extra_data:
-        return "小组赛数据加载中，请稍后再看 AI 分析。"
+def _build_group_prompt(contest: Contest, phase: str, extra_data: dict) -> str:
+    """小组赛 prompt（投票期与公示期共用）。
 
-    # 新结构：female/male 各含 groups/group_results/ranking
+    两者的数据行完全一致，只有标题（进行中 / 结果公示）与收尾要求不同。
+    此前是两个近乎逐行复制的函数（_build_group_result_prompt），数据行一改
+    就得改两遍，极易漏改其中一处。现合并为一个函数，公示期复用同一份数据行。
+    """
+    is_result = (phase or '').endswith('_result')
+    placeholder = ("小组赛本轮数据加载中，请稍后再看 AI 分析。" if is_result
+                   else "小组赛数据加载中，请稍后再看 AI 分析。")
+    if not extra_data:
+        return placeholder
+
+    if is_result:
+        round_map = {
+            'group_round_1_result': 1,
+            'group_round_2_result': 2,
+            'group_round_3_result': 3,
+        }
+        round_num = round_map.get(phase, 1)
+        header = f"阶段：第{round_num}轮公示"
+    else:
+        round_num = 1
+        parts = (phase or '').split('_')
+        if len(parts) >= 3 and parts[2].isdigit():
+            round_num = int(parts[2])
+        header = f"阶段：小组赛第{round_num}轮"
+
+    # 新结构：female/male 各含 groups/group_results/ranking；兼容旧单性别结构
     if 'female' in extra_data or 'male' in extra_data:
         sections = [(g, extra_data.get(g, {})) for g in ('female', 'male')]
     else:
-        # 兼容旧单性别结构
-        gender = extra_data.get('gender', 'female')
-        sections = [(gender, extra_data)]
+        sections = [(extra_data.get('gender', 'female'), extra_data)]
 
-    round_num = 1
-    parts = (_phase or '').split('_')
-    if len(parts) >= 3 and parts[2].isdigit():
-        round_num = int(parts[2])
-
-    lines = [f"赛事：{contest.title}", f"阶段：小组赛第{round_num}轮"]
+    lines = [f"赛事：{contest.title}", header]
     has_data = False
     for gender, section in sections:
         data_lines = _group_section_lines(section, round_num)
@@ -346,13 +444,30 @@ def _build_group_prompt(contest: Contest, _phase: str, extra_data: dict) -> str:
             lines.append("\n【女组】" if gender == 'female' else "\n【男组】")
             lines.extend(data_lines)
     if not has_data:
-        return "小组赛数据加载中，请稍后再看 AI 分析。"
+        return placeholder
+
+    body = chr(10).join(lines)
+
+    if is_result:
+        return f"""
+你是萌战解说员，正在解说小组赛第{round_num}轮的结果公示。
+
+当前数据：
+{body}
+
+请生成一段 150-200 字的小组赛总结。
+要求：
+1. 男女组分开总结（若某组没有数据则略过该组）
+2. 突出本轮的精彩对决和出线形势
+3. 提到积分榜上的领先者
+4. 语气热情、专业，不要编造数据
+"""
 
     return f"""
 你是萌战解说员，正在解说小组赛第{round_num}轮。
 
 当前数据：
-{chr(10).join(lines)}
+{body}
 
 请根据以上数据，生成一段 120-180 字的小组赛战报。
 要求：
@@ -448,51 +563,6 @@ def _build_qualifying_result_prompt(contest: Contest) -> str:
 3. 预告即将开始的小组赛
 4. 语气热情、有期待感
 5. 不要编造数据，不要混淆男女组
-"""
-
-
-def _build_group_result_prompt(contest: Contest, phase: str, extra_data: dict) -> str:
-    """小组赛公示期 prompt"""
-    if not extra_data:
-        return "小组赛本轮数据加载中，请稍后再看 AI 分析。"
-
-    round_map = {
-        'group_round_1_result': 1,
-        'group_round_2_result': 2,
-        'group_round_3_result': 3,
-    }
-    round_num = round_map.get(phase, 1)
-
-    # 新结构：female/male 各含 group_results/ranking；兼容旧单性别结构
-    if 'female' in extra_data or 'male' in extra_data:
-        sections = [(g, extra_data.get(g, {})) for g in ('female', 'male')]
-    else:
-        gender = extra_data.get('gender', 'female')
-        sections = [(gender, extra_data)]
-
-    lines = [f"赛事：{contest.title}", f"阶段：第{round_num}轮公示"]
-    has_data = False
-    for gender, section in sections:
-        data_lines = _group_section_lines(section, round_num)
-        if data_lines:
-            has_data = True
-            lines.append("\n【女组】" if gender == 'female' else "\n【男组】")
-            lines.extend(data_lines)
-    if not has_data:
-        return "小组赛本轮数据加载中，请稍后再看 AI 分析。"
-
-    return f"""
-你是萌战解说员，正在解说小组赛第{round_num}轮的结果公示。
-
-当前数据：
-{chr(10).join(lines)}
-
-请生成一段 150-200 字的小组赛总结。
-要求：
-1. 男女组分开总结（若某组没有数据则略过该组）
-2. 突出本轮的精彩对决和出线形势
-3. 提到积分榜上的领先者
-4. 语气热情、专业，不要编造数据
 """
 
 
@@ -602,14 +672,6 @@ def generate_commentary(contest_id: int, phase: str, extra_data: dict = None, fo
         if phase == 'not_started':
             return True, "赛事尚未开始，AI 解说将在提名期启动后自动开启。请于 10 月 1 日 18:00 后回来查看！", None
 
-        # 检查缓存（force 跳过）
-        round_info = extra_data.get('round_info', '') if extra_data else ''
-        cache_key = _get_cache_key(contest_id, phase, 'commentary', round_info)
-        if not force:
-            cached = _get_cached(cache_key)
-            if cached:
-                return True, cached, None
-
         # 阶段名称映射
         phase_names = {
             'nomination': '提名期', 'review': '审核期',
@@ -621,6 +683,16 @@ def generate_commentary(contest_id: int, phase: str, extra_data: dict = None, fo
             'closed': '已结束'
         }
         phase_name = phase_names.get(phase, phase)
+
+        # 缓存键：round_info 由调用方通过 extra_data 提供（/commentary 路由不传）。
+        # 先查缓存再构建 prompt——否则命中缓存也要白跑一遍小组赛数据/票数查询，
+        # 比改前更贵（改前是先查缓存、命中即返回）。
+        round_info = extra_data.get('round_info', '') if extra_data else ''
+        cache_key = _get_cache_key(contest_id, phase, 'commentary', round_info)
+        if not force:
+            cached = _get_cached(cache_key)
+            if cached:
+                return True, cached, None
 
         # 小组赛阶段调用方不带 extra_data（/commentary 路由没有比赛数据可传），
         # 这里按轮次自建男女组数据，否则整个小组赛只能回「数据加载中」占位
@@ -634,19 +706,15 @@ def generate_commentary(contest_id: int, phase: str, extra_data: dict = None, fo
                 or prompt.startswith('海选投票已开启')):
             return True, prompt, None
 
-        client = get_client()
-        response = client.chat.completions.create(
-            model=os.getenv('AI_MODEL', 'deepseek-ai/DeepSeek-V3'),
-            messages=[
-                {"role": "system", "content": "你是一个二次元萌战赛事的专业解说员，风格热情、活泼、略带中二。"},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=400,
-            temperature=0.8
+        content = _cached_or_compute(
+            cache_key,
+            lambda: _chat(
+                prompt,
+                "你是一个二次元萌战赛事的专业解说员，风格热情、活泼、略带中二。",
+                400, 0.8,
+            ),
+            force=force,
         )
-
-        content = response.choices[0].message.content
-        _set_cache(cache_key, content)
         return True, content, None
 
     except Exception as e:
@@ -654,13 +722,25 @@ def generate_commentary(contest_id: int, phase: str, extra_data: dict = None, fo
         return False, None, str(e)
 
 
+def _knockout_vote_totals(contest: Contest, sub_round: int) -> dict:
+    """本轮淘汰赛各候选人的票数（一次分组聚合，替代逐候选人 SUM）"""
+    rows = (
+        db.session.query(ContestVote.candidate_id, db.func.sum(ContestVote.weight))
+        .filter(
+            ContestVote.contest_id == contest.id,
+            ContestVote.round_number == 4,
+            ContestVote.sub_round == sub_round,
+        )
+        .group_by(ContestVote.candidate_id)
+        .all()
+    )
+    return {cid: int(total or 0) for cid, total in rows}
+
+
 def _prediction_knockout_lines(contest: Contest) -> list:
     """淘汰赛阶段的当前对阵数据行（男女组分开，实时票数）"""
-    from .contest_engine import get_knockout_votes
-
     config = contest.config or {}
     candidates_map = {c.id: c for c in contest.candidates.all()}
-    sub_round_map = {'16强': 1, '8强': 2, '4强': 3, '决赛': 4}
     round_order = {'16强': 1, '8强': 2, '4强': 3, '决赛': 4}
 
     active_round = 0
@@ -670,7 +750,11 @@ def _prediction_knockout_lines(contest: Contest) -> list:
     if not active_round:
         return []
     round_name = {1: '16强', 2: '8强', 3: '4强', 4: '决赛'}[active_round]
-    sub_round = sub_round_map[round_name]
+
+    # 一次分组查询取回本轮全部候选人的票数：此前是每场每候选人各调一次
+    # get_knockout_votes，16强男女组合计最多 32 次 SUM，叠加模型调用后
+    # 逼近 Vercel 30s 上限。sub_round 与轮次一一对应（16强=1 … 决赛=4）
+    totals = _knockout_vote_totals(contest, active_round)
 
     lines = [f"\n当前进行：{round_name}"]
     for gender, label in (('female', '【女组】'), ('male', '【男组】')):
@@ -685,8 +769,8 @@ def _prediction_knockout_lines(contest: Contest) -> list:
             n2 = '已移除' if m.get('candidate2') else '轮空'
             v1 = v2 = '?'
             if c1 and c2:
-                v1 = get_knockout_votes(contest, c1.id, gender, sub_round)
-                v2 = get_knockout_votes(contest, c2.id, gender, sub_round)
+                v1 = totals.get(c1.id, 0)
+                v2 = totals.get(c2.id, 0)
             banned_mark = ""
             if (c1 and c1.banned) or (c2 and c2.banned):
                 banned_mark = "（有角色禁赛）"
@@ -802,10 +886,12 @@ def generate_prediction(contest_id: int) -> tuple:
             return True, "赛事尚未开始，AI 预测将在比赛启动后开启。请于 10 月 1 日 18:00 后回来查看！", None
 
         # 阶段决定数据视角与缓存键。旧实现缓存键只用 status（小组赛15天/淘汰赛
-        # 一个键）、数据写死海选票数，导致小组赛和淘汰赛期间预测永远停留在海选视角
-        from .public import _calc_current_phase
-        phase = _calc_current_phase(contest)
+        # 一个键）、数据写死海选票数，导致小组赛和淘汰赛期间预测永远停留在海选视角。
+        # 阶段计算直接走引擎，不再借道 public，切断 ai → public 反向依赖
+        phase = _current_phase(contest)
 
+        # 先查缓存再构建 prompt：构建预测数据要跑小组赛/淘汰赛的聚合查询，
+        # 命中缓存时不该白跑一遍（改前就是先查缓存、命中即返回）
         cache_key = _get_cache_key(contest_id, phase, 'prediction')
         cached = _get_cached(cache_key)
         if cached:
@@ -815,19 +901,14 @@ def generate_prediction(contest_id: int) -> tuple:
         if prompt is None:
             return True, "当前阶段暂无可供预测的数据，请稍后再看。", None
 
-        client = get_client()
-        response = client.chat.completions.create(
-            model=os.getenv('AI_MODEL', 'deepseek-ai/DeepSeek-V3'),
-            messages=[
-                {"role": "system", "content": "你是一个二次元萌战赛事的预测专家，分析理性但语气有趣。"},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=400,
-            temperature=0.7
+        content = _cached_or_compute(
+            cache_key,
+            lambda: _chat(
+                prompt,
+                "你是一个二次元萌战赛事的预测专家，分析理性但语气有趣。",
+                400, 0.7,
+            ),
         )
-
-        content = response.choices[0].message.content
-        _set_cache(cache_key, content)
         return True, content, None
 
     except Exception as e:

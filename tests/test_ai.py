@@ -109,7 +109,7 @@ class TestAIPrediction:
         ]
 
         with patch('app.ai.get_client', return_value=mock_client), \
-             patch('app.public._calc_current_phase', return_value='qualifying'):
+             patch('app.ai._current_phase', return_value='qualifying'):
             success1, content1, error1 = generate_prediction(sample_contest.id)
             assert success1 is True
             assert content1 == "这是缓存的预测内容。"
@@ -132,7 +132,7 @@ class TestAIPrediction:
         mock_client.chat.completions.create.side_effect = Exception("API 服务暂时不可用")
 
         with patch('app.ai.get_client', return_value=mock_client), \
-             patch('app.public._calc_current_phase', return_value='qualifying'):
+             patch('app.ai._current_phase', return_value='qualifying'):
             success, content, error = generate_prediction(sample_contest.id)
 
             assert success is False
@@ -401,7 +401,7 @@ class TestAIPredictionStageAware:
         mock = self._mock_client('小组赛阶段预测。')
 
         with patch('app.ai.get_client', return_value=mock), \
-             patch('app.public._calc_current_phase', return_value='group_round_1'):
+             patch('app.ai._current_phase', return_value='group_round_1'):
             success, content, error = generate_prediction(sample_contest.id)
 
         assert success is True and content == '小组赛阶段预测。'
@@ -434,7 +434,7 @@ class TestAIPredictionStageAware:
         mock = self._mock_client('淘汰赛阶段预测。')
 
         with patch('app.ai.get_client', return_value=mock), \
-             patch('app.public._calc_current_phase', return_value='knockout_16'):
+             patch('app.ai._current_phase', return_value='knockout_16'):
             success, content, error = generate_prediction(sample_contest.id)
 
         assert success is True and content == '淘汰赛阶段预测。'
@@ -454,14 +454,14 @@ class TestAIPredictionStageAware:
             MagicMock(message=MagicMock(content="第一次预测"))
         ]
         with patch('app.ai.get_client', return_value=mock), \
-             patch('app.public._calc_current_phase', return_value='group_round_1'):
+             patch('app.ai._current_phase', return_value='group_round_1'):
             generate_prediction(sample_contest.id)
         mock.chat.completions.create.side_effect = None
         mock.chat.completions.create.return_value.choices = [
             MagicMock(message=MagicMock(content="第二次预测"))
         ]
         with patch('app.ai.get_client', return_value=mock), \
-             patch('app.public._calc_current_phase', return_value='group_round_2'):
+             patch('app.ai._current_phase', return_value='group_round_2'):
             success, content, error = generate_prediction(sample_contest.id)
 
         assert success is True
@@ -473,9 +473,163 @@ class TestAIPredictionStageAware:
         mock = self._mock_client()
 
         with patch('app.ai.get_client', return_value=mock), \
-             patch('app.public._calc_current_phase', return_value='closed'):
+             patch('app.ai._current_phase', return_value='closed'):
             success, content, error = generate_prediction(sample_contest.id)
 
         assert success is True
         assert '暂无可供预测' in content
         assert mock.chat.completions.create.call_count == 0
+
+
+# ========== 回归：逐槽位取名 / 组数上限 / 单飞缓存 / 合并构建器 ==========
+from app.ai import (
+    _group_section_lines, _cached_or_compute, _knockout_vote_totals, _current_phase,
+)
+
+
+class TestGroupSectionLinesEdgeCases:
+    """① 轮空槽不得泄漏对象 repr；④ 组数不再写死 8"""
+
+    def test_none_slot_never_leaks_object_repr(self, sample_contest, db_session):
+        cand = sample_contest.candidates.filter_by(gender='female').first()
+        section = {'group_results': [{
+            'group_name': 'A组',
+            'matches': [{
+                'candidate1': None, 'candidate2': cand,
+                'votes1': 0, 'votes2': 4,
+                'winner': cand.id, 'removed1': False,
+            }],
+        }]}
+        text = '\n'.join(_group_section_lines(section, 1))
+        assert '轮空' in text
+        assert cand.name in text
+        assert '<Candidate' not in text
+        assert 'object at 0x' not in text
+
+    def test_removed_slot_label(self, sample_contest, db_session):
+        cand = sample_contest.candidates.filter_by(gender='female').first()
+        section = {'group_results': [{
+            'group_name': 'A组',
+            'matches': [{
+                'candidate1': None, 'candidate2': cand,
+                'votes1': 0, 'votes2': 4, 'winner': cand.id, 'removed1': True,
+            }],
+        }]}
+        text = '\n'.join(_group_section_lines(section, 1))
+        assert '已移除' in text
+        assert '<Candidate' not in text
+
+    def test_more_than_eight_groups_are_included(self, sample_contest, db_session):
+        cands = sample_contest.candidates.filter_by(gender='female').limit(18).all()
+        groups = []
+        for i in range(9):
+            groups.append({
+                'group_name': f'{chr(65 + i)}组',
+                'matches': [{
+                    'candidate1': cands[2 * i], 'candidate2': cands[2 * i + 1],
+                    'votes1': 1, 'votes2': 0, 'winner': cands[2 * i].id,
+                }],
+            })
+        text = '\n'.join(_group_section_lines({'group_results': groups}, 1))
+        assert 'I组' in text
+        assert cands[16].name in text
+
+
+class TestGroupPromptMerged:
+    """⑥ 投票期与公示期共用同一个构建器，只有标题与收尾要求不同"""
+
+    def test_same_builder_serves_vote_and_result_phases(self, sample_contest, db_session):
+        cand = sample_contest.candidates.filter_by(gender='female').first()
+        extra = {'female': {'group_results': [{
+            'group_name': 'A组',
+            'matches': [{'candidate1': cand, 'candidate2': None,
+                         'votes1': 6, 'votes2': 0, 'winner': cand.id,
+                         'removed2': False}],
+        }], 'ranking': []}}
+        vote_prompt = _build_group_prompt(sample_contest, 'group_round_1', extra)
+        result_prompt = _build_group_prompt(sample_contest, 'group_round_2_result', extra)
+        assert '小组赛第1轮' in vote_prompt
+        assert '第2轮公示' in result_prompt
+        assert '结果公示' in result_prompt
+
+    def test_old_result_builder_removed(self):
+        import app.ai as ai_module
+        assert not hasattr(ai_module, '_build_group_result_prompt')
+
+
+class TestCacheSingleFlight:
+    """⑤ 同键并发未命中只放行一次真实计算，防缓存击穿"""
+
+    def test_concurrent_misses_compute_once(self):
+        import threading
+        import time
+        _cache.clear()
+        key = 'a' * 32
+        calls = []
+        results = []
+
+        def compute():
+            calls.append(1)
+            time.sleep(0.05)
+            return 'payload'
+
+        def worker():
+            results.append(_cached_or_compute(key, compute))
+
+        threads = [threading.Thread(target=worker) for _ in range(4)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert calls == [1]
+        assert results == ['payload'] * 4
+
+    def test_cached_reused_and_force_recomputes(self):
+        _cache.clear()
+        key = 'b' * 32
+        calls = []
+
+        def compute():
+            calls.append(1)
+            return f'v{len(calls)}'
+
+        assert _cached_or_compute(key, compute) == 'v1'
+        assert _cached_or_compute(key, compute) == 'v1'
+        assert _cached_or_compute(key, compute, force=True) == 'v2'
+        assert len(calls) == 2
+
+
+class TestCurrentPhaseFromEngine:
+    """③ 阶段计算走引擎，不再借道 public（历史上的 ai → public 反向依赖）"""
+
+    def test_phase_uses_engine_calc_phase(self, sample_contest, db_session):
+        with patch('app.ai.calc_phase', return_value='group_round_2') as mock_calc:
+            assert _current_phase(sample_contest) == 'group_round_2'
+        assert mock_calc.called
+
+    def test_public_reverse_dependency_removed(self):
+        import app.ai as ai_module
+        assert not hasattr(ai_module, '_calc_current_phase')
+
+
+class TestKnockoutVoteAggregate:
+    """② 淘汰赛票数改为一次分组聚合，替代逐候选人 SUM"""
+
+    def test_totals_grouped_and_filtered_by_round(self, sample_contest, db_session, sample_user):
+        c = sample_contest.candidates.filter_by(gender='female').limit(2).all()
+        db_session.add(ContestVote(
+            contest_id=sample_contest.id, candidate_id=c[0].id,
+            user_id=sample_user.id, weight=6,
+            round_number=4, sub_round=1, gender='female'
+        ))
+        db_session.add(ContestVote(
+            contest_id=sample_contest.id, candidate_id=c[1].id,
+            user_id=sample_user.id, weight=2,
+            round_number=4, sub_round=2, gender='female'
+        ))
+        db_session.commit()
+
+        totals = _knockout_vote_totals(sample_contest, 1)
+        assert totals.get(c[0].id) == 6
+        assert c[1].id not in totals
