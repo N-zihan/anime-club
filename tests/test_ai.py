@@ -108,7 +108,8 @@ class TestAIPrediction:
             MagicMock(message=MagicMock(content="这是缓存的预测内容。"))
         ]
 
-        with patch('app.ai.get_client', return_value=mock_client):
+        with patch('app.ai.get_client', return_value=mock_client), \
+             patch('app.public._calc_current_phase', return_value='qualifying'):
             success1, content1, error1 = generate_prediction(sample_contest.id)
             assert success1 is True
             assert content1 == "这是缓存的预测内容。"
@@ -130,7 +131,8 @@ class TestAIPrediction:
         mock_client = MagicMock()
         mock_client.chat.completions.create.side_effect = Exception("API 服务暂时不可用")
 
-        with patch('app.ai.get_client', return_value=mock_client):
+        with patch('app.ai.get_client', return_value=mock_client), \
+             patch('app.public._calc_current_phase', return_value='qualifying'):
             success, content, error = generate_prediction(sample_contest.id)
 
             assert success is False
@@ -362,3 +364,118 @@ class TestAICommentaryGroupStage:
         pairs = fr['matches']
         assert pairs[0]['winner'] == f[0].id        # f0 5票 > f1 3票
         assert pairs[1]['winner'] == f[2].id        # f3 禁赛，f2 不战而胜
+
+
+class TestAIPredictionStageAware:
+    """AI 预测按阶段取数：小组赛/淘汰赛不再停留在海选视角"""
+
+    def _setup_group(self, sample_contest, db_session, sample_user):
+        f = sample_contest.candidates.filter_by(gender='female').limit(4).all()
+        m = sample_contest.candidates.filter_by(gender='male').limit(4).all()
+        for c in f + m:
+            c.stage = 'group_stage'
+        sample_contest.config = {
+            'female_groups': [[f[0].id, f[1].id, f[2].id, f[3].id]],
+            'male_groups': [[m[0].id, m[1].id, m[2].id, m[3].id]],
+        }
+        for cand, weight in [(f[0], 5), (f[1], 3)]:
+            db_session.add(ContestVote(
+                contest_id=sample_contest.id, candidate_id=cand.id,
+                user_id=sample_user.id, weight=weight,
+                round_number=1, gender='female'
+            ))
+        db_session.commit()
+        return f, m
+
+    def _mock_client(self, text='这是预测内容。'):
+        client = MagicMock()
+        client.chat.completions.create.return_value.choices = [
+            MagicMock(message=MagicMock(content=text))
+        ]
+        return client
+
+    def test_prediction_group_stage_uses_group_data(self, sample_contest, db_session, sample_user):
+        """小组赛阶段：预测 prompt 含分组对阵与积分，而非海选票数"""
+        _cache.clear()
+        f, m = self._setup_group(sample_contest, db_session, sample_user)
+        mock = self._mock_client('小组赛阶段预测。')
+
+        with patch('app.ai.get_client', return_value=mock), \
+             patch('app.public._calc_current_phase', return_value='group_round_1'):
+            success, content, error = generate_prediction(sample_contest.id)
+
+        assert success is True and content == '小组赛阶段预测。'
+        user_message = mock.chat.completions.create.call_args[1]['messages'][1]['content']
+        assert '小组赛第1轮' in user_message
+        assert f[0].name in user_message and m[0].name in user_message
+        assert '总积分排名' in user_message
+        assert '海选票数前10名' not in user_message
+
+    def test_prediction_knockout_stage_uses_matches(self, sample_contest, db_session, sample_user):
+        """淘汰赛阶段：预测 prompt 含当前对阵与实时票数"""
+        _cache.clear()
+        c = sample_contest.candidates.filter_by(gender='female').limit(2).all()
+        for cand in c:
+            cand.stage = 'knockout'
+        sample_contest.config = {
+            'knockout_matches_female': [
+                {'round': 'round_1', 'round_name': '16强',
+                 'candidate1': c[0].id, 'candidate2': c[1].id,
+                 'status': 'active', 'votes1': 0, 'votes2': 0, 'winner': None}
+            ],
+            'knockout_matches_male': []
+        }
+        db_session.add(ContestVote(
+            contest_id=sample_contest.id, candidate_id=c[0].id,
+            user_id=sample_user.id, weight=9,
+            round_number=4, sub_round=1, gender='female'
+        ))
+        db_session.commit()
+        mock = self._mock_client('淘汰赛阶段预测。')
+
+        with patch('app.ai.get_client', return_value=mock), \
+             patch('app.public._calc_current_phase', return_value='knockout_16'):
+            success, content, error = generate_prediction(sample_contest.id)
+
+        assert success is True and content == '淘汰赛阶段预测。'
+        user_message = mock.chat.completions.create.call_args[1]['messages'][1]['content']
+        assert '当前进行：16强' in user_message
+        assert c[0].name in user_message
+        assert '9票' in user_message            # sub_round=1 的实时票数进入 prompt
+        assert '【女组】' in user_message
+
+    def test_prediction_phase_cache_keys_differ(self, sample_contest, db_session, sample_user):
+        """不同阶段的预测缓存独立：阶段切换后重新生成而非永远读旧键"""
+        _cache.clear()
+        f, m = self._setup_group(sample_contest, db_session, sample_user)
+
+        mock = MagicMock()
+        mock.chat.completions.create.return_value.choices = [
+            MagicMock(message=MagicMock(content="第一次预测"))
+        ]
+        with patch('app.ai.get_client', return_value=mock), \
+             patch('app.public._calc_current_phase', return_value='group_round_1'):
+            generate_prediction(sample_contest.id)
+        mock.chat.completions.create.side_effect = None
+        mock.chat.completions.create.return_value.choices = [
+            MagicMock(message=MagicMock(content="第二次预测"))
+        ]
+        with patch('app.ai.get_client', return_value=mock), \
+             patch('app.public._calc_current_phase', return_value='group_round_2'):
+            success, content, error = generate_prediction(sample_contest.id)
+
+        assert success is True
+        assert content == '第二次预测'          # 缓存键随阶段变化，未命中第1轮旧键
+
+    def test_prediction_closed_returns_friendly(self, sample_contest, db_session):
+        """已结束/决赛公示：无需预测，不打 API"""
+        _cache.clear()
+        mock = self._mock_client()
+
+        with patch('app.ai.get_client', return_value=mock), \
+             patch('app.public._calc_current_phase', return_value='closed'):
+            success, content, error = generate_prediction(sample_contest.id)
+
+        assert success is True
+        assert '暂无可供预测' in content
+        assert mock.chat.completions.create.call_count == 0

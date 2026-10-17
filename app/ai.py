@@ -654,8 +654,145 @@ def generate_commentary(contest_id: int, phase: str, extra_data: dict = None, fo
         return False, None, str(e)
 
 
-def generate_prediction(contest_id: int, _extra_data: dict = None) -> tuple:
-    """生成赛事预测"""
+def _prediction_knockout_lines(contest: Contest) -> list:
+    """淘汰赛阶段的当前对阵数据行（男女组分开，实时票数）"""
+    from .contest_engine import get_knockout_votes
+
+    config = contest.config or {}
+    candidates_map = {c.id: c for c in contest.candidates.all()}
+    sub_round_map = {'16强': 1, '8强': 2, '4强': 3, '决赛': 4}
+    round_order = {'16强': 1, '8强': 2, '4强': 3, '决赛': 4}
+
+    active_round = 0
+    for g in ('female', 'male'):
+        for m in config.get(f'knockout_matches_{g}', []) or []:
+            active_round = max(active_round, round_order.get(m.get('round_name'), 0))
+    if not active_round:
+        return []
+    round_name = {1: '16强', 2: '8强', 3: '4强', 4: '决赛'}[active_round]
+    sub_round = sub_round_map[round_name]
+
+    lines = [f"\n当前进行：{round_name}"]
+    for gender, label in (('female', '【女组】'), ('male', '【男组】')):
+        matches = config.get(f'knockout_matches_{gender}', []) or []
+        if not matches:
+            continue
+        lines.append(f"{label}{round_name}对阵：")
+        for m in matches:
+            c1 = candidates_map.get(m.get('candidate1'))
+            c2 = candidates_map.get(m.get('candidate2'))
+            n1 = '已移除' if m.get('candidate1') else '轮空'
+            n2 = '已移除' if m.get('candidate2') else '轮空'
+            v1 = v2 = '?'
+            if c1 and c2:
+                v1 = get_knockout_votes(contest, c1.id, gender, sub_round)
+                v2 = get_knockout_votes(contest, c2.id, gender, sub_round)
+            banned_mark = ""
+            if (c1 and c1.banned) or (c2 and c2.banned):
+                banned_mark = "（有角色禁赛）"
+            lines.append(f"  {c1.name if c1 else n1}({v1}票) vs {c2.name if c2 else n2}({v2}票){banned_mark}")
+    return lines
+
+
+def _build_prediction_prompt(contest: Contest, phase: str) -> Optional[str]:
+    """按阶段构建预测 prompt；返回 None 表示无需预测"""
+    if phase in ('closed', 'final_result'):
+        return None
+
+    lines = [f"赛事：{contest.title}"]
+
+    if phase in ('not_started', 'nomination', 'review'):
+        candidate_count = Candidate.query.filter_by(contest_id=contest.id).count()
+        lines.append(f"状态：提名/审核阶段，候选池 {candidate_count} 个角色。")
+        return f"""
+你是萌战预测专家。
+
+当前数据：
+{chr(10).join(lines)}
+
+请预测本届赛事男女组的夺冠热门类型（如人气主角、经典角色等）并说明理由。
+格式：用 - 开头列出，总共 120-180 字。
+"""
+
+    if phase in ('qualifying', 'qualifying_result'):
+        female_top = _get_qualifying_top_votes(contest.id, gender='female', limit=10)
+        male_top = _get_qualifying_top_votes(contest.id, gender='male', limit=10)
+        if female_top:
+            lines.append("\n【女组】海选票数前10名：")
+            for i, (_, name, votes) in enumerate(female_top, 1):
+                lines.append(f"  {i}. {name}：{votes}票")
+        if male_top:
+            lines.append("\n【男组】海选票数前10名：")
+            for i, (_, name, votes) in enumerate(male_top, 1):
+                lines.append(f"  {i}. {name}：{votes}票")
+        return f"""
+你是萌战预测专家。
+
+当前数据：
+{chr(10).join(lines)}
+
+请根据海选票数给出以下预测：
+1. 最终冠军预测（男女组各一个）
+2. 冠军预测理由（2-3点）
+3. 可能出现的黑马角色
+
+格式：用 - 开头列出，总共 150-200 字。
+"""
+
+    if phase.startswith('group_round'):
+        parts = phase.split('_')
+        try:
+            round_num = int(parts[2])
+        except (IndexError, ValueError):
+            round_num = 1
+        data = _auto_group_extra_data(contest, phase)
+        has_data = False
+        for gender, label in (('female', '【女组】'), ('male', '【男组】')):
+            section_lines = _group_section_lines(data.get(gender) or {}, round_num)
+            if section_lines:
+                has_data = True
+                lines.append(f"\n{label}")
+                lines.extend(section_lines)
+        if not has_data:
+            return None
+        return f"""
+你是萌战预测专家。
+
+当前数据（小组赛第{round_num}轮）：
+{chr(10).join(lines)}
+
+请根据小组赛积分与对局给出以下预测：
+1. 各组最可能出线的角色（提到名字）
+2. 积分落后但可能翻盘的黑马
+3. 目前看好的最终冠军（男女组各一个）
+
+格式：用 - 开头列出，总共 150-200 字。
+"""
+
+    if phase.startswith('knockout_') or phase == 'final_vote':
+        knockout_lines = _prediction_knockout_lines(contest)
+        if not knockout_lines:
+            return None
+        lines.extend(knockout_lines)
+        return f"""
+你是萌战预测专家。
+
+当前数据：
+{chr(10).join(lines)}
+
+请根据淘汰赛对阵与实时票数给出以下预测：
+1. 本轮最可能晋级的角色（提到名字和理由）
+2. 预测的决赛对阵
+3. 最终冠军预测（男女组各一个）
+
+格式：用 - 开头列出，总共 150-200 字。
+"""
+
+    return None
+
+
+def generate_prediction(contest_id: int) -> tuple:
+    """生成赛事预测（按当前阶段取真实数据：海选/小组赛/淘汰赛各有视角）"""
     try:
         contest = db.session.get(Contest, contest_id)
         if not contest:
@@ -664,40 +801,19 @@ def generate_prediction(contest_id: int, _extra_data: dict = None) -> tuple:
         if contest.status == 'draft':
             return True, "赛事尚未开始，AI 预测将在比赛启动后开启。请于 10 月 1 日 18:00 后回来查看！", None
 
-        cache_key = _get_cache_key(contest_id, contest.status, 'prediction')
+        # 阶段决定数据视角与缓存键。旧实现缓存键只用 status（小组赛15天/淘汰赛
+        # 一个键）、数据写死海选票数，导致小组赛和淘汰赛期间预测永远停留在海选视角
+        from .public import _calc_current_phase
+        phase = _calc_current_phase(contest)
+
+        cache_key = _get_cache_key(contest_id, phase, 'prediction')
         cached = _get_cached(cache_key)
         if cached:
             return True, cached, None
 
-        # 构建预测 prompt
-        female_top = _get_qualifying_top_votes(contest.id, gender='female', limit=10)
-        male_top = _get_qualifying_top_votes(contest.id, gender='male', limit=10)
-
-        lines = [f"赛事：{contest.title}", f"状态：{contest.status}"]
-
-        if female_top:
-            lines.append("\n【女组】海选票数前10名：")
-            for i, (_, name, votes) in enumerate(female_top, 1):
-                lines.append(f"  {i}. {name}：{votes}票")
-
-        if male_top:
-            lines.append("\n【男组】海选票数前10名：")
-            for i, (_, name, votes) in enumerate(male_top, 1):
-                lines.append(f"  {i}. {name}：{votes}票")
-
-        prompt = f"""
-你是萌战预测专家。
-
-当前数据：
-{chr(10).join(lines)}
-
-请给出以下预测：
-1. 最终冠军预测（男女组各一个）
-2. 冠军预测理由（2-3点）
-3. 可能出现的黑马角色
-
-格式：用 - 开头列出，总共 150-200 字。
-"""
+        prompt = _build_prediction_prompt(contest, phase)
+        if prompt is None:
+            return True, "当前阶段暂无可供预测的数据，请稍后再看。", None
 
         client = get_client()
         response = client.chat.completions.create(
