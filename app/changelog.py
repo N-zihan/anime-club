@@ -93,9 +93,13 @@ def get_all_commits() -> list:
     seen_messages = set()
     try:
         page = 1
-        while True:
+        MAX_PAGES = 20
+        while page <= MAX_PAGES:
             url = f'https://api.github.com/repos/{repo}/commits?per_page=100&page={page}'
             res = requests.get(url, headers=headers, timeout=8)
+            if res.status_code != 200:
+                print(f'GitHub commits 拉取失败: HTTP {res.status_code}')
+                return _cache['all_data'] or []
             batch = res.json()
             if not isinstance(batch, list) or not batch:
                 break
@@ -122,8 +126,9 @@ def get_all_commits() -> list:
                 break
             page += 1
 
-        _cache['all_data'] = data
-        _cache['all_expires'] = datetime.now() + timedelta(seconds=CACHE_TTL_ALL)
+        if data:
+            _cache['all_data'] = data
+            _cache['all_expires'] = datetime.now() + timedelta(seconds=CACHE_TTL_ALL)
         return data
     except Exception:
         # 拉取失败时，返回上一次缓存（如果有），否则空列表

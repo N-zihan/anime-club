@@ -58,15 +58,23 @@ def _get_cache_key(contest_id: int, phase: str, mode: str, round_info: str = '')
     return hashlib.md5(data.encode()).hexdigest()
 
 
+# 保护 _cache 的读写锁：Flask 默认多线程处理请求，_set_cache 的淘汰阶段会遍历并
+# 删除字典项，与另一请求的写入并发时可能抛 "dictionary changed size during
+# iteration"，异常被上层 except 吞掉后表现为难以定位的随机 500。
+_cache_lock = threading.Lock()
+
+
 def _get_cached(key: str) -> Optional[str]:
     """从缓存获取"""
     if not CACHE_ENABLED:
         return None
-    if key in _cache:
-        entry = _cache[key]
+    with _cache_lock:
+        entry = _cache.get(key)
+        if entry is None:
+            return None
         if datetime.now() < entry['expires']:
             return entry['data']
-        del _cache[key]
+        _cache.pop(key, None)
     return None
 
 
@@ -77,17 +85,18 @@ def _set_cache(key: str, data: str):
     """存入缓存"""
     if not CACHE_ENABLED:
         return
-    # 缓存键含用户可控的 phase，必须限制条数，否则可被刷爆实例内存
-    if len(_cache) >= _CACHE_MAX_ENTRIES:
-        _now = datetime.now()
-        for _k in [k for k, v in _cache.items() if v['expires'] <= _now]:
-            _cache.pop(_k, None)
-        while len(_cache) >= _CACHE_MAX_ENTRIES:
-            _cache.pop(next(iter(_cache)), None)
-    _cache[key] = {
-        'data': data,
-        'expires': datetime.now() + timedelta(seconds=CACHE_TTL)
-    }
+    with _cache_lock:
+        # 缓存键含用户可控的 phase，必须限制条数，否则可被刷爆实例内存
+        if len(_cache) >= _CACHE_MAX_ENTRIES:
+            _now = datetime.now()
+            for _k in [k for k, v in _cache.items() if v['expires'] <= _now]:
+                _cache.pop(_k, None)
+            while len(_cache) >= _CACHE_MAX_ENTRIES:
+                _cache.pop(next(iter(_cache)), None)
+        _cache[key] = {
+            'data': data,
+            'expires': datetime.now() + timedelta(seconds=CACHE_TTL)
+        }
 
 
 # 同键并发的单飞锁：缓存未命中时只放行一个请求真正调用模型，其余请求等锁后

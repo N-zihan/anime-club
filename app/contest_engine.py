@@ -235,8 +235,12 @@ def auto_activate_contest(contest, now):
 
 def run_qualifying_promotion(contest):
     """海选公示结束后，前32名晋级小组赛并随机分组"""
-    # 防止并发重复执行
-    if contest.config and contest.config.get('female_groups'):
+    # 防止并发重复执行：原判据是 female_groups 真值，单性别无候选时
+    # generate_groups 返回 []，判据恒假 → 每请求重跑并重排阵。改用独立哨兵，
+    # 并保留对既有分组键的兼容判断，避免对线上已生成的赛事重复分组。
+    if contest.config and (contest.config.get('qualifying_promoted')
+                           or contest.config.get('female_groups')
+                           or contest.config.get('male_groups')):
         return
 
     if contest.config is None:
@@ -246,12 +250,22 @@ def run_qualifying_promotion(contest):
     male_candidates = contest.candidates.filter_by(gender='male').all()
 
     def count_votes(candidates):
-        result = []
-        for c in candidates:
-            total = ContestVote.query.filter_by(
-                candidate_id=c.id, round_number=0
-            ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
-            result.append({'candidate': c, 'total_votes': total})
+        # 一次 group_by 取回全部票数：原先逐候选人各发一条 SUM，
+        # 候选池数百人时单次晋级就是数百次查询，且被推进循环反复放大。
+        ids = [c.id for c in candidates]
+        if not ids:
+            return []
+        vote_totals = dict(
+            db.session.query(
+                ContestVote.candidate_id,
+                sa_func.sum(ContestVote.weight)
+            ).filter(
+                ContestVote.candidate_id.in_(ids),
+                ContestVote.round_number == 0
+            ).group_by(ContestVote.candidate_id).all()
+        )
+        result = [{'candidate': c, 'total_votes': vote_totals.get(c.id, 0)}
+                  for c in candidates]
         result.sort(key=lambda x: x['total_votes'], reverse=True)
         return result
 
@@ -261,6 +275,11 @@ def run_qualifying_promotion(contest):
     # 方案 A：禁赛角色无法晋级（过滤掉 banned=True）
     qualified_fem = [item for item in female_result if item['candidate'].banned == False]
     qualified_mal = [item for item in male_result if item['candidate'].banned == False]
+    # 同票时必须先按候选人 id 排序再截断：count_votes 用 list.sort 且只按票数排，
+    # 同票者的相对顺序取决于数据库返回顺序（Postgres 不保证），导致同一份票数
+    # 在不同实例/不同时刻晋级名单不同，32 强边界上的同票角色随机掉出。
+    qualified_fem.sort(key=lambda item: (-item['total_votes'], item['candidate'].id))
+    qualified_mal.sort(key=lambda item: (-item['total_votes'], item['candidate'].id))
     female_top_32 = [item['candidate'] for item in qualified_fem[:QUALIFYING_TOP_N]]
     male_top_32 = [item['candidate'] for item in qualified_mal[:QUALIFYING_TOP_N]]
 
@@ -321,6 +340,10 @@ def run_qualifying_promotion(contest):
         for item in male_result[:32]
     ]
 
+    # 推进完成哨兵：两性别入围均为空（分组键为 []）时也落真值标记，
+    # 使守卫与 public 的推进条件不再反复触发。
+    contest.config['qualifying_promoted'] = True
+
     flag_modified(contest, 'config')
     db.session.commit()
 
@@ -331,8 +354,10 @@ def run_qualifying_promotion(contest):
 
 def run_group_promotion(contest, session=None):
     """小组赛第3轮公示结束后，每组前2晋级淘汰赛，生成16强对阵"""
-    # 防止并发重复执行
-    if contest.config and contest.config.get('knockout_matches_female'):
+    # 防止并发重复执行：同海选，空对阵时旧判据恒假会每请求重跑并重排 16 强。
+    if contest.config and (contest.config.get('knockout_promoted')
+                           or contest.config.get('knockout_matches_female')
+                           or contest.config.get('knockout_matches_male')):
         return
 
     if session is None:
@@ -607,6 +632,9 @@ def run_group_promotion(contest, session=None):
         print(f">>> [萌战] 男子组晋级 {len(male_top16)} 人 ≠ 组数×2"
               f"（{2 * len(male_groups_cfg)}），缺额由轮空机制承接")
 
+    # 推进完成哨兵：两性别对阵均为空时也落真值，避免反复重排淘汰赛对阵
+    contest.config['knockout_promoted'] = True
+
     flag_modified(contest, 'config')
     session.commit()
 
@@ -615,8 +643,33 @@ def run_group_promotion(contest, session=None):
 # 淘汰赛辅助函数
 # ============================================================
 
+def is_banned(candidate_id, contest_id=None):
+    """候选角色是否「不可作为胜者晋级」。
+
+    原来各处在拿到 .banned 前都先做真值判断（如 `if c1_candidate and c1_candidate.banned`），
+    候选人查不到时等于"未禁赛"，删库竞态下会放行一个不存在/已删除的角色晋级。
+    这里改为 fail-closed：查不到、不属于本赛事的候选人一律视为不可晋级。
+    """
+    if candidate_id is None:
+        return True
+    candidate = db.session.get(Candidate, candidate_id)
+    if candidate is None:
+        return True
+    if contest_id is not None and candidate.contest_id != contest_id:
+        # 候选人不属于本赛事：视同不可投票/不可晋级
+        return True
+    return bool(candidate.banned)
+
+
 def get_knockout_votes(contest, candidate_id, gender, sub_round):
-    """统计单个候选人在淘汰赛本轮的总票数"""
+    """统计单个候选人在淘汰赛本轮的总票数。
+
+    计数必须限定在本赛事内：candidate_id 全局唯一，但缺少 contest_id 过滤时，
+    任何调用方（含将来新增的）一旦传入他赛事的候选 id，就会把别的赛事的票
+    算进本场对决；这里补上赛事维度，属于无副作用的收紧。
+    """
+    if candidate_id is None:
+        return 0
     total = ContestVote.query.filter_by(
         contest_id=contest.id,
         candidate_id=candidate_id,
@@ -633,18 +686,26 @@ def get_match_winner(contest, match, gender, sub_round):
     双方都被禁赛时返回 None：本场无人胜出，由 generate_next_round 用
     合法落败者补位，保证下一轮人数足够、赛事链条不断。
     """
-    c1_id = match['candidate1']
-    c2_id = match['candidate2']
+    c1_id = match.get('candidate1')
+    c2_id = match.get('candidate2')
+
+    # 轮空/已移除槽位：只有一方存在时该方直接晋级。
+    # 这里必须用 get()：淘汰赛早期场次允许只有 candidate1（bye=True，candidate2 缺失），
+    # 原实现用 match['candidate2'] 取值会直接抛 KeyError，把整个自动推进打断成 500。
+    if c1_id is None and c2_id is None:
+        return None
+    if c2_id is None:
+        return None if is_banned(c1_id, contest.id) else c1_id
+    if c1_id is None:
+        return None if is_banned(c2_id, contest.id) else c2_id
 
     # 禁赛角色自动落败：有 ban 角色直接让另一方晋级（方案 A：禁赛 = 不能晋级）
-    c1_candidate = db.session.get(Candidate, c1_id) if c1_id else None
-    c2_candidate = db.session.get(Candidate, c2_id) if c2_id else None
-    if c1_candidate and c2_candidate and c1_candidate.banned and c2_candidate.banned:
+    if is_banned(c1_id, contest.id) and is_banned(c2_id, contest.id):
         # 双禁赛：无人可以晋级（返回 None，交由补位机制处理）
         return None
-    if c1_candidate and c1_candidate.banned:
+    if is_banned(c1_id, contest.id):
         return c2_id
-    if c2_candidate and c2_candidate.banned:
+    if is_banned(c2_id, contest.id):
         return c1_id
 
     c1_votes = get_knockout_votes(contest, c1_id, gender, sub_round)
@@ -666,7 +727,7 @@ def get_match_winner(contest, match, gender, sub_round):
     c1_qualifying = next((item['votes'] for item in results if item.get('id') == c1_id), 0)
     c2_qualifying = next((item['votes'] for item in results if item.get('id') == c2_id), 0)
 
-    return match['candidate1'] if c1_qualifying >= c2_qualifying else match['candidate2']
+    return c1_id if c1_qualifying >= c2_qualifying else c2_id
 
 
 def generate_next_round(contest, matches, gender, sub_round, round_name):
@@ -676,6 +737,9 @@ def generate_next_round(contest, matches, gender, sub_round, round_name):
     使晋级人数恒等于场次数——16→8→4→2 每轮人数链不缺员，赛事不会走崩。
     补位池耗尽时（极端情况），奇数剩余者生成"轮空场"（candidate2=None）
     兜底，推进时对方自动晋级，不再静默淘汰。
+
+    matches 是 JSON config 里的普通 dict 列表，轮空场可能直接缺 'candidate2' 键，
+    因此全程使用 match.get()，原实现用 match['candidate2'] 会 KeyError。
     """
     winners = []
     banned_slots = 0   # 双禁赛场次数（每场需补位 1 人）
@@ -684,8 +748,9 @@ def generate_next_round(contest, matches, gender, sub_round, round_name):
         # 记录本轮最终票数（供公示期展示）
         c1_id = match.get('candidate1')
         c2_id = match.get('candidate2')
-        c1_votes = get_knockout_votes(contest, c1_id, gender, sub_round)
-        c2_votes = get_knockout_votes(contest, c2_id, gender, sub_round)
+        # 轮空场（另一方为 None）没有对决，票数固定为 0，不必查库
+        c1_votes = get_knockout_votes(contest, c1_id, gender, sub_round) if c1_id and c2_id else 0
+        c2_votes = get_knockout_votes(contest, c2_id, gender, sub_round) if c1_id and c2_id else 0
         match['votes1'] = c1_votes
         match['votes2'] = c2_votes
 
@@ -760,6 +825,10 @@ def run_knockout_advance(contest, now, times):
     if contest.config is None:
         return False, None
     if not (contest.config.get('knockout_matches_female') or contest.config.get('knockout_matches_male')):
+        return False, None
+    # 赛程时间缺失（contest.open_at 为空 → calc_stage_times 全返回 None）时，
+    # now >= None 会抛 TypeError 直接 500；没有时间节点就不存在"到点推进"。
+    if not times or not times.get('knockout_16_end'):
         return False, None
 
     config = contest.config
@@ -1049,6 +1118,30 @@ def prepare_group_round_data(contest, phase):
     groups_male = contest.config.get('male_groups', [])
     candidates_map = {c.id: c for c in contest.candidates.all()}
 
+    # 批量预取票数：原先每场对决各发 2 条 SUM，8 组×多轮×2 性别可放大到上百次查询。
+    _gt_rows = db.session.query(
+        ContestVote.candidate_id.label('cid'),
+        ContestVote.gender.label('gender'),
+        sa_func.sum(ContestVote.weight).label('total')
+    ).filter(
+        ContestVote.contest_id == contest.id,
+        ContestVote.round_number == round_num
+    ).group_by(ContestVote.candidate_id, ContestVote.gender).all()
+    _gt_vote_map = {(r.gender, r.cid): r.total for r in _gt_rows}
+
+    _ov_rows = db.session.query(
+        ContestVote.candidate_id.label('cid'),
+        ContestVote.gender.label('gender'),
+        ContestVote.round_number.label('rn'),
+        sa_func.sum(ContestVote.weight).label('total')
+    ).filter(
+        ContestVote.contest_id == contest.id,
+        ContestVote.round_number.in_([1, 2, 3])
+    ).group_by(
+        ContestVote.candidate_id, ContestVote.gender, ContestVote.round_number
+    ).all()
+    _ov_vote_map = {(r.gender, r.cid, r.rn): r.total for r in _ov_rows}
+
     def get_group_matches(gender, groups):
         if not groups:
             return []
@@ -1075,14 +1168,8 @@ def prepare_group_round_data(contest, phase):
                 votes1 = votes2 = 0
                 winner = None
                 if c1 and c2 and not b1 and not b2:
-                    votes1 = ContestVote.query.filter_by(
-                        contest_id=contest.id, candidate_id=cid1,
-                        round_number=round_num, gender=gender
-                    ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
-                    votes2 = ContestVote.query.filter_by(
-                        contest_id=contest.id, candidate_id=cid2,
-                        round_number=round_num, gender=gender
-                    ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+                    votes1 = _gt_vote_map.get((gender, cid1), 0)
+                    votes2 = _gt_vote_map.get((gender, cid2), 0)
                     winner = cid1 if votes1 > votes2 else (cid2 if votes2 > votes1 else None)
                 elif c1 and c2 and b1 != b2:
                     # 单边禁赛：对手兵不血刃取胜
@@ -1161,15 +1248,9 @@ def prepare_group_round_data(contest, phase):
                         stats[l]['losses'] += 1
                         continue
 
-                    votes1 = ContestVote.query.filter_by(
-                        contest_id=contest.id, candidate_id=cid1,
-                        round_number=r, gender=gender
-                    ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+                    votes1 = _ov_vote_map.get((gender, cid1, r), 0)
 
-                    votes2 = ContestVote.query.filter_by(
-                        contest_id=contest.id, candidate_id=cid2,
-                        round_number=r, gender=gender
-                    ).with_entities(sa_func.sum(ContestVote.weight)).scalar() or 0
+                    votes2 = _ov_vote_map.get((gender, cid2, r), 0)
 
                     # 累加本轮票数到 total_votes
                     stats[cid1]['total_votes'] += votes1

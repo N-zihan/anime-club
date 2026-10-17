@@ -409,6 +409,9 @@ def admin_bind_email(user_id):
     notify(user.id, '站长已为你绑定邮箱',
            '以后你可以在「个人设置」或「忘记密码」中通过该邮箱找回密码。',
            notify_type='system', send_mail=False)
+    # notify() 只把站内通知 add 进会话、不提交；这里必须显式提交，
+    # 否则请求结束时会话回滚，站内通知永远不落库（邮件是同步发的，不受影响）。
+    db.session.commit()
     flash(f'已为 {user.username} 绑定 {email}', 'success')
     return redirect(url_for('admin.admin_users'))
 
