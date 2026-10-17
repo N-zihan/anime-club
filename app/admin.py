@@ -491,6 +491,13 @@ def export_users_excel():
 def admin_messages():
     """留言管理页面，显示所有留言及回复"""
     messages = Message.query.order_by(Message.timestamp.desc()).all()
+    # 时间转东八区：Message/Reply.timestamp 存的是 naive UTC，前台 board()、
+    # user_profile()、notifications() 都已手动 +8，后台此前漏做，导致同一条留言
+    # 在前后台相差 8 小时。（仅用于本次渲染，不提交，请求结束随会话回滚。）
+    for msg in messages:
+        msg.timestamp = msg.timestamp + timedelta(hours=8)
+        for reply in msg.replies:
+            reply.timestamp = reply.timestamp + timedelta(hours=8)
     return render_template('admin_messages.html', messages=messages)
 
 

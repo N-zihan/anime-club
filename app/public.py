@@ -9,7 +9,6 @@
 """
 import os
 import uuid
-import requests
 from datetime import timedelta, datetime, timezone
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory, Response, abort
@@ -233,19 +232,30 @@ def api_anime_cover():
     from urllib.parse import unquote
     url = unquote(request.args.get('url', ''))
 
-    # 白名单校验，防止 SSRF
+    # 白名单校验，防止 SSRF（只允许 Bangumi 图床）
     if not url.startswith('https://lain.bgm.tv/'):
         abort(404)
 
-    try:
-        res = requests.get(url, headers=HEADERS_FOR_IMAGE, timeout=8)
-        return Response(
-            res.content,
-            mimetype=res.headers.get('Content-Type', 'image/jpeg'),
-            headers={'Cache-Control': 'public, max-age=604800, s-maxage=604800'},
-        )
-    except Exception:
+    # 改用 safe_get 逐跳校验：裸 requests.get 默认自动跟随重定向，图床侧的开放
+    # 重定向即可让请求跳到内网地址，前缀白名单只挡住了第一跳。与 api_news_image()
+    # 保持同一套防护。
+    res = safe_get(url, headers=HEADERS_FOR_IMAGE, timeout=8)
+    if res is None or res.status_code >= 400:
         abort(404)
+
+    # 不原样回传上游 Content-Type：否则可让本站同源渲染任意 HTML（同源 XSS）
+    content_type = (res.headers.get('Content-Type') or '').split(';')[0].strip().lower()
+    if not content_type.startswith('image/'):
+        abort(404)
+
+    return Response(
+        res.content,
+        mimetype=content_type,
+        headers={
+            'Cache-Control': 'public, max-age=604800, s-maxage=604800',
+            'X-Content-Type-Options': 'nosniff',
+        },
+    )
 
 
 @public_bp.route('/api/anime/list')
