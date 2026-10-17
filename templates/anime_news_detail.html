@@ -27,6 +27,45 @@
 </div>
 {% endif %}
 
+{% if fetch_failed is defined and fetch_failed %}
+{# 抓取失败时的降级提示：不 500，明确告诉用户去原文看 #}
+<div style="background: var(--bg-code); padding:16px 20px; border-radius:10px; margin-bottom:24px; line-height:1.6; color: var(--text-secondary);">
+  正文抓取失败（原文站可能不可达或响应超时），你可以直接点页面底部的「查看原文」。
+</div>
+{% endif %}
+
+{% if videos %}
+{# ★ 安全约定：本块绝不使用 |safe。
+   视频 URL 一律先经 media_url 过滤器做净化（html.unescape + 字符级过滤 +
+   协议/域名校验，不安全则返回空串），只有 embed_ok 判定属于白名单播放器域
+   时才渲染成 <iframe>；非白名单只给「在新窗口打开」外链，href 同样经过净化。
+   这是继解析层、视图层之后的第三道防线。 #}
+<div style="margin-bottom:28px;">
+  <h3 style="font-size:1.1rem; margin-bottom:12px;">视频</h3>
+  {% for v in videos %}
+    {% set su = (v.url or v.src)|media_url %}
+    {% if su %}
+      {% if su|embed_ok %}
+      <div style="position:relative; width:100%; aspect-ratio:16/9; margin-bottom:14px; border-radius:10px; overflow:hidden; background:#000;">
+        <iframe src="{{ su }}"
+                title="{{ v.label or '视频播放器' }}"
+                style="position:absolute; inset:0; width:100%; height:100%; border:0;"
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                allowfullscreen></iframe>
+      </div>
+      {% else %}
+      <div style="margin-bottom:10px;">
+        <a href="{{ su }}" target="_blank" rel="noopener noreferrer nofollow"
+           style="color:#4a90d9;">▶ 在新窗口打开视频（{{ v.label or '外部视频' }}）</a>
+      </div>
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+
 {% if images %}
 <div style="margin-bottom:28px;">
   <h3 style="font-size:1.1rem; margin-bottom:12px;">相关图片</h3>

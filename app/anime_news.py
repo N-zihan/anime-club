@@ -6,14 +6,16 @@
 import base64
 import hashlib
 import hmac
+import html
 import json
 import os
 import re
+import threading
 import traceback
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
-from urllib.parse import quote
+from urllib.parse import parse_qs, quote, urljoin, urlsplit
 
 import requests
 from bs4 import BeautifulSoup
@@ -22,13 +24,87 @@ from .utils import safe_get
 
 ANI_NEWS_API = 'https://news.nanyi-anime-club.top/'
 
+# ============================================================
+# 进程内缓存：容量上限 + 锁
+# ============================================================
+# ★ 注意：这些缓存是**模块级全局**的，在 Vercel Serverless 下**每个实例各有一份**，
+#   实例被回收即丢失。因此缓存命中率有限（冷启动必然回源一次），这是平台特性
+#   而不是 bug；但也正因为实例内存只有 2GB、且缓存键包含用户可控的搜索词
+#   （如 f'search:{keyword}:{limit}'），**必须**有容量上限：
+#   否则匿名用户不断换关键词就能把实例内存刷爆。
+#   _cache / _translate_cache 的键和值都可能来自用户输入，写入前一律过 _prune()。
+_CACHE_MAX = 500          # 列表/搜索/语料等结果缓存上限
+_TRANSLATE_MAX = 2000     # 翻译缓存上限（键是原文，值含译文，占用较大）
+_ARTICLE_MAX = 200        # 正文缓存上限（每篇正文+图片列表都不小）
+
+# dict 在多线程下并发读改写会抛
+# "dictionary changed size during iteration"（search_news / _get_search_corpus
+# 都用 ThreadPoolExecutor 并发跑），所有读改写一律持锁。
+_cache_lock = threading.RLock()
+
 _cache = {}
 _CACHE_TTL = 1800
 
-_translate_cache = {}  # 翻译缓存（永久，进程重启后清空）
+_translate_cache = {}  # 翻译缓存（有上限，进程重启后清空）
 
 _article_cache = {}
 _ARTICLE_TTL = 172800
+
+
+def _prune(cache, limit):
+    """把缓存裁剪到 limit 条以内。
+
+    淘汰策略：优先删「已过期」的条目（省内存且不影响正确性），仍然超限时按
+    插入顺序删最旧的一批（dict 保序，等价于 FIFO）。不引入额外依赖。
+    调用方需自行持有 _cache_lock。
+    """
+    if len(cache) <= limit:
+        return
+    now = datetime.now()
+    # 1) 先清已过期（值是 (data, expires) 元组，或退避用的裸 datetime）
+    expired = []
+    for key, value in list(cache.items()):
+        expires = value[1] if isinstance(value, tuple) and len(value) == 2 else value
+        if isinstance(expires, datetime) and expires < now:
+            expired.append(key)
+    for key in expired:
+        cache.pop(key, None)
+    if len(cache) <= limit:
+        return
+    # 2) 仍然超限，从最旧的开始删，一次删到 limit 的 90%，避免每次写入都裁剪
+    target = max(1, int(limit * 0.9))
+    for key in list(cache.keys())[:max(0, len(cache) - target)]:
+        cache.pop(key, None)
+
+
+def _cache_set(cache, key, value, limit):
+    """线程安全地写缓存，并强制容量上限"""
+    with _cache_lock:
+        cache[key] = value
+        _prune(cache, limit)
+
+
+def _cache_get(cache, key, default=None):
+    """线程安全地读缓存"""
+    with _cache_lock:
+        return cache.get(key, default)
+
+
+def _cache_pop(cache, key):
+    with _cache_lock:
+        cache.pop(key, None)
+
+
+def _cache_keys(cache):
+    """线程安全地取键快照（用于遍历，避免并发修改崩溃）"""
+    with _cache_lock:
+        return list(cache.keys())
+
+
+def _cache_items(cache):
+    """线程安全地取 (键, 值) 快照"""
+    with _cache_lock:
+        return list(cache.items())
 
 _UA = 'Mozilla/5.0 (compatible; nanyi-anime-club/1.0)'
 
@@ -109,7 +185,7 @@ def _translate_batch(texts):
         if not t or not t.strip():
             result[t] = t
             continue
-        cached = _translate_cache.get(t)
+        cached = _cache_get(_translate_cache, t)
         if cached:
             result[t] = cached
         else:
@@ -155,7 +231,7 @@ def _translate_batch(texts):
             translated = _aliyun_call(truncated)
             if translated:
                 out[batch[0]] = translated
-                _translate_cache[batch[0]] = translated
+                _cache_set(_translate_cache, batch[0], translated, _TRANSLATE_MAX)
             else:
                 out[batch[0]] = batch[0]
             return out
@@ -178,13 +254,13 @@ def _translate_batch(texts):
                 single = _aliyun_call(t)
                 zh = single if single else t
                 out[t] = zh
-                _translate_cache[t] = zh
+                _cache_set(_translate_cache, t, zh, _TRANSLATE_MAX)
             return out
 
         for orig, trans in zip(batch, lines):
             zh = trans.strip() or orig
             out[orig] = zh
-            _translate_cache[orig] = zh
+            _cache_set(_translate_cache, orig, zh, _TRANSLATE_MAX)
         return out
 
     # 并发翻译各批次：原先串行执行，20 条新闻冷启动可累计 30 秒以上
@@ -215,23 +291,49 @@ def _encode_cursor(offset):
 
 # 搜索语料：预取一次全量新闻（当前约百条）并只翻译标题，6 小时内供列表与搜索复用
 _CORPUS_KEY = 'corpus_search'
+# 最后一次成功的语料单独留一份：上游抖动时用它兜底，绝不被空结果覆盖
+_CORPUS_STALE_KEY = 'corpus_search_lastgood'
+_CORPUS_BACKOFF_KEY = 'corpus_search_backoff'
 _CORPUS_TTL = 21600
+# 上游（news.nanyi-anime-club.top）实测极不稳定：读超时 / ConnectionReset(10054)
+# 频发。失败后退避重试，避免每个请求都去撞一次 12 秒超时。
+_CORPUS_RETRY_BASE = 60
+_CORPUS_RETRY_MAX = 600
+_corpus_fail_streak = 0
+
+
+def _corpus_backoff_active(now=None):
+    """上游语料是否处于退避窗口内（用于避免紧接着再打一次上游白等超时）"""
+    now = now or datetime.now()
+    until = _cache_get(_cache, _CORPUS_BACKOFF_KEY)
+    return bool(until and now < until)
 
 
 def _get_search_corpus():
     """获取搜索语料（标题已译）。空语料做短时负缓存，避免上游抖动时反复超时"""
+    global _corpus_fail_streak
     now = datetime.now()
-    entry = _cache.get(_CORPUS_KEY)
+    entry = _cache_get(_cache, _CORPUS_KEY)
     if entry:
         arts, expires = entry
         if now < expires:
             if arts:
-                # 顺带回填已缓存的摘要翻译
+                # 顺带回填已缓存的摘要翻译（键是原文，需持锁快照后读）
+                cached_excerpts = _cache_items(_translate_cache)
+                excerpt_map = {k: v for k, v in cached_excerpts if isinstance(k, str)}
                 for a in arts:
                     e = a.get('excerpt') or ''
-                    if e and not a.get('excerpt_zh') and _translate_cache.get(e):
-                        a['excerpt_zh'] = _translate_cache[e]
+                    if e and not a.get('excerpt_zh') and excerpt_map.get(e):
+                        a['excerpt_zh'] = excerpt_map[e]
             return arts
+
+    # 退避窗口内不再打上游：有历史语料就直接续用（stale-while-error），
+    # 否则返回空让调用方走兜底分支。
+    if _corpus_backoff_active(now):
+        stale = _cache_get(_cache, _CORPUS_STALE_KEY)
+        if stale:
+            return stale
+        return []
 
     try:
         res = requests.get(f'{ANI_NEWS_API}/api/news', params={'limit': 100}, timeout=12)
@@ -250,12 +352,26 @@ def _get_search_corpus():
                     a['title_zh'] = zh.get(a['title'], a['title'])
 
         if arts:
-            _cache[_CORPUS_KEY] = (arts, now + timedelta(seconds=_CORPUS_TTL))
+            _cache_set(_cache, _CORPUS_KEY, (arts, now + timedelta(seconds=_CORPUS_TTL)), _CACHE_MAX)
+            _cache_set(_cache, _CORPUS_STALE_KEY, arts, _CACHE_MAX)
+            _cache_pop(_cache, _CORPUS_BACKOFF_KEY)
+            _corpus_fail_streak = 0
         return arts
     except Exception as e:
         print(f'>>> 搜索语料拉取失败: {e}')
-        # 负缓存 60 秒：防止上游抖动时每个请求都拖一次 12 秒超时
-        _cache[_CORPUS_KEY] = ([], now + timedelta(seconds=60))
+        # 指数退避：连续失败时最长 10 分钟不再打上游
+        delay = min(_CORPUS_RETRY_MAX, _CORPUS_RETRY_BASE * (2 ** _corpus_fail_streak))
+        _corpus_fail_streak += 1
+        _cache_set(_cache, _CORPUS_BACKOFF_KEY, now + timedelta(seconds=delay), _CACHE_MAX)
+
+        # ★ 关键修复：原实现在这里无条件写入 ([], now+60s)，把上一次成功抓到的
+        #   语料覆盖成空。上游持续抖动时，列表页与搜索会长时间只显示空态
+        #   （每次失败还要额外等一次 12s 超时 + 一次 15s 上游重试）。
+        #   现在：有历史语料就续用，只有从未成功过才做短时负缓存。
+        stale = _cache_get(_cache, _CORPUS_STALE_KEY)
+        if stale:
+            return stale
+        _cache_set(_cache, _CORPUS_KEY, ([], now + timedelta(seconds=delay)), _CACHE_MAX)
         return []
 
 
@@ -266,10 +382,10 @@ def find_article_meta(url):
     for a in _get_search_corpus():
         if (a.get('link') or a.get('url')) == url:
             return a
-    cache_keys = [k for k in _cache if str(k).startswith('news_')]
-    if cache_keys:
-        latest_key = max(cache_keys, key=lambda k: _cache[k][1])
-        cached_articles = _cache[latest_key][0]
+    cache_items = [(k, v) for k, v in _cache_items(_cache) if str(k).startswith('news_')]
+    if cache_items:
+        latest_key = max(cache_items, key=lambda kv: kv[1][1])[0]
+        cached_articles = _cache_get(_cache, latest_key)[0]
         arts = cached_articles[0] if isinstance(cached_articles, tuple) else cached_articles
         for a in arts:
             if (a.get('link') or a.get('url')) == url:
@@ -282,8 +398,9 @@ def get_anime_news(limit=20, tag=None, cursor=None):
     cache_key = f'news_{limit}_{tag or "all"}_{cursor or "start"}'
     now = datetime.now()
 
-    if cache_key in _cache:
-        data, expires = _cache[cache_key]
+    entry = _cache_get(_cache, cache_key)
+    if entry:
+        data, expires = entry
         if now < expires:
             return data
 
@@ -299,7 +416,7 @@ def get_anime_news(limit=20, tag=None, cursor=None):
                 next_cursor = _encode_cursor(offset + limit) if has_more else None
                 result = (page, {'total': len(corpus), 'hasMore': has_more,
                                  'nextCursor': next_cursor})
-                _cache[cache_key] = (result, now + timedelta(seconds=_CACHE_TTL))
+                _cache_set(_cache, cache_key, (result, now + timedelta(seconds=_CACHE_TTL)), _CACHE_MAX)
                 return result
 
     params = {'limit': limit}
@@ -345,7 +462,7 @@ def get_anime_news(limit=20, tag=None, cursor=None):
                         a['excerpt_zh'] = translated.get(e, e)
 
         result = (articles, meta)
-        _cache[cache_key] = (result, now + timedelta(seconds=_CACHE_TTL))
+        _cache_set(_cache, cache_key, (result, now + timedelta(seconds=_CACHE_TTL)), _CACHE_MAX)
         return result
 
     except Exception as e:
@@ -369,8 +486,9 @@ def search_news(keyword, limit=50):
     # 搜索缓存键
     cache_key = f'search:{keyword.lower()}:{limit}'
     now = datetime.now()
-    if cache_key in _cache:
-        cached_data, expires = _cache[cache_key]
+    entry = _cache_get(_cache, cache_key)
+    if entry:
+        cached_data, expires = entry
         if now < expires:
             return cached_data
 
@@ -387,10 +505,10 @@ def search_news(keyword, limit=50):
 
     # 语料不可用时回退已缓存的列表数据
     if not articles:
-        cache_keys = [k for k in _cache if k.startswith('news_')]
-        if cache_keys:
-            latest_key = max(cache_keys, key=lambda k: _cache[k][1])  # 按过期时间排序
-            cached_articles, _ = _cache[latest_key]
+        cache_items = [(k, v) for k, v in _cache_items(_cache) if str(k).startswith('news_')]
+        if cache_items:
+            latest_key = max(cache_items, key=lambda kv: kv[1][1])[0]  # 按过期时间排序
+            cached_articles = _cache_get(_cache, latest_key)[0]
             if isinstance(cached_articles, tuple):
                 articles = cached_articles[0]  # 格式：(articles, meta)
             else:
@@ -428,7 +546,7 @@ def search_news(keyword, limit=50):
         return []
 
     # 缓存搜索结果 (5分钟)
-    _cache[cache_key] = (results, now + timedelta(minutes=5))
+    _cache_set(_cache, cache_key, (results, now + timedelta(minutes=5)), _CACHE_MAX)
     
     return results
 
@@ -436,15 +554,308 @@ def search_news(keyword, limit=50):
 def _translate_keyword(keyword):
     """把搜索关键词翻译成英文"""
     cache_key = 'KW:' + keyword
-    if cache_key in _translate_cache:
-        return _translate_cache[cache_key]
+    cached = _cache_get(_translate_cache, cache_key)
+    if cached:
+        return cached
 
     translated = _aliyun_call(keyword, source='zh', target='en')
     if translated:
         translated = translated.strip().strip('"\'')
-        _translate_cache[cache_key] = translated
+        _cache_set(_translate_cache, cache_key, translated, _TRANSLATE_MAX)
         return translated
     return keyword
+
+
+# ============================================================
+# 视频提取（仅「嵌入 / 外链播放」）
+# ============================================================
+# ★ 能力边界（务必不要越过）：
+#   本站只做「视频嵌入 / 外链播放」——把原文页里已有的白名单播放器用 <iframe>
+#   嵌进详情页，或给一个跳转到原站的外链。**绝不做**以下任何一件事：
+#     1. 服务端下载视频文件；
+#     2. 服务端转码 / 切片 / 生成 HLS；
+#     3. 把视频转存到 Supabase Storage。
+#   原因：Vercel 免费计划 Serverless 无常驻磁盘、maxDuration=30s，一集动画动辄
+#   数百 MB，下载/转码必然超时并吃掉免费额度；Supabase 免费计划 1GB Storage
+#   也远不够；此外转存第三方版权视频存在版权风险。
+#   视频本体永远由 YouTube / Bilibili / Vimeo 的播放器或原站自己提供。
+#
+#   同理，视频 URL **不走** 自家的 /api/anime/news-image 代理（那是给图片用的，
+#   只放行 content-type: image/*，且 8s 超时）——视频必须直连上游，否则必撞
+#   30s 超时并放大流量成本。
+
+# 允许 <iframe> 嵌入的播放器域名白名单（精确匹配 host，或匹配其子域）
+_VIDEO_EMBED_HOSTS = (
+    'youtube.com', 'youtube-nocookie.com', 'youtu.be',
+    'bilibili.com', 'b23.tv',
+    'vimeo.com',
+    'dailymotion.com', 'dai.ly',
+    'nicovideo.jp',
+    'streamable.com',
+    'twitch.tv',
+    'facebook.com', 'fb.watch',
+)
+
+# 明确拒绝的伪协议 / 本地协议（javascript:、data: 等一律不得进入结果）
+_BAD_URL_SCHEMES = ('javascript', 'data', 'vbscript', 'file', 'blob', 'about', 'jar')
+
+# 只有在 <iframe> 的 src 里出现这些「播放器路径特征」时才认为是视频嵌入，
+# 否则视频新闻页里那些自家文章嵌入、邮件订阅嵌入都会被误判成视频。
+_VIDEO_EMBED_PATH_HINTS = (
+    '/embed', '/player', '/video', '/v/', 'yt_embed', '/plugins/video',
+)
+
+# <video>/<source>/og:video 这类直链只接受真正的视频文件扩展名
+_VIDEO_FILE_EXT = ('.mp4', '.webm', '.ogv', '.ogg', '.m4v', '.mov', '.m3u8', '.mpd')
+
+# 返回结果里 videos 元素的 type 取值：iframe / video / meta
+
+
+def _safe_media_url(raw, base=None):
+    """把原始 src/content 规范化成可安全返回的绝对 https URL；不合法返回 None。
+
+    这是所有视频/媒体 URL 的唯一入口，负责挡住：
+      - javascript: / data: / vbscript: / file: / blob: 等伪协议（含大小写混淆、
+        前导空白与控制字符混淆，如 "\\tjava\\nscript:"）；
+      - 协议相对地址 //evil.com/x（直接拒绝，不尝试补全协议：补全后仍会在
+        https 页面下发出跨域请求，白名单校验必须看到确定无疑的 host）；
+      - 内嵌引号 / 尖括号 / 反引号 / 空白的属性逃逸载荷（" onload="alert(1)）；
+      - **HTML 实体残留**：BeautifulSoup 会把 `&amp;quot;` 解码成 `&quot;`，
+        于是 URL 里会残留 `&quot;` 文本；若只做字符串前缀校验，攻击者可用
+        `https://www.youtube.com/embed/a&amp;quot;onload=&amp;quot;alert(1)`
+        构造出「域名合法但 URL 内容不受控」的值。这里先 html.unescape 再校验，
+        解出引号后立即整条拒绝。
+    畸形或不可信的 URL 一律 **整条丢弃**（返回 None）：既不降级成 embed，
+    也不退化成外链——URL 本身不可信时，任何形式输出给前端都是隐患。
+    正常 URL（含 `?si=xxx&t=30` 这类查询串，`&` 合法）不会被误杀。
+    """
+    if not raw:
+        return None
+    if not isinstance(raw, str):
+        return None
+    # 反复 unescape：`&amp;amp;quot;` 这类多重编码也要解到位，直到稳定为止
+    cleaned = raw.strip()
+    for _ in range(3):
+        unescaped = html.unescape(cleaned)
+        if unescaped == cleaned:
+            break
+        cleaned = unescaped.strip()
+    if not cleaned:
+        return None
+    # 解出实体后，任何引号/尖括号/反引号/空白/控制字符都说明 URL 不可信
+    if re.search(r'[\s\x00-\x1f\x7f"\'`<>\\]', cleaned):
+        return None
+    if cleaned[0] in '<>"\'`':
+        return None
+    # 协议相对与反斜杠形式一律拒绝（不补全协议）
+    if cleaned.startswith('//') or cleaned.startswith('\\\\'):
+        return None
+    if ':' in cleaned.split('/', 1)[0].split('?', 1)[0]:
+        scheme = cleaned.split(':', 1)[0].lower()
+        if scheme in _BAD_URL_SCHEMES:
+            return None
+        if scheme not in ('http', 'https'):
+            return None
+    try:
+        abs_url = urljoin(base, cleaned) if base else cleaned
+        parsed = urlsplit(abs_url)
+    except (ValueError, AttributeError):
+        return None
+    if parsed.scheme.lower() not in ('http', 'https'):
+        return None
+    if not _strict_netloc_ok(parsed):
+        return None
+    # 片段（#...）一律拒绝：合法视频嵌入/直链都不需要片段，而
+    # `https://www.youtube.com#@evil.example.com` 这类「netloc 干净、脏东西
+    # 藏在 fragment 里」的地址正是解析器混淆的常见形态——不同解析器对
+    # `#` 与 `@` 的先后处理不一致。整条丢弃，绝不输出。
+    if parsed.fragment:
+        return None
+    # 统一升级到 https：站点自身是 https，避免混合内容被浏览器拦截
+    if parsed.scheme.lower() != 'https':
+        abs_url = 'https://' + abs_url.split('://', 1)[1]
+    return abs_url
+
+
+def _strict_netloc_ok(parsed):
+    """netloc 严格校验，挡住 URL 解析器差异（parser confusion）攻击。
+
+    形如 `https://www.youtube.com:evil.example.com/embed/x` 的地址，
+    urlsplit().hostname 会「友好地」返回 www.youtube.com（于是域名白名单
+    轻松通过），但 netloc 里其实塞了额外内容；浏览器 / 代理 / requests
+    对它的解释可能不一致，属于典型的解析器混淆漏洞。
+    这里要求 netloc 必须**恰好**等于 hostname（可带合法数字端口），
+    任何多余字符（伪端口、userinfo、@、残留内容）一律拒绝。
+    """
+    try:
+        port = parsed.port  # 非法端口（如 evil.example.com）会抛 ValueError
+    except ValueError:
+        return False
+    if parsed.username or parsed.password or '@' in parsed.netloc:
+        return False
+    host = parsed.hostname
+    if not host:
+        return False
+    port_part = f':{port}' if port else ''
+    # host 已被 urlsplit 小写化，故 netloc 也按小写比对（大写域名应正常放行）
+    return parsed.netloc.lower() == host + port_part
+
+
+def _host_in_allowlist(host, allowlist):
+    """host 是否精确等于白名单域，或是其子域（挡掉 youtube.com.evil.test 这类）"""
+    if not host:
+        return False
+    host = host.lower().strip('.')
+    for allowed in allowlist:
+        if host == allowed or host.endswith('.' + allowed):
+            return True
+    return False
+
+
+def _is_allowed_embed_url(url):
+    """该 URL 是否允许作为 <iframe> 嵌进本站页面"""
+    try:
+        parsed = urlsplit(url)
+    except (ValueError, AttributeError):
+        return False
+    if parsed.scheme.lower() != 'https':
+        return False
+    # 同样走 netloc 严格校验，防止畸形 netloc 在此二次校验时蒙混过关
+    if not _strict_netloc_ok(parsed):
+        return False
+    # host 精确匹配白名单域或其子域（绝不用子串判断）
+    return _host_in_allowlist(parsed.hostname, _VIDEO_EMBED_HOSTS)
+
+
+def _is_direct_video_file(url):
+    """是否为受支持的视频直链（按扩展名判断，m3u8/HLS 也算）"""
+    try:
+        path = urlsplit(url).path.lower()
+    except (ValueError, AttributeError):
+        return False
+    return path.endswith(_VIDEO_FILE_EXT)
+
+
+def _looks_like_video_embed(url):
+    """iframe 是否像播放器嵌入：白名单域 + 播放器路径特征，或 youtu.be 短链"""
+    if not _is_allowed_embed_url(url):
+        return False
+    parsed = urlsplit(url)
+    host = (parsed.hostname or '').lower()
+    if host in ('youtu.be', 'b23.tv', 'dai.ly'):
+        return True
+    if _host_in_allowlist(host, ('youtube.com', 'youtube-nocookie.com', 'vimeo.com',
+                                 'dailymotion.com', 'twitch.tv', 'facebook.com')):
+        # 这些站的播放器路径特征：/embed/、/video/、/player/、/v/
+        return any(hint in parsed.path.lower() for hint in _VIDEO_EMBED_PATH_HINTS)
+    if _host_in_allowlist(host, ('bilibili.com',)):
+        # B 站：/player.html、/blackboard/...、BV 视频页都视作可嵌入
+        return ('/player' in parsed.path.lower()
+                or '/blackboard' in parsed.path.lower()
+                or bool(re.match(r'^/video/', parsed.path, re.I)))
+    if _host_in_allowlist(host, ('nicovideo.jp', 'streamable.com')):
+        return True
+    return False
+
+
+def _youtube_id_from_handler_url(url):
+    """从 Anime Corner 的 youtube-iframe-handler.html?yt_embed=XXXX 里取出视频 ID"""
+    try:
+        parsed = urlsplit(url)
+    except (ValueError, AttributeError):
+        return None
+    query = parse_qs(parsed.query)
+    for key in ('yt_embed', 'yt', 'v', 'video_id'):
+        values = query.get(key)
+        if values and re.fullmatch(r'[A-Za-z0-9_-]{6,20}', values[0] or ''):
+            return values[0]
+    return None
+
+
+def _dedupe_videos(videos, limit=6):
+    """按 url 去重并限制条数（Vercel 免费计划：详情页不该无限膨胀）"""
+    out = []
+    seen = set()
+    for v in videos:
+        url = v.get('url')
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        out.append(v)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def _extract_videos(soup, base_url, title):
+    """从原文页提取视频嵌入/外链，返回可直接交给模板的 dict 列表。
+
+    只返回两类：
+      - {'type': 'iframe', 'url': ..., 'embed': True, 'label': ...}
+        白名单播放器，模板可安全 <iframe> 嵌入；
+      - {'type': 'video'|'meta', 'url': ..., 'embed': False, 'label': ...}
+        视频直链或 og:video 等，模板只能渲染成「新窗口打开」的外链。
+
+    注意：本函数是纯解析，不会为了拿视频 info 去请求任何第三方地址
+    （不做 oEmbed 解析），因此不存在由原文 HTML 触发的任意域 SSRF。
+    """
+    videos = []
+
+    # 1) <iframe src>：白名单播放器
+    for tag in soup.find_all('iframe'):
+        raw = tag.get('src') or tag.get('data-src') or ''
+        abs_url = _safe_media_url(raw, base_url)
+        if not abs_url:
+            continue
+        yt_id = _youtube_id_from_handler_url(abs_url)
+        if yt_id:
+            # 视频站自家的「YouTube iframe handler」页（如 Anime Corner 的
+            # /acwp-direct/youtube-iframe-handler.html?yt_embed=XXXX）跑在**原文站
+            # 自己的域名**上，无法在站外嵌入（X-Frame-Options 会拒绝），因此只取
+            # 其中的 yt_embed 视频 ID，换成标准 YouTube 播放器地址再嵌入。
+            # 注意此处**只信 URL 结构，不发起任何请求**（无 oEmbed、无 SSRF）。
+            videos.append({'type': 'iframe', 'url':
+                           f'https://www.youtube.com/embed/{yt_id}',
+                           'embed': True, 'label': 'YouTube'})
+            continue
+        if _looks_like_video_embed(abs_url):
+            host = (urlsplit(abs_url).hostname or '').lower()
+            label = 'Bilibili' if 'bilibili' in host else (
+                'Vimeo' if 'vimeo' in host else 'YouTube' if 'youtu' in host else host)
+            videos.append({'type': 'iframe', 'url': abs_url,
+                           'embed': True, 'label': label})
+
+    # 2) <video src> / <source src>：视频直链，只能外链播放
+    for tag in soup.find_all(['video', 'source']):
+        raw = tag.get('src') or ''
+        abs_url = _safe_media_url(raw, base_url)
+        if not abs_url:
+            continue
+        if _is_allowed_embed_url(abs_url) and _looks_like_video_embed(abs_url):
+            videos.append({'type': 'iframe', 'url': abs_url,
+                           'embed': True, 'label': '视频播放器'})
+        elif _is_direct_video_file(abs_url):
+            videos.append({'type': 'video', 'url': abs_url,
+                           'embed': False, 'label': '视频文件'})
+
+    # 3) og:video / og:video:url / og:video:secure_url / twitter:player meta
+    for meta in soup.find_all('meta'):
+        prop = (meta.get('property') or meta.get('name') or '').strip().lower()
+        if not (prop.startswith('og:video') or prop.startswith('twitter:player')):
+            continue
+        abs_url = _safe_media_url(meta.get('content') or '', base_url)
+        if not abs_url:
+            continue
+        if _is_allowed_embed_url(abs_url) and _looks_like_video_embed(abs_url):
+            videos.append({'type': 'iframe', 'url': abs_url,
+                           'embed': True, 'label': '视频播放器'})
+        else:
+            # 任意域的 og:video 允许作为「外链」返回（如原站自托管 mp4），
+            # 但 embed=False，模板绝不能把它渲染成 iframe。
+            videos.append({'type': 'meta', 'url': abs_url,
+                           'embed': False, 'label': title or '原站视频'})
+
+    return _dedupe_videos(videos)
 
 
 # ============================================================
@@ -456,8 +867,9 @@ def get_article_content(url):
         return None
 
     now = datetime.now()
-    if url in _article_cache:
-        data, expires = _article_cache[url]
+    cached_article = _cache_get(_article_cache, url)
+    if cached_article:
+        data, expires = cached_article
         if now < expires:
             return data
 
@@ -473,6 +885,13 @@ def get_article_content(url):
 
     try:
         soup = BeautifulSoup(res.text, 'html.parser')
+
+        title = soup.title.string.strip() if soup.title and soup.title.string else ''
+
+        # ★ 视频提取必须在 decompose() 之前做：iframe / video / source / meta
+        #   下面会被当成噪音标签删掉，先提取才能拿到视频来源。
+        #   只做嵌入与外链，提取本身不发起任何网络请求。
+        videos = _extract_videos(soup, url, title)
 
         for tag in soup(['script', 'style', 'nav', 'header', 'footer',
                          'aside', 'form', 'iframe', 'noscript', 'button']):
@@ -525,11 +944,15 @@ def get_article_content(url):
         images = [u for u in images if u not in seen and not seen.add(u)][:8]
         
         result = {
-            'title': soup.title.string.strip() if soup.title and soup.title.string else '',
+            'title': title,
             'content': translated,
             'images': images,
+            # 新增字段：向后兼容（旧调用方只读 title/content/images）
+            # 'videos' 元素形如 {'type','url','embed','label'}，
+            # 仅 embed=True 的白名单项允许被模板渲染成 iframe。
+            'videos': videos,
         }
-        _article_cache[url] = (result, now + timedelta(seconds=_ARTICLE_TTL))
+        _cache_set(_article_cache, url, (result, now + timedelta(seconds=_ARTICLE_TTL)), _ARTICLE_MAX)
         return result
 
     except Exception as e:

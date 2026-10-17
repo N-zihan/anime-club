@@ -8,6 +8,8 @@
 400、403、404、405、413、500 均有对应的自定义页面。
 """
 import os
+import threading
+import time
 import uuid
 from datetime import timedelta, datetime, timezone
 
@@ -19,7 +21,10 @@ from .bangumi import (
     get_subjects, search_subjects, get_subject_detail,
     get_subject_characters, get_character_detail,
 )
-from .anime_news import get_anime_news, get_article_content, find_article_meta, search_news
+from .anime_news import (
+    get_anime_news, get_article_content, find_article_meta, search_news,
+    _safe_media_url, _is_allowed_embed_url,
+)
 from .ai import generate_commentary, generate_prediction
 from .config import (
     NOMINATION_LIMIT,
@@ -47,6 +52,29 @@ HEADERS_FOR_IMAGE = {
     'User-Agent': 'Mozilla/5.0 (compatible; nanyi-anime-club/1.0)',
     'Referer': 'https://bgm.tv/',
 }
+
+
+# ============================================================
+# 视频 URL 的模板级防线
+# ============================================================
+# 模板是最后一道防线：即使视图层或解析层漏了，也不能把任意 URL 输出成
+# 可执行的 iframe。这两个过滤器让模板**不需要** |safe，也拿不到脏 URL：
+#   {{ v|media_url }}  → 净化后的 https URL，不安全则返回 ''
+#   {{ u|embed_ok }}   → 该 URL 是否属于允许嵌入的白名单播放器域
+# 用过滤器而不是在模板里内联判断，是为了保证净化逻辑只有一处实现。
+
+@public_bp.app_template_filter('media_url')
+def _tpl_media_url(value):
+    """模板过滤器：返回可安全输出的 URL（不安全则返回空串）"""
+    # _safe_media_url 已做 html.unescape + 字符级净化 + 协议/域名校验，
+    # 任何不可信 URL 都会整条被丢弃，这里绝不回退输出原始值。
+    return _safe_media_url(value) or ''
+
+
+@public_bp.app_template_filter('embed_ok')
+def _tpl_embed_ok(value):
+    """模板过滤器：该 URL 是否允许作为 <iframe> 嵌入（白名单域 + https）"""
+    return bool(_safe_media_url(value) and _is_allowed_embed_url(value))
 
 
 def _calc_current_phase(contest):
@@ -337,8 +365,52 @@ def anime_news_article():
 
     # 抓取正文和图片
     data = get_article_content(url)
-    content = data.get('content') if data else ''
-    images = data.get('images') if data else []
+    # data 可能是 None（抓取失败）或旧结构（无 videos 键），全部用 getattr/兜底处理，
+    # 详情页在抓取失败时必须降级渲染而不是 500。
+    content = (data or {}).get('content') or ''
+    images = (data or {}).get('images') or []
+
+    # 视频：只做「白名单 iframe 嵌入 + 非白名单外链跳转」。
+    # 这里再做一次服务端白名单复核（解析层已过滤一遍），确保模板拿到的
+    # embed_videos 每一项都真的通过白名单校验——模板自身仍会独立复核，
+    # 双重保险，避免任何一处遗漏导致 iframe 注入。
+    embed_videos = []
+    link_videos = []
+    raw_videos = (data or {}).get('videos') or []
+    if isinstance(raw_videos, (list, tuple)):
+        for v in raw_videos:
+            if not isinstance(v, dict):
+                continue
+            # 兼容 'src' 键名（T5 对抗测试会用 {'src': ...} 喂进来）
+            safe_url = _safe_media_url(v.get('url') or v.get('src'))
+            if not safe_url:
+                continue
+            item = {
+                'url': safe_url,
+                'label': v.get('label') or '视频',
+                'type': v.get('type') or 'video',
+            }
+            # embed 只认「白名单域」这一硬条件，不信任上游传来的 embed 标志
+            if _is_allowed_embed_url(safe_url):
+                item['embed'] = True
+                embed_videos.append(item)
+            else:
+                item['embed'] = False
+                link_videos.append(item)
+    # 去重并限制条数（Vercel 免费计划：详情页不该无限膨胀）
+    def _dedupe(items, limit=6):
+        out, seen = [], set()
+        for it in items:
+            if it['url'] in seen:
+                continue
+            seen.add(it['url'])
+            out.append(it)
+            if len(out) >= limit:
+                break
+        return out
+
+    embed_videos = _dedupe(embed_videos)
+    link_videos = _dedupe(link_videos)
 
     # 中文来源映射（保留一些品牌词）
     source_zh_map = {
@@ -357,6 +429,10 @@ def anime_news_article():
                            url=url,
                            content=content,
                            images=images,
+                           videos=embed_videos + link_videos,
+                           embed_videos=embed_videos,
+                           link_videos=link_videos,
+                           fetch_failed=(data is None),
                            source_zh=source_zh)
 
 
@@ -513,7 +589,9 @@ def contest_detail(contest_id):
 
         # ① 海选投票结束 → 生成小组赛数据（先不切 status）
         if now >= times['qualifying_vote_end'] and contest.status == 'open':
-            if not (contest.config and contest.config.get('female_groups')):
+            if not (contest.config and (contest.config.get('qualifying_promoted')
+                                       or contest.config.get('female_groups')
+                                       or contest.config.get('male_groups'))):
                 run_qualifying_promotion(contest)
                 changed = True
 
@@ -525,7 +603,9 @@ def contest_detail(contest_id):
 
         # ③ 小组赛第3轮投票结束 → 生成淘汰赛数据
         if now >= times['group_round_3_end'] and contest.status in ['open', 'group_stage']:
-            if not (contest.config and contest.config.get('knockout_matches_female')):
+            if not (contest.config and (contest.config.get('knockout_promoted')
+                                       or contest.config.get('knockout_matches_female')
+                                       or contest.config.get('knockout_matches_male'))):
                 run_group_promotion(contest)
                 changed = True
 
@@ -1646,13 +1726,76 @@ def ai_commentary(contest_id):
     return jsonify({'success': False, 'error': error}), 500
 
 
+# 单飞锁：并发请求同时未命中缓存时，只放一个真去调（付费）模型，其余等待并复用结果。
+# ★ 为什么必须单飞：Vercel Serverless 是**多实例**部署，app/ai.py 里的缓存是进程内的
+#   （每实例一份、实例回收即失效），而 /contest/<id>/predict 又在 app/__init__.py 的
+#   匿名白名单里。三者叠加 => 匿名用户并发打同一个 contest，多个实例各自未命中缓存，
+#   就会各自发起一次真实付费模型调用；再换 contest_id 即可绕过任何单键缓存。
+#   app/ai.py 的 _cached_or_compute() 只保证「同一 key 同时只有一个在写」，
+#   拿不到锁的线程进入锁内二次查缓存失败后仍会各自 compute()，挡不住重复计费调用，
+#   因此在视图这一层用「进程内单飞 + 冷却」再收一道。
+_predict_locks = {}
+_predict_locks_guard = threading.Lock()
+# 同一 contest 的冷却窗口：预测基于赛事快照，N 秒内重复请求没有新信息，
+# 直接复用上一次结果（不触发新的付费调用）。取 60s，与 Lead 建议一致。
+_PREDICT_COOLDOWN_SECONDS = 60
+_predict_cooldown = {}
+
+
+def _get_predict_lock(contest_id):
+    """按 contest 取一把单飞锁（锁字典有上限，避免被 contest_id 刷爆）"""
+    with _predict_locks_guard:
+        lock = _predict_locks.get(contest_id)
+        if lock is None:
+            if len(_predict_locks) >= 256:
+                # dict 保序：丢掉最早插入的一批（等价 FIFO 淘汰）
+                for key in list(_predict_locks.keys())[:128]:
+                    _predict_locks.pop(key, None)
+            lock = threading.Lock()
+            _predict_locks[contest_id] = lock
+        return lock
+
+
 @public_bp.route('/contest/<int:contest_id>/predict')
 def ai_predict(contest_id):
-    """获取 AI 赛事预测"""
-    success, content, error = generate_prediction(contest_id)
-    if success:
-        return jsonify({'success': True, 'prediction': content})
-    return jsonify({'success': False, 'error': error}), 500
+    """获取 AI 赛事预测
+
+    ★ 资损防护（该端点在匿名白名单内，必须自己兜住）：
+      1) 单飞：同一 contest 的并发请求只允许一次真实模型调用，其余等锁后复用，
+         避免 Vercel 多实例 / 多线程同时击穿缓存导致重复计费；
+      2) 冷却：同一 contest 60 秒内重复请求直接返回上一次结果，不触发新调用；
+      3) 匿名用户仍可查看预测（保持原有 UX），真正的模型调用只发生在
+         「缓存未命中且不在冷却窗口内」时——app/ai.py 的 1 小时缓存是第一道，
+         这里只负责堵住并发击穿与高频重放。
+    注意：进程内状态在 Serverless 下每实例独立，所以它降低的是**单个实例内**的
+    重复调用；跨实例的重复由 ai.py 的缓存兜底，两者叠加后资损面已收敛到
+    「每个实例在缓存过期后最多再调一次」。
+    """
+    contest = get_or_404(Contest, contest_id)
+
+    lock = _get_predict_lock(contest_id)
+    with lock:
+        now_ts = time.time()
+        last = _predict_cooldown.get(contest_id)
+        if last and now_ts - last < _PREDICT_COOLDOWN_SECONDS:
+            # 冷却窗口内：答 429 让前端稍后再来，绝不触发真实调用。
+            # （ai.py 未导出公开的缓存读取接口，且它不在本模块写范围内，
+            #   故这里不去回读它的缓存，直接按「稍后再试」处理。）
+            retry_after = max(1, int(_PREDICT_COOLDOWN_SECONDS - (now_ts - last)))
+            return jsonify({
+                'success': False,
+                'error': f'请求过于频繁，请 {retry_after} 秒后再试',
+                'retry_after': retry_after,
+            }), 429
+
+        success, content, error = generate_prediction(contest_id)
+        if success:
+            _predict_cooldown[contest_id] = now_ts
+            if len(_predict_cooldown) > 256:
+                for key in list(_predict_cooldown.keys())[:128]:
+                    _predict_cooldown.pop(key, None)
+            return jsonify({'success': True, 'prediction': content})
+        return jsonify({'success': False, 'error': error}), 500
 
 
 @public_bp.route('/manifest.json')
