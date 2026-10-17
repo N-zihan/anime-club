@@ -259,15 +259,71 @@
 <p style="margin-top:20px;"><a href="{{ url_for('public.contest_detail', contest_id=contest.id) }}">← 返回赛事详情</a></p>
 
 {% if phase in voting_phases %}
+{# 投票提交：后端 POST /contest/<id>/knockout/submit 需要 candidate_id + gender。原模板只有按钮、无 form/fetch，淘汰赛实际无法投票。 #}
+<form action="{{ url_for('public.knockout_vote_submit', contest_id=contest.id) }}" id="knockoutVoteForm" method="POST" style="display:none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input id="knockoutCandidateInput" name="candidate_id" type="hidden" value="">
+    <input name="gender" type="hidden" value="{{ gender }}">
+</form>
+<script>
+    (function () {
+        const form = document.getElementById('knockoutVoteForm');
+        const votedMatches = new Set({{ voted_matches|tojson }});
+        document.querySelectorAll('.vote-btn').forEach(function (btn) {
+            if (votedMatches.has(parseInt(btn.dataset.matchIndex))) {
+                btn.disabled = true;
+                btn.textContent = '已投';
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+            }
+            btn.addEventListener('click', function () {
+                if (this.disabled) return;
+                const candidateId = parseInt(this.dataset.candidate);
+                if (!candidateId) { alert('该角色已被移除'); return; }
+                if (!confirm('确定要投给 ' + (this.dataset.name || '') + ' 吗？')) return;
+                const original = this.textContent;
+                this.disabled = true;
+                this.textContent = '提交中...';
+                document.getElementById('knockoutCandidateInput').value = candidateId;
+                const self = this;
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
+                    body: new FormData(form)
+                })
+                .then(res => res.text().then(text => {
+                    try { return JSON.parse(text); }
+                    catch (err) { throw new Error('服务器返回非 JSON（HTTP ' + res.status + '）：' + text.substring(0, 300)); }
+                }))
+                .then(data => {
+                    if (data.success) {
+                        alert('✓ ' + data.message);
+                        window.location.reload();
+                    } else {
+                        alert('✗ ' + data.message);
+                        self.disabled = false;
+                        self.textContent = original;
+                    }
+                })
+                .catch(err => {
+                    alert('请求异常：' + err.message);
+                    self.disabled = false;
+                    self.textContent = original;
+                });
+            });
+        });
+    })();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     (function () {
         const contestId = {{ contest.id }};
         const currentSubRound = {{ sub_round or 0 }};
         {% if session.user_id %}
+        // 用 tojson 而不是裸插进 '...' 字符串：一旦 key/URL 含引号即 XSS
         const supabase = window.supabase.createClient(
-            '{{ supabase_url }}',
-            '{{ supabase_anon_key }}'
+            {{ supabase_url|tojson }},
+            {{ supabase_anon_key|tojson }}
         );
         const channel = supabase
             .channel('votes-channel')

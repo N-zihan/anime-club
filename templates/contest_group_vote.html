@@ -345,9 +345,10 @@
         const contestId = {{ contest.id }};
         const currentRound = {{ phase.split('_')[-1]|int }};
         {% if session.user_id %}
+        // 用 tojson 而不是裸插进 '...' 字符串：一旦 key/URL 含引号即 XSS
         const supabase = window.supabase.createClient(
-            '{{ supabase_url }}',
-            '{{ supabase_anon_key }}'
+            {{ supabase_url|tojson }},
+            {{ supabase_anon_key|tojson }}
         );
         const channel = supabase
             .channel('votes-channel')

@@ -551,8 +551,9 @@
         const contestId = {{contest.id}};
         {% if session.user_id %}
         // 初始化 Supabase 客户端
-        const SUPABASE_URL = '{{ supabase_url or "" }}';
-        const SUPABASE_ANON_KEY = '{{ supabase_anon_key or "" }}';
+        // 用 tojson 而不是裸插进 '...' 字符串：一旦 key/URL 含引号即 XSS
+        const SUPABASE_URL = {{ (supabase_url or "")|tojson }};
+        const SUPABASE_ANON_KEY = {{ (supabase_anon_key or "")|tojson }};
         if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
             console.warn('Supabase 未配置，实时票数更新已禁用');
             return;
