@@ -71,6 +71,23 @@ def create_app():
         app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+    # ====== 连接池参数（Serverless 关键） ======
+    # 原实现完全没配 SQLALCHEMY_ENGINE_OPTIONS：Postgres 走 SQLAlchemy 默认
+    # QueuePool(pool_size=5, max_overflow=10)，单个 Vercel 实例最多开 15 条连接，
+    # 多实例并发叠加会打满 Supabase 免费计划的连接上限，直接导致整站 500；
+    # 且线上 DATABASE_URL 走 6543 端口（Supavisor 事务池），长连接被复用时
+    # 还会触发 prepared statement 报错。
+    # SQLite 不支持 pool_size/max_overflow（走 StaticPool/SingletonThreadPool），
+    # 传了会直接报错，所以按 URL 前缀分流：只有 Postgres 才注入池参数。
+    if DATABASE_URL and DATABASE_URL.split(':', 1)[0] in ('postgres', 'postgresql'):
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'pool_pre_ping': True,   # 免费计划连接可能被服务端回收，取用前先探活
+            'pool_size': 1,          # Serverless 每实例只需极少连接
+            'max_overflow': 2,
+            'pool_recycle': 300,     # 早于 Supabase 侧空闲超时主动回收
+        }
+    # =========================================
+
     db.init_app(app)
 
     # ====== CSRF 保护 ======

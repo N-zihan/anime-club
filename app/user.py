@@ -346,7 +346,10 @@ def notification_read(nid):
     if n and n.user_id == session['user_id']:
         n.is_read = True
         db.session.commit()
-        if n.link:
+        # 通知 link 目前都由 url_for() 生成，但它是可写数据库字段：将来只要
+        # 有任何路径把用户输入写进 link，这里就是开放重定向。只放行站内相对
+        # 路径（以 / 开头且不是 //host 形式），其余一律回落到通知列表页。
+        if n.link and n.link.startswith('/') and not n.link.startswith('//'):
             return redirect(n.link)
     return redirect(url_for('user.notifications'))
 

@@ -41,6 +41,15 @@ SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 
 _supabase_client: Client | None = None # pylint: disable=invalid-name
 
+# 显式拉黑的特殊网段：标准库的 is_private/is_reserved 覆盖不到它们，
+# 但都是真实可路由的内网/元数据地址，必须拒绝。
+_BLOCKED_NETWORKS = tuple(ipaddress.ip_network(cidr) for cidr in (
+    '100.64.0.0/10',    # RFC 6598 CGNAT（云内网常用）
+    '100.100.100.200/32',  # 阿里云 metadata 服务
+    '192.0.0.0/24',     # IETF 协议专用
+    '198.18.0.0/15',    # 基准测试网段
+))
+
 
 def get_supabase() -> Client:
     """懒加载获取 Supabase 客户端，仅在首次调用时初始化"""
@@ -61,57 +70,139 @@ def get_supabase() -> Client:
 # SSRF 防护：只允许访问公网的 http(s) 地址
 # ============================================================
 
+def _is_blocked_ip(ip):
+    """单个 IP 是否属于禁止访问的范围。
+
+    Python 3.14 的 is_private / is_reserved 覆盖不到下面这几段，实测
+    `http://100.100.100.200/`（阿里云 metadata）与 `http://100.64.0.1/`（CGNAT）
+    都被判成"公网"放行，等于把云上实例的凭证接口暴露给匿名请求。
+    """
+    if (ip.is_private or ip.is_loopback or ip.is_link_local
+            or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
+        return True
+    # is_global 是标准库给出的"可全球路由"判据，用它兜住上面枚举漏掉的段
+    # （0.0.0.0/8、198.18.0.0/15 等特殊用途地址都在其中）。
+    if not ip.is_global:
+        return True
+    for network in _BLOCKED_NETWORKS:
+        if ip in network:
+            return True
+    return False
+
+
+def resolve_public_ip(host, port):
+    """把主机名解析为「一个可信的公网 IP」；不可信或解析失败时返回 None。
+
+    关键点：只在这里解析一次，把结果交给调用方；避免"校验时解析一次、
+    建连时再解析一次"造成 DNS rebinding（TOCTOU）窗口 —— 攻击者可以让域名
+    第一次返回公网 IP 骗过校验，第二次解析到 127.0.0.1。
+    """
+    if not host:
+        return None
+    try:
+        infos = socket.getaddrinfo(host, port, proto=socket.IPPROTO_TCP)
+    except (socket.gaierror, UnicodeError, OSError):
+        return None
+    if not infos:
+        return None
+    for info in infos:
+        try:
+            ip = ipaddress.ip_address(info[4][0])
+        except ValueError:
+            return None
+        if _is_blocked_ip(ip):
+            return None
+    return infos[0][4][0]
+
+
+def _parse_http_url(url):
+    """解析出 (host, port)；URL 非法时返回 None"""
+    try:
+        parsed = urlparse(url)
+    except (ValueError, AttributeError):
+        return None
+    if parsed.scheme not in ('http', 'https'):
+        return None
+    host = parsed.hostname
+    if not host:
+        return None
+    try:
+        port = parsed.port or (443 if parsed.scheme == 'https' else 80)
+    except ValueError:
+        return None
+    return host, port
+
+
 def is_public_http_url(url):
     """校验 URL 是否指向公网 http(s) 地址。
 
     阻止内网 / 环回 / 链路本地（含云元数据 169.254.169.254）/ 保留地址，
     避免服务端被当成跳板去访问内网。
     """
+    parsed = _parse_http_url(url)
+    if parsed is None:
+        return False
+    host, port = parsed
+    return resolve_public_ip(host, port) is not None
+
+
+def _peer_is_public(response, expected_port):
+    """复核实际建连的对端 IP，作为 DNS rebinding 的第二道防线。
+
+    返回 (ok, local_redirect_ok)：
+      ok=False → 必须整体失败；
+      local_redirect_ok=False → 对端是本地代理，跳转不能由本地跟随。
+    """
     try:
-        parsed = urlparse(url)
-    except (ValueError, AttributeError):
-        return False
-    if parsed.scheme not in ('http', 'https'):
-        return False
-    host = parsed.hostname
-    if not host:
-        return False
+        connection = getattr(response.raw, '_connection', None)
+        peer = connection.sock.getpeername() if connection is not None and connection.sock else None
+    except Exception:  # pylint: disable=broad-except
+        peer = None
+    if not peer:
+        # 拿不到对端（urllib3 可能已释放连接）：退回逐跳校验，不假设通过
+        return True, True
     try:
-        port = parsed.port or (443 if parsed.scheme == 'https' else 80)
-    except ValueError:
-        return False
-    try:
-        infos = socket.getaddrinfo(host, port, proto=socket.IPPROTO_TCP)
-    except (socket.gaierror, UnicodeError, OSError):
-        return False
-    if not infos:
-        return False
-    for info in infos:
-        try:
-            ip = ipaddress.ip_address(info[4][0])
-        except ValueError:
-            return False
-        if (ip.is_private or ip.is_loopback or ip.is_link_local
-                or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
-            return False
-    return True
+        peer_ip = ipaddress.ip_address(peer[0])
+        peer_port = peer[1]
+    except (ValueError, IndexError, TypeError):
+        return False, True
+    if not _is_blocked_ip(peer_ip):
+        return True, True
+    # 目标是公网、对端却是内网：唯一合理解释是走了本地代理（开发机/CI 常见，
+    # 例如 127.0.0.1:7890）。此时禁止由本地跟随重定向（否则重定向目标绕过了
+    # 逐跳校验），响应本身仍交回调用方。
+    if peer_ip.is_loopback and peer_port != expected_port:
+        return True, False
+    return False, True
 
 
 def safe_get(url, max_redirects=4, **kwargs):
     """带 SSRF 防护的 requests.get：逐跳校验目标地址。
 
     返回 requests.Response；地址不合法或重定向过多时返回 None。
+    重定向一律由本函数自己跟随（allow_redirects=False），每一跳都重新校验，
+    并在拿到响应头后复核真实对端 IP。
     """
     kwargs.pop('allow_redirects', None)
+    kwargs.setdefault('stream', True)  # 先只取响应头，复核对端后再读 body
     for _ in range(max_redirects + 1):
-        if not is_public_http_url(url):
+        parsed = _parse_http_url(url)
+        if parsed is None:
+            return None
+        host, port = parsed
+        if resolve_public_ip(host, port) is None:
             return None
         try:
             res = requests.get(url, allow_redirects=False, **kwargs)
         except requests.RequestException:
             return None
-        if res.is_redirect and res.headers.get('Location'):
+        ok, local_redirect_ok = _peer_is_public(res, port)
+        if not ok:
+            res.close()
+            return None
+        if res.is_redirect and res.headers.get('Location') and local_redirect_ok:
             url = urljoin(url, res.headers['Location'])
+            res.close()
             continue
         return res
     return None
